@@ -1,0 +1,10 @@
+describe('MarkdownOutput', () => {
+  it.todo('renderiza texto markdown como elementos HTML (não como texto raw em <pre>)')
+  it.todo('renderiza **bold** como elemento <strong>')
+  it.todo('renderiza tabela GFM como elemento <table>')
+  it.todo('renderiza `inline code` como elemento <code>')
+  it.todo('container tem classes whitespace-pre-wrap font-sans text-base leading-relaxed')
+  it.todo('container tem classe bg-[#F1F1F1] dark:bg-[#1A1A1A] rounded-xl p-6')
+  it.todo('aceita className extra e aplica ao container')
+  it.todo('renderiza string vazia sem erros')
+})

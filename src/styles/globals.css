@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: 255 255 255;
+    --color-fg: 10 10 10;
+  }
+
+  .dark {
+    --color-bg: 10 10 10;
+    --color-fg: 255 255 255;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-white dark:bg-[#0A0A0A] text-[#0A0A0A] dark:text-white font-sans antialiased;
+  }
+
+  /* Scrollbar roxa personalizada */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #7E54FE;
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6b3fe8;
+  }
+}
+
+/* ──── Swiper: setas do ProjectsGallery — círculos roxos ──── */
+.projects-gallery .swiper-button-next,
+.projects-gallery .swiper-button-prev {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #7E54FE;
+  color: white;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.projects-gallery .swiper-button-next:hover,
+.projects-gallery .swiper-button-prev:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+.projects-gallery .swiper-button-next::after,
+.projects-gallery .swiper-button-prev::after {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ──── Swiper: pagination dots do ServicesCarousel ──── */
+.services-carousel .swiper-pagination-bullet {
+  background: #D1D5DB;
+  opacity: 1;
+  width: 8px;
+  height: 8px;
+}
+.services-carousel .swiper-pagination-bullet-active {
+  background: #7E54FE;
+  width: 24px;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
