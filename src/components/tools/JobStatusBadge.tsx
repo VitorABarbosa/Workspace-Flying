@@ -11,22 +11,22 @@ const BADGE_CONFIG: Record<
   }
 > = {
   pending: {
-    label: 'Na fila',
+    label: 'Analisando material',
     classes: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
     icon: <Clock size={12} />,
   },
   processing: {
-    label: 'Processando',
+    label: 'Analisando material',
     classes: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     icon: <Loader2 size={12} className="animate-spin" aria-hidden="true" />,
   },
   awaiting_input: {
-    label: 'Aguardando endereço',
+    label: 'Aguardando endereco do empreendimento',
     classes: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
     icon: <MapPin size={12} />,
   },
   completed: {
-    label: 'Concluído',
+    label: 'Concluido',
     classes: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
     icon: <CheckCircle size={12} />,
   },

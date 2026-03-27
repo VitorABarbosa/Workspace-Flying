@@ -18,24 +18,19 @@ interface ReportsManagerProps {
 // Normaliza o payload retornado pelo GET /jobs (formato do backend pode variar)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeJob(raw: any): ReportItem {
+  const state = raw.status ?? raw.state ?? 'unknown'
+
   return {
     id: raw.job_id ?? raw.id ?? '',
-    state: raw.status ?? raw.state ?? 'unknown',
-    signedUrl:
-      raw.signed_url ??
-      raw.result?.signed_url ??
-      null,
-    name:
-      raw.product_name ??
-      raw.empreendimento ??
-      raw.name ??
-      null,
+    state: state === 'awaiting_address' ? 'awaiting_input' : state,
+    signedUrl: raw.signed_url ?? raw.result?.signed_url ?? null,
+    name: raw.product_name ?? raw.empreendimento ?? raw.name ?? null,
     createdAt: raw.created_at ?? null,
   }
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return '—'
+  if (!iso) return '-'
   try {
     return new Date(iso).toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -45,7 +40,7 @@ function formatDate(iso: string | null): string {
       minute: '2-digit',
     })
   } catch {
-    return '—'
+    return '-'
   }
 }
 
@@ -55,11 +50,11 @@ function StatusBadge({ state }: { state: string }) {
   else if (state === 'failed') className = 'bg-red-100 text-red-700'
 
   const labels: Record<string, string> = {
-    completed: 'Concluído',
+    completed: 'Concluido',
     failed: 'Falhou',
-    pending: 'Pendente',
-    processing: 'Processando',
-    awaiting_input: 'Aguardando',
+    pending: 'Analisando material',
+    processing: 'Analisando material',
+    awaiting_input: 'Aguardando endereco do empreendimento',
     unknown: 'Desconhecido',
   }
   const label = labels[state] ?? state
@@ -96,7 +91,7 @@ export function ReportsManager({ apiBase, onBack }: ReportsManagerProps) {
       })
       .catch((err: unknown) => {
         if (cancelled) return
-        setError(err instanceof Error ? err.message : 'Erro ao carregar relatórios.')
+        setError(err instanceof Error ? err.message : 'Erro ao carregar relatorios.')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -110,21 +105,19 @@ export function ReportsManager({ apiBase, onBack }: ReportsManagerProps) {
   async function handleDelete(id: string) {
     setDeletingId(id)
     try {
-      // Backend limpa job + PDF + report do Supabase Storage
       await fetch(`${apiBase}/jobs/${id}`, { method: 'DELETE' })
       setReports((prev) => prev.filter((r) => r.id !== id))
     } catch {
-      // Silencioso — item permanece na lista se a requisição falhar
+      // Silencioso: item permanece na lista se a requisicao falhar.
     } finally {
       setDeletingId(null)
     }
   }
 
   async function handleDeleteAll() {
-    if (!window.confirm('Apagar todos os relatórios? Esta ação não pode ser desfeita.')) return
+    if (!window.confirm('Apagar todos os relatorios? Esta acao nao pode ser desfeita.')) return
     setDeletingAll(true)
     try {
-      // Backend limpa todos os jobs + todos os arquivos do Supabase Storage
       await fetch(`${apiBase}/jobs`, { method: 'DELETE' })
       setReports([])
     } catch {
@@ -136,7 +129,6 @@ export function ReportsManager({ apiBase, onBack }: ReportsManagerProps) {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <button
@@ -144,11 +136,9 @@ export function ReportsManager({ apiBase, onBack }: ReportsManagerProps) {
             onClick={onBack}
             className="text-sm text-brand-purple hover:opacity-80 transition-opacity"
           >
-            ← Nova análise
+            {'<-'} Nova analise
           </button>
-          <h2 className="text-[22px] font-bold text-[#1A1A2E] dark:text-white">
-            Relatórios
-          </h2>
+          <h2 className="text-[22px] font-bold text-[#1A1A2E] dark:text-white">Relatorios</h2>
           <button
             type="button"
             onClick={() => setRefreshKey((k) => k + 1)}
@@ -168,15 +158,13 @@ export function ReportsManager({ apiBase, onBack }: ReportsManagerProps) {
         </button>
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="flex flex-col items-center py-16">
           <Loader2 size={32} className="text-brand-purple animate-spin" aria-hidden="true" />
-          <p className="text-base text-gray-500 dark:text-gray-400 mt-3">Carregando relatórios...</p>
+          <p className="text-base text-gray-500 dark:text-gray-400 mt-3">Carregando relatorios...</p>
         </div>
       )}
 
-      {/* Erro */}
       {!loading && error && (
         <div className="flex flex-col items-center py-16">
           <AlertCircle size={40} className="text-red-500" />
@@ -191,21 +179,19 @@ export function ReportsManager({ apiBase, onBack }: ReportsManagerProps) {
         </div>
       )}
 
-      {/* Lista vazia */}
       {!loading && !error && reports.length === 0 && (
         <div className="flex flex-col items-center py-16">
-          <p className="text-base text-gray-500 dark:text-gray-400">Nenhum relatório encontrado.</p>
+          <p className="text-base text-gray-500 dark:text-gray-400">Nenhum relatorio encontrado.</p>
           <button
             type="button"
             onClick={onBack}
             className="mt-4 text-sm text-brand-purple hover:opacity-80 transition-opacity"
           >
-            ← Voltar
+            {'<-'} Voltar
           </button>
         </div>
       )}
 
-      {/* Lista de relatórios */}
       {!loading && !error && reports.length > 0 && (
         <ul className="flex flex-col gap-3">
           {reports.map((report) => (
@@ -215,7 +201,7 @@ export function ReportsManager({ apiBase, onBack }: ReportsManagerProps) {
             >
               <div className="flex flex-col gap-1 min-w-0">
                 <span className="font-bold text-[#1A1A2E] dark:text-white truncate">
-                  {report.name ?? 'Empreendimento não identificado'}
+                  {report.name ?? 'Empreendimento nao identificado'}
                 </span>
                 <div className="flex items-center gap-2 flex-wrap">
                   <StatusBadge state={report.state} />
@@ -250,7 +236,7 @@ export function ReportsManager({ apiBase, onBack }: ReportsManagerProps) {
                   type="button"
                   onClick={() => handleDelete(report.id)}
                   disabled={deletingId === report.id || deletingAll}
-                  aria-label={`Deletar relatório ${report.name ?? report.id}`}
+                  aria-label={`Deletar relatorio ${report.name ?? report.id}`}
                   className="flex items-center gap-1 text-red-500 hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {deletingId === report.id ? (

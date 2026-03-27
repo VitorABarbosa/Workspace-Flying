@@ -27,6 +27,8 @@ export interface JobStatus {
   result?: unknown       // agent-specific; Pesquisador returns { markdown: string }
   error?: string
   progress?: string      // optional stage label: "Analisando documento..."
+  requires_address?: boolean
+  address_prompt?: string
 }
 
 /**

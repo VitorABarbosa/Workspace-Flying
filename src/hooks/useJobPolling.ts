@@ -41,6 +41,8 @@ export function useJobPolling(
           error: Array.isArray(raw.errors) && raw.errors.length > 0 ? raw.errors[0] : raw.error,
           result: raw.signed_url ? { signed_url: raw.signed_url } : raw.result,
           progress: raw.progress,
+          requires_address: raw.requires_address,
+          address_prompt: raw.address_prompt,
         }
         setJobStatus(data)
         if (TERMINAL_STATES.includes(data.state as typeof TERMINAL_STATES[number])) {

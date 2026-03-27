@@ -13,19 +13,18 @@ describe('useJobPolling', () => {
     jest.useRealTimers()
   })
 
-  it('não inicia polling quando jobId=null', () => {
+  it('nao inicia polling quando jobId=null', () => {
     renderHook(() => useJobPolling(null, '/api/jobs'))
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('inicia polling imediato (sem aguardar primeiro intervalo) quando jobId é definido', async () => {
+  it('inicia polling imediato (sem aguardar primeiro intervalo) quando jobId e definido', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ id: 'job-1', state: 'processing' }),
     })
     renderHook(() => useJobPolling('job-1', '/api/jobs', 5000))
-    // fetch is called immediately (before any timer advance)
     await act(async () => {
       await Promise.resolve()
     })
@@ -40,16 +39,15 @@ describe('useJobPolling', () => {
       json: async () => ({ id: 'job-2', state: 'processing' }),
     })
     renderHook(() => useJobPolling('job-2', '/api/jobs', 1000))
-    // First immediate poll
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      await Promise.resolve()
+    })
     expect(mockFetch).toHaveBeenCalledTimes(1)
-    // Advance 1 interval
     await act(async () => {
       jest.advanceTimersByTime(1000)
       await Promise.resolve()
     })
     expect(mockFetch).toHaveBeenCalledTimes(2)
-    // Advance another interval
     await act(async () => {
       jest.advanceTimersByTime(1000)
       await Promise.resolve()
@@ -57,28 +55,37 @@ describe('useJobPolling', () => {
     expect(mockFetch).toHaveBeenCalledTimes(3)
   })
 
-  it('atualiza jobStatus com o payload retornado pela API', async () => {
-    const payload = { id: 'job-3', state: 'processing', progress: 'Analisando...' }
+  it('atualiza jobStatus com os campos do payload retornado pela API', async () => {
+    const payload = {
+      id: 'job-3',
+      state: 'processing',
+      progress: 'Analisando...',
+      requires_address: true,
+      address_prompt: 'Informe o endereco completo para continuar.',
+    }
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => payload,
     })
     const { result } = renderHook(() => useJobPolling('job-3', '/api/jobs', 1000))
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      await Promise.resolve()
+    })
     expect(result.current.jobStatus).toEqual(payload)
   })
 
-  it('para o polling quando state="completed" (não dispara mais fetches)', async () => {
+  it('para o polling quando state="completed" (nao dispara mais fetches)', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ id: 'job-4', state: 'completed', result: { markdown: '# Done' } }),
     })
     renderHook(() => useJobPolling('job-4', '/api/jobs', 1000))
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      await Promise.resolve()
+    })
     expect(mockFetch).toHaveBeenCalledTimes(1)
-    // Even after interval advances, no more fetches
     await act(async () => {
       jest.advanceTimersByTime(3000)
       await Promise.resolve()
@@ -90,12 +97,13 @@ describe('useJobPolling', () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({ id: 'job-5', state: 'failed', error: 'Documento inválido' }),
+      json: async () => ({ id: 'job-5', state: 'failed', error: 'Documento invalido' }),
     })
     const { result } = renderHook(() => useJobPolling('job-5', '/api/jobs', 1000))
-    await act(async () => { await Promise.resolve() })
-    expect(result.current.error).toBe('Documento inválido')
-    // No more fetches after terminal state
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(result.current.error).toBe('Documento invalido')
     await act(async () => {
       jest.advanceTimersByTime(3000)
       await Promise.resolve()
@@ -106,9 +114,10 @@ describe('useJobPolling', () => {
   it('para o polling em erro de rede e define error="Falha ao verificar status"', async () => {
     mockFetch.mockRejectedValue(new TypeError('Network error'))
     const { result } = renderHook(() => useJobPolling('job-6', '/api/jobs', 1000))
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      await Promise.resolve()
+    })
     expect(result.current.error).toBe('Falha ao verificar status')
-    // No more fetches after network error
     await act(async () => {
       jest.advanceTimersByTime(3000)
       await Promise.resolve()
@@ -124,20 +133,20 @@ describe('useJobPolling', () => {
       json: async () => ({ id: 'job-7', state: 'processing' }),
     })
     const { unmount } = renderHook(() => useJobPolling('job-7', '/api/jobs', 1000))
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      await Promise.resolve()
+    })
     unmount()
     expect(clearIntervalSpy).toHaveBeenCalled()
     clearIntervalSpy.mockRestore()
   })
 
   it('redefine isTerminal para false quando jobId muda', async () => {
-    // First jobId: completed (terminal)
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => ({ id: 'job-8a', state: 'completed' }),
     })
-    // Second jobId: processing (non-terminal)
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -148,10 +157,11 @@ describe('useJobPolling', () => {
       ({ id }: { id: string }) => useJobPolling(id, '/api/jobs', 1000),
       { initialProps: { id: jobId } }
     )
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      await Promise.resolve()
+    })
     expect(result.current.jobStatus?.state).toBe('completed')
 
-    // Change jobId — polling should restart
     await act(async () => {
       rerender({ id: 'job-8b' })
       await Promise.resolve()
@@ -159,16 +169,17 @@ describe('useJobPolling', () => {
     expect(result.current.jobStatus?.state).toBe('processing')
   })
 
-  it('trata 401 como terminal e define error="Sessão expirada..."', async () => {
+  it('trata 401 como terminal e define error="Sessao expirada..."', async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 401,
       json: async () => ({}),
     })
     const { result } = renderHook(() => useJobPolling('job-9', '/api/jobs', 1000))
-    await act(async () => { await Promise.resolve() })
+    await act(async () => {
+      await Promise.resolve()
+    })
     expect(result.current.error).toBe('Sessão expirada. Faça login novamente.')
-    // No more fetches after 401
     await act(async () => {
       jest.advanceTimersByTime(3000)
       await Promise.resolve()

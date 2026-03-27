@@ -24,15 +24,16 @@ type View = 'idle' | 'uploading' | 'polling' | 'awaiting_input' | 'completed' | 
 function deriveView(
   createStatus: 'idle' | 'creating' | 'error',
   jobId: string | null,
-  pollingState: JobState | undefined,
+  jobStatus: { state?: JobState; requires_address?: boolean } | null,
   createError: string | null,
   pollingError: string | null,
 ): View {
+  const pollingState = jobStatus?.state
   if (createStatus === 'creating') return 'uploading'
   if (createStatus === 'error' || pollingError) return 'failed'
   if (!jobId) return 'idle'
   if (!pollingState) return 'polling'
-  if (pollingState === 'awaiting_input') return 'awaiting_input'
+  if (pollingState === 'awaiting_input' || jobStatus?.requires_address) return 'awaiting_input'
   if (pollingState === 'completed') return 'completed'
   if (pollingState === 'failed') return 'failed'
   return 'polling' // pending | processing
@@ -62,7 +63,7 @@ export function PesquisadorAgent() {
   const currentView = deriveView(
     jobCreate.status,
     jobCreate.jobId,
-    normalizedState,
+    jobStatus ? { ...jobStatus, state: normalizedState } : null,
     jobCreate.error,
     pollingError,
   )
@@ -76,6 +77,7 @@ export function PesquisadorAgent() {
       jobCreate.jobId !== null &&
       currentView !== 'completed' &&
       currentView !== 'failed' &&
+      currentView !== 'awaiting_input' &&
       currentView !== 'idle'
 
     if (isActive) {
@@ -202,6 +204,7 @@ export function PesquisadorAgent() {
               onSubmit={handleAddressSubmit}
               isSubmitting={addressSubmit.status === 'submitting'}
               submitError={addressSubmit.error}
+              prompt={jobStatus?.address_prompt}
             />
           )}
 

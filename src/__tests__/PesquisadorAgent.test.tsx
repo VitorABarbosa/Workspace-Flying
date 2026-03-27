@@ -4,7 +4,6 @@ import { PesquisadorAgent } from '@/components/agents/pesquisador/PesquisadorAge
 import { useJobCreate } from '@/hooks/useJobCreate'
 import { useJobPolling } from '@/hooks/useJobPolling'
 
-// Mock hooks
 jest.mock('@/hooks/useJobCreate', () => ({
   useJobCreate: jest.fn(() => ({
     jobId: null,
@@ -28,7 +27,6 @@ jest.mock('@/hooks/useAddressSubmit', () => ({
   })),
 }))
 
-// Mock ReportView para isolar da cadeia ESM de react-markdown
 jest.mock('@/components/agents/pesquisador/ReportView', () => ({
   ReportView: ({ onNewAnalysis }: { markdown: string; onNewAnalysis: () => void }) => (
     <div>
@@ -37,7 +35,6 @@ jest.mock('@/components/agents/pesquisador/ReportView', () => ({
   ),
 }))
 
-// Mock framer-motion AnimatePresence (não disponível em jsdom)
 jest.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   motion: {
@@ -49,7 +46,10 @@ const mockUseJobCreate = jest.mocked(useJobCreate)
 const mockUseJobPolling = jest.mocked(useJobPolling)
 
 describe('PesquisadorAgent', () => {
-  beforeEach(() => { jest.clearAllMocks() })
+  beforeEach(() => {
+    jest.clearAllMocks()
+    global.fetch = jest.fn()
+  })
 
   it('renderiza DropZone no estado idle (jobId=null, createStatus=idle)', () => {
     mockUseJobCreate.mockReturnValue({ jobId: null, status: 'idle', error: null, createJob: jest.fn(), reset: jest.fn() })
@@ -76,25 +76,57 @@ describe('PesquisadorAgent', () => {
     mockUseJobCreate.mockReturnValue({ jobId: 'job-1', status: 'idle', error: null, createJob: jest.fn(), reset: jest.fn() })
     mockUseJobPolling.mockReturnValue({ jobStatus: { id: 'job-1', state: 'awaiting_input' }, error: null })
     render(<PesquisadorAgent />)
-    expect(screen.getByText('Endereço necessário')).toBeInTheDocument()
+    expect(screen.getByText('Endereco necessario')).toBeInTheDocument()
   })
 
-  it('renderiza ReportView quando state=completed com result.markdown', () => {
+  it('renderiza AddressForm quando backend retorna awaiting_address com address_prompt', () => {
     mockUseJobCreate.mockReturnValue({ jobId: 'job-1', status: 'idle', error: null, createJob: jest.fn(), reset: jest.fn() })
     mockUseJobPolling.mockReturnValue({
-      jobStatus: { id: 'job-1', state: 'completed', result: { markdown: '# Relatório' } },
+      jobStatus: {
+        id: 'job-1',
+        state: 'awaiting_address',
+        address_prompt: 'Informe o endereco completo para continuar.',
+      },
       error: null,
     })
     render(<PesquisadorAgent />)
-    expect(screen.getByText('Baixar .md')).toBeInTheDocument()
+    expect(screen.getByText('Informe o endereco completo para continuar.')).toBeInTheDocument()
   })
 
-  it('renderiza ErrorView quando pollingError não é null', () => {
+  it('renderiza AddressForm quando backend sinaliza requires_address=true', () => {
     mockUseJobCreate.mockReturnValue({ jobId: 'job-1', status: 'idle', error: null, createJob: jest.fn(), reset: jest.fn() })
-    mockUseJobPolling.mockReturnValue({ jobStatus: null, error: 'Documento inválido' })
+    mockUseJobPolling.mockReturnValue({
+      jobStatus: {
+        id: 'job-1',
+        state: 'processing',
+        requires_address: true,
+      },
+      error: null,
+    })
+    render(<PesquisadorAgent />)
+    expect(screen.getByText('Endereco necessario')).toBeInTheDocument()
+  })
+
+  it('renderiza ReportView quando state=completed com signed_url', async () => {
+    const mockFetch = jest.mocked(global.fetch)
+    mockFetch.mockResolvedValue({
+      text: async () => '# Relatorio',
+    } as Response)
+    mockUseJobCreate.mockReturnValue({ jobId: 'job-1', status: 'idle', error: null, createJob: jest.fn(), reset: jest.fn() })
+    mockUseJobPolling.mockReturnValue({
+      jobStatus: { id: 'job-1', state: 'completed', result: { signed_url: '/signed/report.md' } },
+      error: null,
+    })
+    render(<PesquisadorAgent />)
+    expect(await screen.findByText('Baixar .md')).toBeInTheDocument()
+  })
+
+  it('renderiza ErrorView quando pollingError nao e null', () => {
+    mockUseJobCreate.mockReturnValue({ jobId: 'job-1', status: 'idle', error: null, createJob: jest.fn(), reset: jest.fn() })
+    mockUseJobPolling.mockReturnValue({ jobStatus: null, error: 'Documento invÃ¡lido' })
     render(<PesquisadorAgent />)
     expect(screen.getByText('Falha no processamento')).toBeInTheDocument()
-    expect(screen.getByText('Documento inválido')).toBeInTheDocument()
+    expect(screen.getByText('Documento invÃ¡lido')).toBeInTheDocument()
   })
 
   it('renderiza ErrorView quando createStatus=error', () => {
