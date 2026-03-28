@@ -1,0 +1,142 @@
+# Roadmap: Flying Studio Tools
+
+## Overview
+
+Transformar o site institucional atual em um hub interno de ferramentas de IA. A jornada tem duas fases: primeiro limpar o codebase e estabelecer a fundação de auth (sem isso, nada pode ser construído com segurança); depois construir o produto em si — catálogo de ferramentas e o loop completo de interação com agente. Ao final da Phase 2, qualquer membro da equipe abre o browser, loga, escolhe uma ferramenta, interage com o agente e recebe o resultado em tempo real.
+
+## Phases
+
+**Phase Numbering:**
+- Integer phases (1, 2, 3): Planned milestone work
+- Decimal phases (1.1, 1.2): Urgent insertions (marked with INSERTED)
+
+Decimal phases appear between their surrounding integers in numeric order.
+
+- [x] **Phase 1: Foundation and Migration** - Remover código morto, estabelecer auth e infraestrutura de servidor (completed 2026-03-23)
+- [x] **Phase 2: Tool Catalog and Architecture Foundation** - Catálogo de ferramentas em `/tools`, padrão arquitetural de agentes e infraestrutura compartilhada de jobs (completed 2026-03-23)
+- [x] **Phase 3: Pesquisador Agent Integration** - Integração completa do Pesquisador: upload PDF → polling → endereço condicional → relatório Markdown (completed 2026-03-23)
+- [ ] **Phase 4: LUMEN Foundation — Backend + Search + Job Lifecycle** - Backend job_id isolation, registro do agente no catálogo, formulário de busca e ciclo de vida completo do job assíncrono com cancelamento
+- [ ] **Phase 5: LUMEN Search Results** - Visualização de leads isolada por job: lista com score, detalhes em slide-over e export XLSX da pesquisa
+- [ ] **Phase 6: LUMEN Global Leads Database** - Banco global de leads com painel de filtros, paginação server-side e export XLSX com filtros ativos
+- [ ] **Phase 7: LUMEN Search History** - Histórico de pesquisas anteriores com re-abertura dos resultados por job_id
+
+## Phase Details
+
+### Phase 1: Foundation and Migration
+**Goal**: Codebase limpo, login/logout funcionando e todas as rotas de ferramentas protegidas por auth
+**Depends on**: Nothing (first phase)
+**Requirements**: MIG-01, MIG-02, MIG-03, MIG-04, AUTH-01, AUTH-02, AUTH-03
+**Success Criteria** (what must be TRUE):
+  1. Usuário acessa `/login`, insere a senha da equipe e é redirecionado para a home
+  2. Usuário não autenticado que tenta acessar `/tools/*` é redirecionado para `/login`
+  3. Usuário autenticado pode fazer logout e é redirecionado para `/login`
+  4. Nenhuma rota de portfolio (cases, flying-news, imagens-3d, etc.) existe mais no site
+  5. Header e footer com identidade visual (roxo #7E54FE, tipografia Outfit, dark/light mode) estão presentes e funcionando
+**Plans**: 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Wave 0: scaffolding de testes para MIG-03, AUTH-01/02/03
+- [ ] 01-02-PLAN.md — Limpeza completa: remover rotas, componentes, dependências e simplificar home/sidebar
+- [ ] 01-03-PLAN.md — Infraestrutura de auth: supabase-server, middleware, logout action, tool registry
+- [ ] 01-04-PLAN.md — Login page com formulário de senha + checkpoint visual
+
+### Phase 2: Tool Catalog and Architecture Foundation
+**Goal**: Usuário autenticado acessa `/tools`, vê o catálogo de ferramentas com status visual, e a infraestrutura extensível de agentes está pronta para receber o Pesquisador
+**Depends on**: Phase 1
+**Requirements**: CAT-01, CAT-02, ARCH-01
+**Success Criteria** (what must be TRUE):
+  1. Usuário autenticado acessa `/tools` e vê um grid de cards com nome, descrição e status de cada ferramenta
+  2. Cards de ferramentas "em breve" têm aparência visual distinta (badge, opacidade reduzida) — não são clicáveis
+  3. Adicionar uma nova ferramenta ao catálogo requer apenas criar arquivos em `components/agents/[slug]/` e adicionar uma linha em `config/tools.ts` — sem modificar código existente
+  4. Hooks compartilhados (`useJobCreate`, `useJobPolling`) e componentes de UI genéricos (`AgentShell`, `MarkdownOutput`, `JobStatusBadge`) existem e têm testes unitários passando
+  5. Tipos de job (`JobStatus`, `JobResult`) estão definidos e tipagem TypeScript compila sem erros
+**Plans**: 4 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Wave 0: scaffolding de 7 arquivos de teste stub (ToolCard, ToolsPage, hooks, componentes)
+- [ ] 02-02-PLAN.md — Wave 1: tipos de job (src/types/job.ts) + hooks reutilizáveis (useJobCreate, useJobPolling)
+- [ ] 02-03-PLAN.md — Wave 2: componentes UI compartilhados (ToolCard, AgentShell, JobStatusBadge, MarkdownOutput)
+- [ ] 02-04-PLAN.md — Wave 3: páginas (catálogo + rota dinâmica) + middleware + checkpoint visual
+
+### Phase 3: Pesquisador Agent Integration
+**Goal**: Usuário da equipe faz upload de um PDF, acompanha o processamento em tempo real, insere endereço quando solicitado e lê o relatório completo formatado na página
+**Depends on**: Phase 2
+**Requirements**: PESQ-01, PESQ-02, PESQ-03, PESQ-04, PESQ-05, PESQ-06, PESQ-07
+**Success Criteria** (what must be TRUE):
+  1. Usuário arrasta um PDF (ou usa botão) para a área de upload e o job é criado na API — validação de tipo e tamanho acontece no cliente antes do upload
+  2. Enquanto o pipeline executa (3-10 min), o usuário vê spinner com mensagens de status rotativas e um timer de tempo decorrido — sem barra de progresso falsa com percentual
+  3. Quando o backend detecta necessidade de endereço, o formulário de endereço aparece inline substituindo o spinner — o usuário insere e o polling retoma automaticamente após o submit
+  4. Ao concluir, o relatório Markdown completo é renderizado na página com formatação (tabelas, negrito, blocos de código com syntax highlighting)
+  5. Usuário pode fazer download do relatório como arquivo `.md` e copiar o conteúdo para o clipboard com um clique
+  6. Quando o job falha, uma mensagem de erro útil é exibida e o usuário pode tentar novamente com o mesmo PDF ou fazer upload de um novo
+**Plans**: 4 plans
+
+Plans:
+- [x] 03-01-PLAN.md — Wave 0: configuração ESM (jest.config.ts, next.config.mjs, styleMock) + scaffolding de 7 arquivos de teste
+- [x] 03-02-PLAN.md — Wave 1: instalar dependências ESM + upgrade MarkdownOutput para react-markdown + hook useAddressSubmit
+- [x] 03-03-PLAN.md — Wave 2: componentes filhos (DropZone, PollingProgress, AddressForm, ReportView) com testes
+- [ ] 03-04-PLAN.md — Wave 3: PesquisadorAgent orchestrator + registro em AGENT_COMPONENTS + checkpoint visual
+
+### Phase 4: LUMEN Foundation — Backend + Search + Job Lifecycle
+**Goal**: O agente LUMEN aparece no catálogo, o backend suporta isolamento de leads por job_id, e o usuário pode executar uma busca completa — do formulário ao polling ao cancelamento — sem ver resultados ainda
+**Depends on**: Phase 3
+**Requirements**: BACK-01, BACK-02, BACK-03, LUMEN-01, LUMEN-02, LUMEN-03, LUMEN-04, LUMEN-05
+**Success Criteria** (what must be TRUE):
+  1. LUMEN aparece no catálogo `/tools` como ferramenta ativa e clicável com ícone próprio
+  2. Usuário preenche cidade (obrigatório), seleciona ao menos um dos 5 segmentos e opcionalmente uma query livre — erros de validação aparecem inline ao submeter, não ao digitar
+  3. Ao submeter o formulário, um job assíncrono é criado na API e o polling inicia automaticamente; o formulário fica desabilitado enquanto o job está ativo
+  4. Enquanto o job executa, o usuário vê contadores ao vivo (encontrados / novos / duplicados) atualizando a cada ciclo de polling e uma barra de progresso determinística baseada em `progress_pct`
+  5. Usuário pode cancelar um job em andamento — o polling para, o estado `cancelled` é exibido corretamente e o formulário volta a ficar habilitado
+**Plans**: 4 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Wave 0: scaffolding de 3 arquivos de teste stub (LumenSearchForm, LumenJobProgress, LumenAgent)
+- [ ] 04-02-PLAN.md — Wave 1: extensão de tipos/hooks/badge + registro LUMEN no catálogo + API proxy + backend handoff doc
+- [ ] 04-03-PLAN.md — Wave 2: componentes filhos (LumenSearchForm, LumenJobProgress)
+- [ ] 04-04-PLAN.md — Wave 3: LumenAgent orchestrator + checkpoint visual
+
+### Phase 5: LUMEN Search Results
+**Goal**: Ao concluir uma busca, o usuário vê exclusivamente os leads daquela pesquisa — nunca de outras buscas — podendo inspecionar detalhes e exportar
+**Depends on**: Phase 4
+**Requirements**: LUMEN-06, LUMEN-07, LUMEN-08, LUMEN-09
+**Success Criteria** (what must be TRUE):
+  1. Após job concluído, a lista de leads exibe APENAS os leads do `job_id` atual — leads de buscas anteriores com os mesmos parâmetros não aparecem
+  2. Cada lead na lista mostra nome, cidade, segmento, website, telefone, badge de score (0–100 colorido por faixa: vermelho/amarelo/verde) e status do scraping
+  3. Usuário clica em um lead e um slide-over abre com contatos Apollo (nome, cargo, email com nível de confiança, LinkedIn, telefone), keywords detectadas no site e composição do score — a lista de fundo permanece visível e acessível
+  4. Usuário clica em "Exportar XLSX" e faz download de um arquivo com os leads da pesquisa atual, preservando o `job_id` como filtro da requisição ao backend
+**Plans**: TBD
+
+### Phase 6: LUMEN Global Leads Database
+**Goal**: O usuário pode acessar o banco completo de leads de forma deliberada e independente de qualquer pesquisa em curso, com filtros funcionais, paginação e export
+**Depends on**: Phase 5
+**Requirements**: LUMEN-10, LUMEN-11, LUMEN-12, LUMEN-13
+**Success Criteria** (what must be TRUE):
+  1. O banco global é acessível apenas via ação explícita do usuário (aba ou CTA dedicado) — nunca é exibido automaticamente ao concluir uma pesquisa
+  2. Usuário aplica filtros de cidade (texto), segmento (select), score mínimo (número) e data de criação a partir de (date input) e a lista atualiza refletindo os filtros; ao trocar qualquer filtro a paginação volta à página 1
+  3. A lista exibe até 50 leads por página ordenados por score decrescente, com controles de paginação funcionando via server-side pagination
+  4. Usuário exporta os leads do banco global com os filtros ativos aplicados — o arquivo XLSX baixado contém apenas os registros correspondentes aos filtros selecionados
+**Plans**: TBD
+
+### Phase 7: LUMEN Search History
+**Goal**: O usuário pode consultar todas as pesquisas anteriores e re-abrir os resultados de qualquer busca concluída sem precisar repetir a pesquisa
+**Depends on**: Phase 6
+**Requirements**: LUMEN-14, LUMEN-15
+**Success Criteria** (what must be TRUE):
+  1. Usuário vê uma lista cronológica de pesquisas anteriores com cidade, segmentos, status (badge visual), totais (encontrados / novos / duplicados) e data de execução
+  2. Usuário clica em uma pesquisa concluída do histórico e vê os leads daquela busca específica carregados diretamente — sem disparar novo polling para jobs já terminados
+**Plans**: TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Foundation and Migration | 4/4 | Complete | 2026-03-23 |
+| 2. Tool Catalog and Architecture Foundation | 4/4 | Complete | 2026-03-23 |
+| 3. Pesquisador Agent Integration | 4/4 | Complete | 2026-03-23 |
+| 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 0/4 | Not started | - |
+| 5. LUMEN Search Results | 0/? | Not started | - |
+| 6. LUMEN Global Leads Database | 0/? | Not started | - |
+| 7. LUMEN Search History | 0/? | Not started | - |
