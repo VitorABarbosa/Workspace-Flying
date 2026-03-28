@@ -1,0 +1,149 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-28T22:58:10.256Z"
+last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
+progress:
+  total_phases: 7
+  completed_phases: 3
+  total_plans: 16
+  completed_plans: 13
+  percent: 43
+---
+
+# Project State
+
+## Project Reference
+
+See: .planning/PROJECT.md (updated 2026-03-28)
+
+**Core value:** A equipe da Flying Studio acessa e usa agentes de IA diretamente no browser, sem fricção — abre a ferramenta, interage, recebe resultado.
+**Current focus:** Phase 4 — LUMEN Foundation (Backend + Search + Job Lifecycle)
+
+## Current Position
+
+Phase: 4 — LUMEN Foundation — Backend + Search + Job Lifecycle
+Plan: Not started
+Status: Roadmap defined — ready to plan Phase 4
+Last activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
+
+Progress: [████████████░░░░░░░░░░░░░░░░] 43% (3/7 phases complete)
+
+## Performance Metrics
+
+**Velocity:**
+- Total plans completed: 4 (Phase 1)
+- Average duration: ~12 min/plan
+- Total execution time: ~50 min
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| Phase 01-foundation-and-migration P01-01 | 7 | 2 tasks | 4 files |
+| Phase 01-foundation-and-migration P01-02 | 25 | 2 tasks | 11 files |
+| Phase 01-foundation-and-migration P01-03 | 3 | 2 tasks | 8 files |
+| Phase 01-foundation-and-migration P01-04 | 15 | 1 tasks | 3 files |
+
+**Recent Trend:**
+- Last 5 plans: Phase 1 complete (4 plans)
+- Trend: Steady
+
+*Updated after each plan completion*
+| Phase 03-pesquisador P01 | 2min | 2 tasks | 10 files |
+| Phase 02 P01 | 3 | 3 tasks | 7 files |
+| Phase 02-tool-catalog-and-architecture-foundation P02 | 3min | 2 tasks | 5 files |
+| Phase 02-tool-catalog-and-architecture-foundation P03 | 4min | 2 tasks | 9 files |
+| Phase 02-tool-catalog-and-architecture-foundation P04 | 5min | 2 tasks | 7 files |
+| Phase 02-tool-catalog-and-architecture-foundation P04 | 70min | 3 tasks | 7 files |
+| Phase 03-pesquisador-agent-integration P02 | 2min | 2 tasks | 5 files |
+| Phase 03 P04 | 6min | 2 tasks | 4 files |
+| Phase 04-lumen-foundation-backend-search-job-lifecycle P01 | 5min | 2 tasks | 3 files |
+
+## Accumulated Context
+
+### Decisions
+
+Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
+
+- Supabase Auth (`@supabase/ssr`) para autenticação — já integrado, sem nova dependência
+- Middleware Next.js protege tanto `/tools/*` quanto `/api/tools/*` — crítico para segurança
+- Config-driven tool registry (`src/config/tools.ts`) — adicionar nova ferramenta = uma linha de config
+- [Phase 01-foundation-and-migration]: fs.readFileSync para testar Server Components — evita problemas de contexto SSR no jsdom
+- [Phase 01-foundation-and-migration]: it.todo como contrato de testes para módulos inexistentes — evita erros de compilação antes da implementação
+- [Phase 01-foundation-and-migration]: Testes de portfolio em subdiretórios deletados junto com os componentes — sem sentido manter testes de código inexistente
+- [Phase 01-foundation-and-migration]: Testes de layout atualizados para refletir implementação real (fixed vs sticky, 1 link vs 9, bg-[#0D0D0D] vs bg-brand-dark)
+- [Phase 01-foundation-and-migration]: jest.mock() factory inline para next/server evita hoisting issue com const antes de jest.mock
+- [Phase 01-foundation-and-migration]: require() síncrono para server actions em testes — import() dinâmico incompatível com jest describe
+- [Phase 01-foundation-and-migration]: try/catch em torno de logout() nos testes — redirect() do Next lança NEXT_REDIRECT em contexto de teste
+- [Phase 01-foundation-and-migration]: autoFocus testado via document.activeElement em jsdom — React define propriedade DOM, não atributo HTML
+- [Phase 01-foundation-and-migration]: signInWithPassword com email fixo oculto (team@flyingstudio.com.br) + router.refresh() obrigatório após login para revalidar cookies
+- [v1.1 roadmap]: Pesquisador usa modelo async de batch (upload-then-poll), não streaming — exige arquitetura específica por agente em vez de ToolRunner genérico
+- [v1.1 roadmap]: Phase 2 entrega infraestrutura extensível (hooks + tipos + componentes compartilhados) antes da UI do Pesquisador (Phase 3) — separa bugs de UI de bugs de integração
+- [v1.1 roadmap]: Upload direto do browser para FastAPI (sem proxy Next.js) — evita limite de 4.5MB do body parser; URL do FastAPI em variável de ambiente validada em startup
+- [Phase 02-01]: it.todo() stubs criados antes da implementação conforme padrão Nyquist do projeto
+- [Phase 02-01]: Falhas pré-existentes (HeroSubtitleSection, LoginPage) registradas como deferred-items — fora do escopo da Phase 2
+- [Phase 02-tool-catalog-and-architecture-foundation]: useJobPolling usa useRef(false) para isTerminal — evita stale closure dentro do callback do setInterval
+- [Phase 02-tool-catalog-and-architecture-foundation]: awaiting_input (não awaiting_address) é o estado correto no tipo TypeScript — alinha com backend FastAPI
+- [Phase 02-tool-catalog-and-architecture-foundation]: JobStatus.result tipado como unknown na infraestrutura — cada agente faz cast explícito na sua camada
+- [Phase 02-tool-catalog-and-architecture-foundation]: icon?: string adicionado à interface Tool como campo opcional — backward-compatible com Phase 1
+- [Phase 02-tool-catalog-and-architecture-foundation]: MarkdownOutput é stub Phase 2 com <pre> font-sans — interface estável para Phase 3 substituir por react-markdown
+- [Phase 02-tool-catalog-and-architecture-foundation]: AGENT_COMPONENTS map vazio na Phase 2 — pesquisador entra na Phase 3 sem alterar a rota dinâmica
+- [Phase 02-tool-catalog-and-architecture-foundation]: Extensao de agente: criar components/agents/[slug]/ + 1 linha tools.ts + 1 linha AGENT_COMPONENTS — padrao extensivel provado na Phase 2
+- [Phase 02-tool-catalog-and-architecture-foundation]: Nome de exibição encurtado para 'Pesquisador' (sem 'de Imóveis') por decisão do usuário no checkpoint visual
+- [Phase 03-01 Wave 0]: transformIgnorePatterns inclui toda cadeia ESM transitiva de react-markdown (unified, micromark-*, mdast-util-*, etc.)
+- [Phase 03-01 Wave 0]: MarkdownOutput.test.tsx substituído integralmente — testes de <pre> incompatíveis com react-markdown; novos stubs testam comportamento react-markdown
+- [Phase 03-01 Wave 0]: it.todo() como contrato de teste antes da implementação (Nyquist Rule) — padrão confirmado nas Phases 1, 2 e agora 3
+- [Phase 03-02]: rehypeSanitize antes de rehypeHighlight — sanitize primeiro, highlight depois
+- [Phase 03-02]: useAddressSubmit segue padrão idêntico ao useJobCreate — mesma estrutura useState + async + try/catch
+- [Phase 03-03]: jest.mock MarkdownOutput em ReportView.test.tsx — createJestConfig do Next.js prepende padrões que bloqueiam devlop ESM; mock isola o componente sem tentar transpilar a cadeia inteira
+- [Phase 03-03]: Componentes filhos isolados com unit tests antes de serem compostos no PesquisadorAgent (wave 3) — garante correctness individual antes da composição
+- [Phase 03]: jest.mocked() com import estático em vez de require() para compatibilidade com @typescript-eslint/no-require-imports
+- [Phase 03]: Mock de ReportView em PesquisadorAgent.test.tsx isola cadeia ESM transitiva de react-markdown em testes de composição (padrão análogo ao ReportView mockar MarkdownOutput)
+- [v1.2 roadmap]: SearchLeadsList e GlobalLeadsView são componentes separados sem contrato compartilhado — jobId opcional tornaria contaminação cruzada possível e silenciosa
+- [v1.2 roadmap]: Backend job_id filter em GET /leads é gate obrigatório antes de Phase 5 — confirmar antes de construir qualquer leads UI
+- [v1.2 roadmap]: cancelled deve ser adicionado a TERMINAL_STATES em useJobPolling.ts na Phase 4 — sem isso, jobs cancelados fazem polling indefinidamente
+- [v1.2 roadmap]: Sem biblioteca XLSX no frontend — backend serve GET /leads?format=xlsx diretamente
+- [v1.2 roadmap]: nuqs para URL-backed filter state no banco global — filtros sobrevivem refresh e navegação de volta
+- [v1.2 roadmap]: Segments armazenados como string[] não string — multi-select; string única exigiria split/join em cada render
+- [Phase 04-lumen-foundation-backend-search-job-lifecycle]: it.todo() stubs in src/components/agents/lumen/__tests__/ (co-located) not src/__tests__/ — follows VALIDATION.md spec for LUMEN component tests
+- [Phase 04-lumen-foundation-backend-search-job-lifecycle]: Wave 0 produces zero failing tests — all stubs are contracts for future waves, not RED/GREEN TDD cycles
+
+### Phase 4 Prerequisites (confirm before planning)
+
+- Backend: Does `GET /leads` currently support `?job_id=` filter? (BACK-03 — in scope for Phase 4)
+- Backend: What is the exact shape of LUMEN job status response — are `progress_pct`, `found`, `new`, `duplicates` top-level fields or embedded in the `progress` JSON string?
+- Backend: BACK-01 (add `job_id` column to leads table) and BACK-02 (`check_and_save` writes `job_id`) are Phase 4 backend work items, must be done before Phase 5 leads list can be built
+
+### Pending Todos
+
+- Confirmar com backend: endpoints exatos do FastAPI, formato de resposta por estado (pending/processing/awaiting_address/completed/failed), TTL do estado awaiting_address, limite de tamanho de PDF aceito
+- Verificar plano Vercel (Free 10s vs Pro 60s timeout) — impacta se rotas de proxy forem necessárias
+- Verificar compatibilidade ESM de react-markdown@10 no next.config.js (possível necessidade de transpilePackages)
+- [v1.2] Confirmar com backend LUMEN: shape exato do job status response (campos top-level vs embedded em progress JSON)
+- [v1.2] Confirmar antes de Phase 6: mecanismo de export XLSX — direct file response vs pre-signed URL
+- [v1.2] Decidir antes de Phase 6: react-day-picker vs native <input type="date"> para filtro created_after
+
+### Blockers/Concerns
+
+- Interface exata do FastAPI não confirmada — confirmar antes de implementar API routes na Phase 2
+- Decisão de arquitetura de upload (direto vs proxy) precisa ser tornada explícita antes da Phase 2
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260324-ijt | Tela de gerenciamento de relatórios do Pesquisador (lista, delete individual e bulk com limpeza Supabase Storage) | 2026-03-24 | 56d643a | [260324-ijt-quando-acesso-o-pesquisador-no-front-end](.planning/quick/260324-ijt-quando-acesso-o-pesquisador-no-front-end/) |
+| 260325-qwr | Botões de download .md e PDF no Pesquisador: links diretos às rotas backend em ReportView e ReportsManager | 2026-03-25 | 9d33d85 | [260325-qwr-adicionar-bot-es-de-download-md-e-pdf-no](.planning/quick/260325-qwr-adicionar-bot-es-de-download-md-e-pdf-no/) |
+
+## Session Continuity
+
+Last activity: 2026-03-28 — v1.2 LUMEN roadmap defined (Phases 4–7 created, 18 requirements mapped)
+Last session: 2026-03-28T22:58:10.252Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None
+Next step: `/gsd:plan-phase 4`
