@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-28T22:58:10.256Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-03-28T23:07:33.718Z"
 last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 16
-  completed_plans: 13
+  completed_plans: 15
   percent: 43
 ---
 
@@ -62,6 +62,8 @@ Progress: [████████████░░░░░░░░░░░
 | Phase 03-pesquisador-agent-integration P02 | 2min | 2 tasks | 5 files |
 | Phase 03 P04 | 6min | 2 tasks | 4 files |
 | Phase 04-lumen-foundation-backend-search-job-lifecycle P01 | 5min | 2 tasks | 3 files |
+| Phase 04 P02 | 308 | 2 tasks | 10 files |
+| Phase 04-lumen-foundation-backend-search-job-lifecycle P03 | 157 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -112,6 +114,11 @@ Recent decisions affecting current work:
 - [v1.2 roadmap]: Segments armazenados como string[] não string — multi-select; string única exigiria split/join em cada render
 - [Phase 04-lumen-foundation-backend-search-job-lifecycle]: it.todo() stubs in src/components/agents/lumen/__tests__/ (co-located) not src/__tests__/ — follows VALIDATION.md spec for LUMEN component tests
 - [Phase 04-lumen-foundation-backend-search-job-lifecycle]: Wave 0 produces zero failing tests — all stubs are contracts for future waves, not RED/GREEN TDD cycles
+- [Phase 04-02]: cancelled added to JobState union and TERMINAL_STATES atomically — prevents silent infinite polling
+- [Phase 04-02]: BADGE_CONFIG extended with cancelled entry in same commit as JobState — TypeScript Record<JobState,...> is exhaustiveness gate
+- [Phase 04-02]: API proxy at /api/tools/lumen/[...route] — LUMEN uses server-side proxy to avoid CORS issues, unlike Pesquisador which calls backend directly
+- [Phase 04-03]: LumenSearchForm uses local state (city, segments, customQuery, errors) — no lifting state up until LumenAgent composes it in Wave 3
+- [Phase 04-03]: LumenJobProgress uses internal elapsed timer (useEffect + setInterval) — not driven by parent prop, starts on mount
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -143,7 +150,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-28 — v1.2 LUMEN roadmap defined (Phases 4–7 created, 18 requirements mapped)
-Last session: 2026-03-28T22:58:10.252Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-28T23:07:33.707Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
 Next step: `/gsd:plan-phase 4`
