@@ -10,6 +10,7 @@ export type JobTerminalState = 'completed' | 'failed' | 'cancelled'
  */
 export type JobState =
   | 'pending'
+  | 'running'
   | 'processing'
   | 'awaiting_input'
   | 'completed'

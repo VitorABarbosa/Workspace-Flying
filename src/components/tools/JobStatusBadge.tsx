@@ -15,6 +15,11 @@ const BADGE_CONFIG: Record<
     classes: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
     icon: <Clock size={12} />,
   },
+  running: {
+    label: 'Buscando leads',
+    classes: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    icon: <Loader2 size={12} className="animate-spin" aria-hidden="true" />,
+  },
   processing: {
     label: 'Analisando material',
     classes: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
@@ -43,7 +48,8 @@ const BADGE_CONFIG: Record<
 }
 
 export function JobStatusBadge({ state }: { state: JobState }) {
-  const { label, classes, icon } = BADGE_CONFIG[state]
+  const config = BADGE_CONFIG[state] ?? BADGE_CONFIG.pending
+  const { label, classes, icon } = config
   return (
     <span
       role="status"
