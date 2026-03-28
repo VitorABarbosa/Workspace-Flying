@@ -1,5 +1,5 @@
 import { cn } from '@/lib/cn'
-import { Clock, Loader2, MapPin, CheckCircle, AlertCircle } from 'lucide-react'
+import { Clock, Loader2, MapPin, CheckCircle, AlertCircle, XCircle } from 'lucide-react'
 import type { JobState } from '@/types/job'
 
 const BADGE_CONFIG: Record<
@@ -34,6 +34,11 @@ const BADGE_CONFIG: Record<
     label: 'Falhou',
     classes: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
     icon: <AlertCircle size={12} />,
+  },
+  cancelled: {
+    label: 'Cancelado',
+    classes: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+    icon: <XCircle size={12} />,
   },
 }
 

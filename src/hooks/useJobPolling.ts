@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { JobStatus } from '@/types/job'
 
-const TERMINAL_STATES = ['completed', 'failed'] as const
+const TERMINAL_STATES = ['completed', 'failed', 'cancelled'] as const
 
 interface UseJobPollingReturn {
   jobStatus: JobStatus | null
@@ -43,6 +43,12 @@ export function useJobPolling(
           progress: raw.progress,
           requires_address: raw.requires_address,
           address_prompt: raw.address_prompt,
+          // LUMEN fields — undefined for Pesquisador (backend never sends them)
+          progress_pct: raw.progress_pct,
+          found: raw.found,
+          new: raw.new,
+          duplicates: raw.duplicates,
+          leads_saved: raw.leads_saved,
         }
         setJobStatus(data)
         if (TERMINAL_STATES.includes(data.state as typeof TERMINAL_STATES[number])) {
