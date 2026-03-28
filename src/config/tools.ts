@@ -23,4 +23,12 @@ export const tools: Tool[] = [
     href: '/tools/pesquisador',
     icon: 'Search',
   },
+  {
+    id: 'lumen',
+    name: 'LUMEN',
+    description: 'Busca empresas do setor imobiliário por cidade e segmento. Gera uma lista de leads qualificados com contatos Apollo.',
+    status: 'active',
+    href: '/tools/lumen',
+    icon: 'Building2',
+  },
 ]

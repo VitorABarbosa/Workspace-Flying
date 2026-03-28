@@ -3,12 +3,15 @@ import Link from 'next/link'
 import { getToolBySlug } from '@/config/tools'
 import { AgentShell } from '@/components/tools/AgentShell'
 import { PesquisadorAgent } from '@/components/agents/pesquisador/PesquisadorAgent'
+// @ts-expect-error — LumenAgent created in Wave 3
+import { LumenAgent } from '@/components/agents/lumen/LumenAgent'
 import type { Tool } from '@/config/tools'
 
 // Mapa de componentes de agente.
 // Para adicionar novo agente: importar o componente e adicionar uma linha aqui.
 const AGENT_COMPONENTS: Record<string, React.ComponentType> = {
   pesquisador: PesquisadorAgent,
+  lumen: LumenAgent,
 }
 
 function ComingSoonShell({ tool }: { tool: Tool }) {
