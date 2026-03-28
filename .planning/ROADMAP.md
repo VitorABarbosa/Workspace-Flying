@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation and Migration** - Remover código morto, estabelecer auth e infraestrutura de servidor (completed 2026-03-23)
 - [x] **Phase 2: Tool Catalog and Architecture Foundation** - Catálogo de ferramentas em `/tools`, padrão arquitetural de agentes e infraestrutura compartilhada de jobs (completed 2026-03-23)
 - [x] **Phase 3: Pesquisador Agent Integration** - Integração completa do Pesquisador: upload PDF → polling → endereço condicional → relatório Markdown (completed 2026-03-23)
-- [ ] **Phase 4: LUMEN Foundation — Backend + Search + Job Lifecycle** - Backend job_id isolation, registro do agente no catálogo, formulário de busca e ciclo de vida completo do job assíncrono com cancelamento
+- [x] **Phase 4: LUMEN Foundation — Backend + Search + Job Lifecycle** - Backend job_id isolation, registro do agente no catálogo, formulário de busca e ciclo de vida completo do job assíncrono com cancelamento (completed 2026-03-28)
 - [ ] **Phase 5: LUMEN Search Results** - Visualização de leads isolada por job: lista com score, detalhes em slide-over e export XLSX da pesquisa
 - [ ] **Phase 6: LUMEN Global Leads Database** - Banco global de leads com painel de filtros, paginação server-side e export XLSX com filtros ativos
 - [ ] **Phase 7: LUMEN Search History** - Histórico de pesquisas anteriores com re-abertura dos resultados por job_id
@@ -136,7 +136,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Foundation and Migration | 4/4 | Complete | 2026-03-23 |
 | 2. Tool Catalog and Architecture Foundation | 4/4 | Complete | 2026-03-23 |
 | 3. Pesquisador Agent Integration | 4/4 | Complete | 2026-03-23 |
-| 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 3/4 | In Progress|  |
+| 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 4/4 | Complete   | 2026-03-28 |
 | 5. LUMEN Search Results | 0/? | Not started | - |
 | 6. LUMEN Global Leads Database | 0/? | Not started | - |
 | 7. LUMEN Search History | 0/? | Not started | - |

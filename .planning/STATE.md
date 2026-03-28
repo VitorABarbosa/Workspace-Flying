@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-03-28T23:07:33.718Z"
+stopped_at: "Checkpoint 04-04 Task 2: awaiting human verify of LUMEN browser flow"
+last_updated: "2026-03-28T23:12:47.948Z"
 last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
 progress:
   total_phases: 7
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 16
-  completed_plans: 15
+  completed_plans: 16
   percent: 43
 ---
 
@@ -64,6 +64,7 @@ Progress: [████████████░░░░░░░░░░░
 | Phase 04-lumen-foundation-backend-search-job-lifecycle P01 | 5min | 2 tasks | 3 files |
 | Phase 04 P02 | 308 | 2 tasks | 10 files |
 | Phase 04-lumen-foundation-backend-search-job-lifecycle P03 | 157 | 2 tasks | 2 files |
+| Phase 04 P04 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,8 @@ Recent decisions affecting current work:
 - [Phase 04-02]: API proxy at /api/tools/lumen/[...route] — LUMEN uses server-side proxy to avoid CORS issues, unlike Pesquisador which calls backend directly
 - [Phase 04-03]: LumenSearchForm uses local state (city, segments, customQuery, errors) — no lifting state up until LumenAgent composes it in Wave 3
 - [Phase 04-03]: LumenJobProgress uses internal elapsed timer (useEffect + setInterval) — not driven by parent prop, starts on mount
+- [Phase 04-lumen-foundation-backend-search-job-lifecycle]: LumenAgent uses direct fetch with JSON body instead of useJobCreate — LUMEN backend expects application/json not FormData
+- [Phase 04-lumen-foundation-backend-search-job-lifecycle]: finalCounts preserved via useEffect on jobStatus — counter values survive view transition to cancelled/completed panels
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -150,7 +153,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-28 — v1.2 LUMEN roadmap defined (Phases 4–7 created, 18 requirements mapped)
-Last session: 2026-03-28T23:07:33.707Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-03-28T23:12:33.614Z
+Stopped at: Checkpoint 04-04 Task 2: awaiting human verify of LUMEN browser flow
 Resume file: None
 Next step: `/gsd:plan-phase 4`
