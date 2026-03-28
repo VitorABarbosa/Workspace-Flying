@@ -1,5 +1,3 @@
-import React from 'react'
-
 // LumenSearchForm.tsx does not exist yet — stubs only.
 // Run: npx jest --testPathPattern="LumenSearchForm" --passWithNoTests
 

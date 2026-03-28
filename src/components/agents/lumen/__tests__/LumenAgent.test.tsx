@@ -1,5 +1,3 @@
-import React from 'react'
-
 // LumenAgent.tsx does not exist yet — stubs only.
 // Run: npx jest --testPathPatterns="LumenAgent" --passWithNoTests
 
