@@ -55,4 +55,11 @@ describe('JobStatusBadge', () => {
     const badge = container.querySelector('[role="status"]')
     expect(badge).toHaveClass('rounded-full')
   })
+
+  it('cancelled: renderiza "Cancelado" com bg-gray-100 e icone XCircle', () => {
+    const { container } = render(<JobStatusBadge state="cancelled" />)
+    expect(screen.getByText('Cancelado')).toBeInTheDocument()
+    const badge = container.querySelector('[role="status"]')
+    expect(badge).toHaveClass('bg-gray-100')
+  })
 })

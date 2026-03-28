@@ -186,4 +186,48 @@ describe('useJobPolling', () => {
     })
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
+
+  it('para o polling quando state="cancelled" (nao dispara mais fetches)', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ id: 'job-cancel', state: 'cancelled', leads_saved: 3 }),
+    })
+    renderHook(() => useJobPolling('job-cancel', '/api/lumen/status', 1000))
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      jest.advanceTimersByTime(3000)
+      await Promise.resolve()
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('encaminha campos LUMEN (progress_pct, found, new, duplicates, leads_saved) no jobStatus', async () => {
+    const payload = {
+      id: 'job-lumen',
+      state: 'processing',
+      progress_pct: 42,
+      found: 10,
+      new: 7,
+      duplicates: 3,
+      leads_saved: 0,
+    }
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => payload,
+    })
+    const { result } = renderHook(() => useJobPolling('job-lumen', '/api/lumen/status', 1000))
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(result.current.jobStatus?.progress_pct).toBe(42)
+    expect(result.current.jobStatus?.found).toBe(10)
+    expect(result.current.jobStatus?.new).toBe(7)
+    expect(result.current.jobStatus?.duplicates).toBe(3)
+    expect(result.current.jobStatus?.leads_saved).toBe(0)
+  })
 })
