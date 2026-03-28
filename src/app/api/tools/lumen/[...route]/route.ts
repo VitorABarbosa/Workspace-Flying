@@ -16,7 +16,14 @@ async function handler(req: NextRequest, { params }: { params: { route: string[]
     return NextResponse.json({ error: 'NEXT_PUBLIC_LUMEN_URL not configured' }, { status: 503 })
   }
 
-  const path = params.route.join('/')
+  let path = params.route.join('/')
+
+  // GET /search/{uuid} → backend expects /search/{uuid}/status
+  const isStatusPoll =
+    req.method === 'GET' &&
+    /^search\/[0-9a-f-]{36}$/.test(path)
+  if (isStatusPoll) path = `${path}/status`
+
   const url = `${LUMEN_URL}/${path}${req.nextUrl.search}`
 
   const isJson = req.headers.get('content-type')?.includes('application/json')
