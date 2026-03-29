@@ -104,7 +104,14 @@ Plans:
   2. Cada lead na lista mostra nome, cidade, segmento, website, telefone, badge de score (0–100 colorido por faixa: vermelho/amarelo/verde) e status do scraping
   3. Usuário clica em um lead e um slide-over abre com contatos Apollo (nome, cargo, email com nível de confiança, LinkedIn, telefone), keywords detectadas no site e composição do score — a lista de fundo permanece visível e acessível
   4. Usuário clica em "Exportar XLSX" e faz download de um arquivo com os leads da pesquisa atual, preservando o `job_id` como filtro da requisição ao backend
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Wave 0: test stubs para SearchLeadsList, LeadScoreBadge, LeadDetailPanel + append stubs ao LumenAgent.test.tsx
+- [ ] 05-02-PLAN.md — Wave 1: src/types/lumen.ts (Lead, ApolloContact, ScoreBreakdown, LeadsResponse) + LeadScoreBadge com testes reais
+- [ ] 05-03-PLAN.md — Wave 2: SearchLeadsList (fetch + tabela + estados loading/empty/error) com testes reais
+- [ ] 05-04-PLAN.md — Wave 3: LeadDetailPanel (slide-over com contacts, keywords, score breakdown) com testes reais
+- [ ] 05-05-PLAN.md — Wave 4: LumenAgent completed view rewrite + Export XLSX + wiring + checkpoint visual
 
 ### Phase 6: LUMEN Global Leads Database
 **Goal**: O usuário pode acessar o banco completo de leads de forma deliberada e independente de qualquer pesquisa em curso, com filtros funcionais, paginação e export
@@ -136,7 +143,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Foundation and Migration | 4/4 | Complete | 2026-03-23 |
 | 2. Tool Catalog and Architecture Foundation | 4/4 | Complete | 2026-03-23 |
 | 3. Pesquisador Agent Integration | 4/4 | Complete | 2026-03-23 |
-| 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 4/4 | Complete   | 2026-03-28 |
-| 5. LUMEN Search Results | 0/? | Not started | - |
+| 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 4/4 | Complete    | 2026-03-29 |
+| 5. LUMEN Search Results | 0/5 | Not started | - |
 | 6. LUMEN Global Leads Database | 0/? | Not started | - |
 | 7. LUMEN Search History | 0/? | Not started | - |
