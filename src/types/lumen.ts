@@ -2,10 +2,13 @@
 // Do NOT import from job.ts here; these are independent domain types.
 
 export interface ApolloContact {
-  name: string
-  title?: string
+  id?: string
+  lead_id?: string
+  name?: string
+  role?: string
   email?: string
-  email_confidence?: 'high' | 'medium' | 'low' | string
+  /** 0–100 integer from backend */
+  email_confidence?: number
   linkedin_url?: string
   phone?: string
 }
@@ -27,8 +30,6 @@ export interface Lead {
   phone?: string
   score: number
   scraping_status?: string
-  apollo_contacts?: ApolloContact[]
-  keywords?: string[]
   score_breakdown?: ScoreBreakdown
   created_at?: string
 }
@@ -39,4 +40,10 @@ export interface LeadsResponse {
   page: number
   pages: number
   per_page: number
+}
+
+/** Full lead detail returned by GET /leads/{id} */
+export interface LeadDetail extends Lead {
+  contacts: ApolloContact[]
+  keywords: string[]
 }

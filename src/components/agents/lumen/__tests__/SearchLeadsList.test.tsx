@@ -42,7 +42,7 @@ describe('SearchLeadsList', () => {
     it('faz fetch para /api/tools/lumen/leads?job_id={encodeURIComponent(jobId)} ao montar', async () => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [], total: 0 }),
+        json: async () => ({ data: [], total: 0, page: 1, pages: 0, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job-abc" onSelectLead={jest.fn()} />)
       await waitFor(() =>
@@ -55,7 +55,7 @@ describe('SearchLeadsList', () => {
     it('usa encodeURIComponent no jobId com caracteres especiais', async () => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [], total: 0 }),
+        json: async () => ({ data: [], total: 0, page: 1, pages: 0, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job abc/123" onSelectLead={jest.fn()} />)
       await waitFor(() =>
@@ -76,7 +76,7 @@ describe('SearchLeadsList', () => {
     it('exibe estado empty quando leads retornados = []', async () => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [], total: 0 }),
+        json: async () => ({ data: [], total: 0, page: 1, pages: 0, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job-abc" onSelectLead={jest.fn()} />)
       await waitFor(() =>
@@ -108,7 +108,7 @@ describe('SearchLeadsList', () => {
         .mockResolvedValueOnce({ ok: false, status: 500 })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ leads: [], total: 0 }),
+          json: async () => ({ data: [], total: 0, page: 1, pages: 0, per_page: 50 }),
         })
 
       render(<SearchLeadsList jobId="job-abc" onSelectLead={jest.fn()} />)
@@ -126,7 +126,7 @@ describe('SearchLeadsList', () => {
     beforeEach(() => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [mockLead], total: 1 }),
+        json: async () => ({ data: [mockLead], total: 1, page: 1, pages: 1, per_page: 50 }),
       })
     })
 
@@ -200,7 +200,7 @@ describe('SearchLeadsList', () => {
     it('renderiza em dash para city, segment, website e phone quando ausentes', async () => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [mockLeadNoOptionals], total: 1 }),
+        json: async () => ({ data: [mockLeadNoOptionals], total: 1, page: 1, pages: 1, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job-abc" onSelectLead={jest.fn()} />)
       await waitFor(() => screen.getByText('Lead Básico'))
@@ -213,7 +213,7 @@ describe('SearchLeadsList', () => {
     it('renderiza "Falhou" para scraping_status failed', async () => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [mockLeadFailed], total: 1 }),
+        json: async () => ({ data: [mockLeadFailed], total: 1, page: 1, pages: 1, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job-abc" onSelectLead={jest.fn()} />)
       await waitFor(() =>
@@ -227,7 +227,7 @@ describe('SearchLeadsList', () => {
       const onSelectLead = jest.fn()
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [mockLead], total: 1 }),
+        json: async () => ({ data: [mockLead], total: 1, page: 1, pages: 1, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job-abc" onSelectLead={onSelectLead} />)
       await waitFor(() => screen.getByText('Imobiliária Central'))
@@ -241,7 +241,7 @@ describe('SearchLeadsList', () => {
     it('linha selecionada recebe bg-brand-purple/10 quando lead.id === selectedLeadId', async () => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [mockLead], total: 1 }),
+        json: async () => ({ data: [mockLead], total: 1, page: 1, pages: 1, per_page: 50 }),
       })
       render(
         <SearchLeadsList
@@ -260,7 +260,7 @@ describe('SearchLeadsList', () => {
       const onSelectLead = jest.fn()
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [mockLead], total: 1 }),
+        json: async () => ({ data: [mockLead], total: 1, page: 1, pages: 1, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job-abc" onSelectLead={onSelectLead} />)
       await waitFor(() => screen.getByText('Imobiliária Central'))
@@ -274,7 +274,7 @@ describe('SearchLeadsList', () => {
       const onSelectLead = jest.fn()
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [mockLead], total: 1 }),
+        json: async () => ({ data: [mockLead], total: 1, page: 1, pages: 1, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job-abc" onSelectLead={onSelectLead} />)
       await waitFor(() => screen.getByText('Imobiliária Central'))
@@ -287,7 +287,7 @@ describe('SearchLeadsList', () => {
     it('linha tem tabIndex={0} para navegação por teclado', async () => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ leads: [mockLead], total: 1 }),
+        json: async () => ({ data: [mockLead], total: 1, page: 1, pages: 1, per_page: 50 }),
       })
       render(<SearchLeadsList jobId="job-abc" onSelectLead={jest.fn()} />)
       await waitFor(() => screen.getByText('Imobiliária Central'))

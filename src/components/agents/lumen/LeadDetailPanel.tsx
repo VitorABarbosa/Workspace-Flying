@@ -1,8 +1,8 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, ExternalLink } from 'lucide-react'
-import type { Lead } from '@/types/lumen'
+import { X, ExternalLink, Loader2 } from 'lucide-react'
+import type { Lead, LeadDetail, ApolloContact } from '@/types/lumen'
 import { LeadScoreBadge } from './LeadScoreBadge'
 
 interface LeadDetailPanelProps {
@@ -10,23 +10,61 @@ interface LeadDetailPanelProps {
   onClose: () => void
 }
 
-function confidenceColor(level?: string) {
-  if (level === 'high') return 'text-green-500'
-  if (level === 'medium') return 'text-yellow-500'
-  return 'text-gray-400'
-}
-
-function confidenceLabel(level?: string) {
-  if (level === 'high') return 'alta'
-  if (level === 'medium') return 'média'
-  return 'baixa'
+function confidenceLabel(level?: number) {
+  if (level === undefined || level === null) return null
+  if (level >= 70) return <span className="text-[10px] uppercase ml-1 text-green-500">alta</span>
+  if (level >= 40) return <span className="text-[10px] uppercase ml-1 text-yellow-500">média</span>
+  return <span className="text-[10px] uppercase ml-1 text-gray-400">baixa</span>
 }
 
 function formatBreakdownKey(key: string) {
   return key.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
 }
 
+function ContactCard({ contact }: { contact: ApolloContact }) {
+  return (
+    <div className="mx-6 mb-3 p-4 rounded-lg bg-gray-50 dark:bg-[#1A1A1A]">
+      {contact.name && <p className="text-sm font-bold text-[#1A1A2E] dark:text-white">{contact.name}</p>}
+      {contact.role && <p className="text-xs text-gray-400 mt-0.5">{contact.role}</p>}
+      {contact.email && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {contact.email}
+          {confidenceLabel(contact.email_confidence)}
+        </p>
+      )}
+      {contact.linkedin_url && (
+        <a
+          href={contact.linkedin_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-brand-purple hover:opacity-80 flex items-center gap-1 mt-1"
+        >
+          <ExternalLink size={10} /> LinkedIn
+        </a>
+      )}
+      {contact.phone && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{contact.phone}</p>}
+    </div>
+  )
+}
+
 export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
+  const [detail, setDetail] = useState<LeadDetail | null>(null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
+
+  // Fetch full lead detail when a lead is selected
+  useEffect(() => {
+    if (!lead) {
+      setDetail(null)
+      return
+    }
+    setLoadingDetail(true)
+    fetch(`/api/tools/lumen/leads/${lead.id}`)
+      .then(res => res.ok ? res.json() as Promise<LeadDetail> : null)
+      .then(data => setDetail(data))
+      .catch(() => setDetail(null))
+      .finally(() => setLoadingDetail(false))
+  }, [lead?.id])
+
   // Close on Escape
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -45,6 +83,10 @@ export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
       document.body.style.overflow = 'unset'
     }
   }, [lead])
+
+  const contacts = detail?.contacts ?? []
+  const keywords = detail?.keywords ?? []
+  const scoreBreakdown = detail?.score_breakdown ?? lead?.score_breakdown
 
   return (
     <AnimatePresence>
@@ -95,9 +137,9 @@ export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Score</p>
               <LeadScoreBadge score={lead.score} />
-              {lead.score_breakdown && Object.keys(lead.score_breakdown).length > 0 && (
+              {scoreBreakdown && Object.keys(scoreBreakdown).length > 0 && (
                 <dl className="mt-3 space-y-1">
-                  {Object.entries(lead.score_breakdown).map(([key, value]) =>
+                  {Object.entries(scoreBreakdown).map(([key, value]) =>
                     value !== undefined ? (
                       <div key={key} className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                         <dt>{formatBreakdownKey(key)}</dt>
@@ -109,57 +151,45 @@ export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
               )}
             </div>
 
-            {/* Apollo Contacts */}
-            {lead.apollo_contacts && lead.apollo_contacts.length > 0 && (
-              <>
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 mt-4 px-6">Contatos Apollo</p>
-                {lead.apollo_contacts.map((contact, i) => (
-                  <div key={i} className="mx-6 mb-3 p-4 rounded-lg bg-gray-50 dark:bg-[#1A1A1A]">
-                    <p className="text-sm font-bold text-[#1A1A2E] dark:text-white">{contact.name}</p>
-                    {contact.title && <p className="text-xs text-gray-400 mt-0.5">{contact.title}</p>}
-                    {contact.email && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {contact.email}
-                        {contact.email_confidence && (
-                          <span className={`text-[10px] uppercase ml-1 ${confidenceColor(contact.email_confidence)}`}>
-                            {confidenceLabel(contact.email_confidence)}
-                          </span>
-                        )}
-                      </p>
-                    )}
-                    {contact.linkedin_url && (
-                      <a
-                        href={contact.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-brand-purple hover:opacity-80 flex items-center gap-1 mt-1"
-                      >
-                        <ExternalLink size={10} /> LinkedIn
-                      </a>
-                    )}
-                    {contact.phone && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{contact.phone}</p>}
-                  </div>
-                ))}
-              </>
-            )}
+            {/* Apollo Contacts — always rendered */}
+            <div className="py-4 border-b border-gray-100 dark:border-gray-800">
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 px-6">Contatos Apollo</p>
+              {loadingDetail ? (
+                <div className="flex items-center gap-2 px-6 text-sm text-gray-400">
+                  <Loader2 size={14} className="animate-spin" />
+                  Carregando contatos...
+                </div>
+              ) : contacts.length > 0 ? (
+                contacts.map((contact, i) => <ContactCard key={contact.id ?? i} contact={contact} />)
+              ) : (
+                <p className="px-6 text-sm text-gray-400">Nenhum contato encontrado para este lead.</p>
+              )}
+            </div>
 
-            {/* Keywords */}
-            {lead.keywords && lead.keywords.length > 0 && (
-              <>
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2 mt-4 px-6">Keywords Detectadas</p>
-                <div className="px-6 flex flex-wrap gap-2 pb-4">
-                  {lead.keywords.map(kw => (
+            {/* Keywords — always rendered */}
+            <div className="py-4 border-b border-gray-100 dark:border-gray-800">
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 px-6">Keywords Detectadas</p>
+              {loadingDetail ? (
+                <div className="flex items-center gap-2 px-6 text-sm text-gray-400">
+                  <Loader2 size={14} className="animate-spin" />
+                  Carregando keywords...
+                </div>
+              ) : keywords.length > 0 ? (
+                <div className="px-6 flex flex-wrap gap-2">
+                  {keywords.map(kw => (
                     <span key={kw} className="px-2 py-0.5 bg-gray-100 dark:bg-[#1A1A1A] text-xs text-gray-600 dark:text-gray-400 rounded-md">
                       {kw}
                     </span>
                   ))}
                 </div>
-              </>
-            )}
+              ) : (
+                <p className="px-6 text-sm text-gray-400">Nenhuma keyword detectada.</p>
+              )}
+            </div>
 
             {/* Footer — Website + Phone */}
             {(lead.website || lead.phone) && (
-              <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-2">
+              <div className="px-6 py-4 flex flex-col gap-2">
                 {lead.website && (
                   <a
                     href={lead.website}

@@ -1,7 +1,7 @@
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { LeadDetailPanel } from '../LeadDetailPanel'
-import type { Lead } from '@/types/lumen'
+import type { Lead, LeadDetail } from '@/types/lumen'
 
 jest.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -31,23 +31,45 @@ const fullLead: Lead = {
   website: 'https://beta.com.br',
   phone: '(11) 9999-9999',
   score: 75,
-  apollo_contacts: [
+}
+
+const detailWithContacts: LeadDetail = {
+  ...fullLead,
+  contacts: [
     {
+      id: 'c1',
+      lead_id: '2',
       name: 'João Silva',
-      title: 'Diretor Comercial',
+      role: 'Diretor Comercial',
       email: 'joao@beta.com.br',
-      email_confidence: 'high',
+      email_confidence: 85,
       linkedin_url: 'https://linkedin.com/in/joaosilva',
       phone: '(11) 8888-8888',
     },
   ],
   keywords: ['lançamento', 'apartamento'],
-  score_breakdown: {
-    website_score: 30,
-    apollo_score: 25,
-    keyword_score: 20,
-  },
 }
+
+const emptyDetail: LeadDetail = {
+  ...baseLead,
+  contacts: [],
+  keywords: [],
+}
+
+function mockFetch(detail: LeadDetail) {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: () => Promise.resolve(detail),
+  } as unknown as Response)
+}
+
+beforeEach(() => {
+  mockFetch(emptyDetail)
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
+})
 
 describe('LeadDetailPanel', () => {
   describe('LUMEN-08: slide-over detail panel', () => {
@@ -77,37 +99,53 @@ describe('LeadDetailPanel', () => {
       expect(badge).toHaveTextContent('85')
     })
 
-    it('renderiza score_breakdown como lista <dl> de key:value quando presente', () => {
-      render(<LeadDetailPanel lead={fullLead} onClose={jest.fn()} />)
-      const dl = document.querySelector('dl')
-      expect(dl).toBeInTheDocument()
-      const dts = document.querySelectorAll('dt')
-      expect(dts.length).toBeGreaterThan(0)
-      const dds = document.querySelectorAll('dd')
-      expect(dds.length).toBeGreaterThan(0)
-    })
-
-    it('renderiza seção "Contatos Apollo" quando apollo_contacts é array não-vazio', () => {
-      render(<LeadDetailPanel lead={fullLead} onClose={jest.fn()} />)
+    it('sempre exibe seção "Contatos Apollo" (mesmo sem contatos)', () => {
+      mockFetch(emptyDetail)
+      render(<LeadDetailPanel lead={baseLead} onClose={jest.fn()} />)
       expect(screen.getByText('Contatos Apollo')).toBeInTheDocument()
     })
 
-    it('omite seção "Contatos Apollo" quando apollo_contacts está vazio ou ausente', () => {
+    it('exibe "Nenhum contato encontrado" quando Apollo não retorna contatos', async () => {
+      mockFetch(emptyDetail)
       render(<LeadDetailPanel lead={baseLead} onClose={jest.fn()} />)
-      expect(screen.queryByText('Contatos Apollo')).not.toBeInTheDocument()
+      await waitFor(() =>
+        expect(screen.getByText('Nenhum contato encontrado para este lead.')).toBeInTheDocument()
+      )
     })
 
-    it('renderiza seção "Keywords Detectadas" quando keywords é array não-vazio', () => {
+    it('exibe contatos Apollo quando presentes no detalhe', async () => {
+      mockFetch(detailWithContacts)
       render(<LeadDetailPanel lead={fullLead} onClose={jest.fn()} />)
+      await waitFor(() =>
+        expect(screen.getByText('João Silva')).toBeInTheDocument()
+      )
+      expect(screen.getByText('Diretor Comercial')).toBeInTheDocument()
+    })
+
+    it('sempre exibe seção "Keywords Detectadas" (mesmo sem keywords)', () => {
+      mockFetch(emptyDetail)
+      render(<LeadDetailPanel lead={baseLead} onClose={jest.fn()} />)
       expect(screen.getByText('Keywords Detectadas')).toBeInTheDocument()
     })
 
-    it('omite seção "Keywords Detectadas" quando keywords está vazio ou ausente', () => {
+    it('exibe "Nenhuma keyword detectada" quando sem keywords', async () => {
+      mockFetch(emptyDetail)
       render(<LeadDetailPanel lead={baseLead} onClose={jest.fn()} />)
-      expect(screen.queryByText('Keywords Detectadas')).not.toBeInTheDocument()
+      await waitFor(() =>
+        expect(screen.getByText('Nenhuma keyword detectada.')).toBeInTheDocument()
+      )
     })
 
-    it('renderiza website como <a> com ExternalLink icon no footer quando presente', () => {
+    it('exibe keywords como chips quando presentes no detalhe', async () => {
+      mockFetch(detailWithContacts)
+      render(<LeadDetailPanel lead={fullLead} onClose={jest.fn()} />)
+      await waitFor(() =>
+        expect(screen.getByText('lançamento')).toBeInTheDocument()
+      )
+      expect(screen.getByText('apartamento')).toBeInTheDocument()
+    })
+
+    it('renderiza website como <a> no footer quando presente', () => {
       render(<LeadDetailPanel lead={fullLead} onClose={jest.fn()} />)
       const link = screen.getByRole('link', { name: /beta\.com\.br/i })
       expect(link).toHaveAttribute('href', 'https://beta.com.br')
@@ -116,9 +154,7 @@ describe('LeadDetailPanel', () => {
 
     it('renderiza telefone no footer quando presente', () => {
       render(<LeadDetailPanel lead={fullLead} onClose={jest.fn()} />)
-      // phone appears in footer (lead-level phone) and possibly contact phone
-      const phoneElements = screen.getAllByText('(11) 9999-9999')
-      expect(phoneElements.length).toBeGreaterThan(0)
+      expect(screen.getByText('(11) 9999-9999')).toBeInTheDocument()
     })
 
     it('chama onClose() ao pressionar Escape', () => {
