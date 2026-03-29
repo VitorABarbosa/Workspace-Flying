@@ -47,10 +47,16 @@ async function handler(req: NextRequest, { params }: { params: { route: string[]
     body: body instanceof FormData ? body : (body as string | undefined),
   })
 
-  const responseBody = await upstream.text()
+  const upstreamContentType = upstream.headers.get('content-type') ?? 'application/json'
+  const isBinary = upstreamContentType.includes('spreadsheetml') ||
+    upstreamContentType.includes('octet-stream') ||
+    upstreamContentType.includes('zip')
+  const responseBody = isBinary
+    ? await upstream.arrayBuffer()
+    : await upstream.text()
   return new NextResponse(responseBody, {
     status: upstream.status,
-    headers: { 'content-type': upstream.headers.get('content-type') ?? 'application/json' },
+    headers: { 'content-type': upstreamContentType },
   })
 }
 
