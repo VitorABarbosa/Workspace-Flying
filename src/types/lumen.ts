@@ -34,6 +34,9 @@ export interface Lead {
 }
 
 export interface LeadsResponse {
-  leads: Lead[]
+  data: Lead[]
   total: number
+  page: number
+  pages: number
+  per_page: number
 }

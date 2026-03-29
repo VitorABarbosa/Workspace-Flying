@@ -32,7 +32,7 @@ export function SearchLeadsList({ jobId, onSelectLead, selectedLeadId }: SearchL
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json() as Promise<LeadsResponse>
       })
-      .then(data => setLeads(data.leads ?? []))
+      .then(data => setLeads(data.data ?? []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [jobId, fetchKey])

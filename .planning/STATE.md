@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-04-PLAN.md
-last_updated: "2026-03-29T21:59:20.607Z"
+stopped_at: "Completed 05-05-PLAN.md Task 1 — awaiting checkpoint:human-verify for Task 2"
+last_updated: "2026-03-29T22:07:05.449Z"
 last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 21
-  completed_plans: 20
+  completed_plans: 21
   percent: 90
 ---
 
@@ -85,6 +85,7 @@ Progress: [████████████░░░░░░░░░░░
 | Phase 05-lumen-search-results PP02 | 1 | 2 tasks | 3 files |
 | Phase 05-lumen-search-results P03 | 3 | 1 tasks | 2 files |
 | Phase 05-lumen-search-results P04 | 8 | 1 tasks | 2 files |
+| Phase 05-lumen-search-results P05 | 18 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -148,6 +149,8 @@ Recent decisions affecting current work:
 - [Phase 05-03]: fetchKey integer incremented on retry avoids stale closure in useEffect — cleaner than boolean reset flag
 - [Phase 05-03]: jobId: string (no ?) enforces LUMEN-06 isolation at TypeScript level — TypeScript prevents accidental undefined leads queries
 - [Phase 05-lumen-search-results]: framer-motion mocked via jest.mock factory in LeadDetailPanel tests — AnimatePresence renders children directly, avoids JSDOM animation incompatibility
+- [Phase 05-05]: LeadDetailPanel placed outside AnimatePresence to avoid slide-over being unmounted during view transitions
+- [Phase 05-05]: mockSearchLeadsList as module-level jest.fn() with get accessor in mock factory — required for per-test mockImplementation to capture callback props with TypeScript
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -179,7 +182,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-28 — v1.2 LUMEN roadmap defined (Phases 4–7 created, 18 requirements mapped)
-Last session: 2026-03-29T21:59:20.603Z
-Stopped at: Completed 05-04-PLAN.md
+Last session: 2026-03-29T22:07:05.446Z
+Stopped at: Completed 05-05-PLAN.md Task 1 — awaiting checkpoint:human-verify for Task 2
 Resume file: None
 Next step: `/gsd:plan-phase 5` (Phase 5 — LUMEN Leads List)
