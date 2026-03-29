@@ -40,4 +40,14 @@ describe('LumenAgent', () => {
     it.todo('exibe painel "Falha na busca" com mensagem de erro')
     it.todo('botão "Tentar novamente" re-usa mesmos valores do formulário')
   })
+
+  describe('LUMEN-06..09: completed view com SearchLeadsList (Phase 5)', () => {
+    it.todo('view="completed" renderiza SearchLeadsList com jobId correto')
+    it.todo('view="completed" renderiza header "Busca concluída" com CheckCircle icon')
+    it.todo('view="completed" renderiza link de export XLSX com href correto (/api/tools/lumen/leads?job_id=...&format=xlsx)')
+    it.todo('clicar em lead na SearchLeadsList define selectedLead no estado')
+    it.todo('LeadDetailPanel renderiza quando selectedLead !== null')
+    it.todo('LeadDetailPanel chama onClose que define selectedLead=null')
+    it.todo('handleNewSearch limpa selectedLead além dos outros estados')
+  })
 })
