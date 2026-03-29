@@ -3,14 +3,30 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-29T21:47:36.286Z"
+stopped_at: Completed 05-03-PLAN.md
+last_updated: "2026-03-29T21:55:40.731Z"
 last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 21
-  completed_plans: 17
+  completed_plans: 19
+  percent: 90
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-29T21:51:20.771Z"
+last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
+progress:
+  [█████████░] 90%
+  completed_phases: 4
+  total_plans: 21
+  completed_plans: 18
   percent: 43
 ---
 
@@ -66,6 +82,8 @@ Progress: [████████████░░░░░░░░░░░
 | Phase 04-lumen-foundation-backend-search-job-lifecycle P03 | 157 | 2 tasks | 2 files |
 | Phase 04 P04 | 2 | 1 tasks | 1 files |
 | Phase 05-lumen-search-results P01 | 2 | 2 tasks | 4 files |
+| Phase 05-lumen-search-results PP02 | 1 | 2 tasks | 3 files |
+| Phase 05-lumen-search-results P03 | 3 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -124,6 +142,10 @@ Recent decisions affecting current work:
 - [Phase 04-lumen-foundation-backend-search-job-lifecycle]: LumenAgent uses direct fetch with JSON body instead of useJobCreate — LUMEN backend expects application/json not FormData
 - [Phase 04-lumen-foundation-backend-search-job-lifecycle]: finalCounts preserved via useEffect on jobStatus — counter values survive view transition to cancelled/completed panels
 - [Phase 05-lumen-search-results]: Wave 0 stubs use it.todo() with no imports — component files do not exist yet, avoids compile errors before implementation
+- [Phase 05-lumen-search-results]: getScoreConfig threshold function (not Record lookup) for score-based color — mirrors BADGE_CONFIG pattern but comparison-driven
+- [Phase 05-lumen-search-results]: lumen.ts has no imports — independent domain types, no coupling to job.ts; ScoreBreakdown index signature enables unknown backend fields
+- [Phase 05-03]: fetchKey integer incremented on retry avoids stale closure in useEffect — cleaner than boolean reset flag
+- [Phase 05-03]: jobId: string (no ?) enforces LUMEN-06 isolation at TypeScript level — TypeScript prevents accidental undefined leads queries
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -155,7 +177,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-28 — v1.2 LUMEN roadmap defined (Phases 4–7 created, 18 requirements mapped)
-Last session: 2026-03-29T21:47:36.278Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-29T21:55:40.727Z
+Stopped at: Completed 05-03-PLAN.md
 Resume file: None
 Next step: `/gsd:plan-phase 5` (Phase 5 — LUMEN Leads List)
