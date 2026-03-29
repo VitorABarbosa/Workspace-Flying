@@ -1,14 +1,17 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, CheckCircle, Loader2, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Download, Loader2, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { AgentShell } from '@/components/tools/AgentShell'
 import { JobStatusBadge } from '@/components/tools/JobStatusBadge'
 import { useJobPolling } from '@/hooks/useJobPolling'
 import { LumenSearchForm } from './LumenSearchForm'
 import { LumenJobProgress } from './LumenJobProgress'
+import { SearchLeadsList } from './SearchLeadsList'
+import { LeadDetailPanel } from './LeadDetailPanel'
 import type { JobState, LumenProgress } from '@/types/job'
+import type { Lead } from '@/types/lumen'
 
 type View = 'idle' | 'submitting' | 'searching' | 'cancelled' | 'completed' | 'failed'
 
@@ -45,6 +48,8 @@ export function LumenAgent() {
   const [isCancelling, setIsCancelling] = useState(false)
   const [finalCounts, setFinalCounts] = useState<LumenProgress | null>(null)
   const [leadsSaved, setLeadsSaved] = useState<number>(0)
+
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
 
   // Store last form values for retry
   const [lastFormValues, setLastFormValues] = useState<{
@@ -133,6 +138,7 @@ export function LumenAgent() {
     setFinalCounts(null)
     setLeadsSaved(0)
     setLastFormValues(null)
+    setSelectedLead(null)
   }
 
   function handleRetry() {
@@ -221,23 +227,61 @@ export function LumenAgent() {
             </div>
           )}
 
-          {view === 'completed' && (
-            <div className="flex flex-col items-center py-16">
-              <CheckCircle size={40} className="text-green-500" />
-              <h2 className="text-[22px] font-bold mt-4 text-[#1A1A2E] dark:text-white">
-                Busca concluída
-              </h2>
-              <p className="text-base text-gray-500 dark:text-gray-400 mt-2 text-center max-w-[480px]">
-                Os leads foram encontrados e salvos. A visualização detalhada estará disponível em breve.
-              </p>
-              {CounterRow}
-              <button
-                type="button"
-                onClick={handleNewSearch}
-                className={`mt-6 max-w-[300px] ${ctaButtonClasses}`}
-              >
-                Nova busca
-              </button>
+          {view === 'completed' && jobId && (
+            <div className="flex flex-col gap-4">
+              {/* Header row */}
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <span className="flex items-center gap-2 text-base font-bold text-[#1A1A2E] dark:text-white">
+                  <CheckCircle size={20} className="text-green-500" />
+                  Busca concluída
+                </span>
+                {finalCounts && (
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { label: 'Encontrados', value: finalCounts.found },
+                      { label: 'Novos', value: finalCounts.new },
+                      { label: 'Duplicados', value: finalCounts.duplicates },
+                    ].map(({ label, value }) => (
+                      <div
+                        key={label}
+                        className="flex flex-col items-center bg-white dark:bg-[#0A0A0A] rounded-lg p-3"
+                      >
+                        <span className="text-xl font-bold text-[#1A1A2E] dark:text-white tabular-nums">
+                          {value}
+                        </span>
+                        <span className="text-xs text-gray-400 mt-1">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <a
+                  href={`/api/tools/lumen/leads?job_id=${encodeURIComponent(jobId)}&format=xlsx`}
+                  download
+                  aria-label="Exportar leads desta pesquisa como XLSX"
+                  className="flex items-center gap-2 text-sm text-brand-purple hover:opacity-80 transition-opacity"
+                >
+                  <Download size={16} />
+                  Exportar XLSX
+                </a>
+              </div>
+
+              {/* Leads table */}
+              <SearchLeadsList
+                jobId={jobId}
+                onSelectLead={setSelectedLead}
+                selectedLeadId={selectedLead?.id}
+              />
+
+              {/* Nova busca */}
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleNewSearch}
+                  className={`max-w-[300px] ${ctaButtonClasses}`}
+                >
+                  Nova busca
+                </button>
+              </div>
             </div>
           )}
 
@@ -271,6 +315,10 @@ export function LumenAgent() {
 
         </motion.div>
       </AnimatePresence>
+      <LeadDetailPanel
+        lead={selectedLead}
+        onClose={() => setSelectedLead(null)}
+      />
     </AgentShell>
   )
 }
