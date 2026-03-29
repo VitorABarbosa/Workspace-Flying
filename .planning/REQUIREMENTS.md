@@ -43,13 +43,13 @@
 
 ### Backend (LUMEN API — mudanças necessárias para isolamento por busca)
 
-- [ ] **BACK-01**: Coluna `job_id` adicionada à tabela `leads` no Supabase (UUID nullable, FK para `search_history.id`)
-- [ ] **BACK-02**: `check_and_save` salva `job_id` no registro do lead ao inserir novo lead no banco
-- [ ] **BACK-03**: `GET /leads` aceita query param `?job_id=` para retornar apenas leads de uma busca específica
+- [x] **BACK-01**: Coluna `job_id` adicionada à tabela `leads` no Supabase (UUID nullable, FK para `search_history.id`)
+- [x] **BACK-02**: `check_and_save` salva `job_id` no registro do lead ao inserir novo lead no banco
+- [x] **BACK-03**: `GET /leads` aceita query param `?job_id=` para retornar apenas leads de uma busca específica
 
 ### Integração no Catálogo
 
-- [ ] **LUMEN-01**: Ferramenta LUMEN aparece no catálogo `/tools` com card ativo e ícone apropriado
+- [x] **LUMEN-01**: Ferramenta LUMEN aparece no catálogo `/tools` com card ativo e ícone apropriado
 
 ### Busca
 
@@ -60,10 +60,10 @@
 
 ### Resultados da Pesquisa (isolados por job)
 
-- [ ] **LUMEN-06**: Ao concluir, usuário vê APENAS os leads encontrados na sua pesquisa (filtrado por `job_id`) — nunca misturado com leads de outras buscas
-- [ ] **LUMEN-07**: Lista de leads exibe nome, cidade, segmento, website, telefone, badge de score (0–100, colorido por faixa) e status do scraping
-- [ ] **LUMEN-08**: Usuário clica em lead e vê painel de detalhes (slide-over): contatos Apollo (nome, cargo, email com nível de confiança, LinkedIn, telefone), keywords detectadas no site e composição do score
-- [ ] **LUMEN-09**: Usuário pode exportar os leads da pesquisa atual como XLSX
+- [x] **LUMEN-06**: Ao concluir, usuário vê APENAS os leads encontrados na sua pesquisa (filtrado por `job_id`) — nunca misturado com leads de outras buscas
+- [x] **LUMEN-07**: Lista de leads exibe nome, cidade, segmento, website, telefone, badge de score (0–100, colorido por faixa) e status do scraping
+- [x] **LUMEN-08**: Usuário clica em lead e vê painel de detalhes (slide-over): contatos Apollo (nome, cargo, email com nível de confiança, LinkedIn, telefone), keywords detectadas no site e composição do score
+- [x] **LUMEN-09**: Usuário pode exportar os leads da pesquisa atual como XLSX
 
 ### Banco Global de Leads
 
@@ -150,18 +150,18 @@
 | PESQ-05 | Phase 3 | Complete |
 | PESQ-06 | Phase 3 | Complete |
 | PESQ-07 | Phase 3 | Complete |
-| BACK-01 | Phase 4 | Pending |
-| BACK-02 | Phase 4 | Pending |
-| BACK-03 | Phase 4 | Pending |
-| LUMEN-01 | Phase 4 | Pending |
+| BACK-01 | Phase 4 | Complete |
+| BACK-02 | Phase 4 | Complete |
+| BACK-03 | Phase 4 | Complete |
+| LUMEN-01 | Phase 4 | Complete |
 | LUMEN-02 | Phase 4 | Complete |
 | LUMEN-03 | Phase 4 | Complete |
 | LUMEN-04 | Phase 4 | Complete |
 | LUMEN-05 | Phase 4 | Complete |
-| LUMEN-06 | Phase 5 | Pending |
-| LUMEN-07 | Phase 5 | Pending |
-| LUMEN-08 | Phase 5 | Pending |
-| LUMEN-09 | Phase 5 | Pending |
+| LUMEN-06 | Phase 5 | Complete |
+| LUMEN-07 | Phase 5 | Complete |
+| LUMEN-08 | Phase 5 | Complete |
+| LUMEN-09 | Phase 5 | Complete |
 | LUMEN-10 | Phase 6 | Pending |
 | LUMEN-11 | Phase 6 | Pending |
 | LUMEN-12 | Phase 6 | Pending |
