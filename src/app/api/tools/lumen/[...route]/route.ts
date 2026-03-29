@@ -26,15 +26,18 @@ async function handler(req: NextRequest, { params }: { params: { route: string[]
 
   const url = `${LUMEN_URL}/${path}${req.nextUrl.search}`
 
-  const isJson = req.headers.get('content-type')?.includes('application/json')
+  const contentType = req.headers.get('content-type')
+  const isJson = contentType?.includes('application/json') ?? false
+  const isFormData = contentType?.includes('multipart/form-data') ?? false
   const body = req.method !== 'GET' && req.method !== 'HEAD'
     ? isJson
       ? await req.text()
-      : await req.formData()
+      : isFormData
+        ? await req.formData()
+        : undefined
     : undefined
 
   const headers = new Headers()
-  const contentType = req.headers.get('content-type')
   if (contentType && isJson) headers.set('content-type', contentType)
   // Note: do NOT forward multipart boundary — fetch will set it automatically for FormData
 
