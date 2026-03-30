@@ -199,7 +199,7 @@ export function LumenAgent() {
           </button>
         ))}
       </div>
-      <AnimatePresence mode="wait">
+      {activeTab === 'busca' && <AnimatePresence mode="wait">
         <motion.div key={view} {...VIEW_VARIANTS}>
 
           {view === 'idle' && (
@@ -334,7 +334,7 @@ export function LumenAgent() {
           )}
 
         </motion.div>
-      </AnimatePresence>
+      </AnimatePresence>}
       {activeTab === 'banco' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
           <GlobalLeadsView
