@@ -10,10 +10,12 @@ import { LumenSearchForm } from './LumenSearchForm'
 import { LumenJobProgress } from './LumenJobProgress'
 import { SearchLeadsList } from './SearchLeadsList'
 import { LeadDetailPanel } from './LeadDetailPanel'
+import { GlobalLeadsView } from './GlobalLeadsView'
 import type { JobState, LumenProgress } from '@/types/job'
 import type { Lead } from '@/types/lumen'
 
 type View = 'idle' | 'submitting' | 'searching' | 'cancelled' | 'completed' | 'failed'
+type ActiveTab = 'busca' | 'banco'
 
 function deriveView(
   createStatus: 'idle' | 'creating' | 'error',
@@ -50,6 +52,7 @@ export function LumenAgent() {
   const [leadsSaved, setLeadsSaved] = useState<number>(0)
 
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
+  const [activeTab, setActiveTab] = useState<ActiveTab>('busca')
 
   // Store last form values for retry
   const [lastFormValues, setLastFormValues] = useState<{
@@ -179,6 +182,23 @@ export function LumenAgent() {
       description="Busca leads do setor imobiliário por cidade e segmento"
       statusBadge={statusBadge}
     >
+      {/* Tab switcher — LUMEN-10: Banco de Leads accessible only via explicit user action */}
+      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+        {(['busca', 'banco'] as const).map(tab => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setActiveTab(tab)}
+            className={`pb-2 px-4 text-sm min-h-[44px] flex items-end cursor-pointer ${
+              activeTab === tab
+                ? 'border-b-2 border-brand-purple text-[#1A1A2E] dark:text-white font-bold'
+                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+            }`}
+          >
+            {tab === 'busca' ? 'Busca' : 'Banco de Leads'}
+          </button>
+        ))}
+      </div>
       <AnimatePresence mode="wait">
         <motion.div key={view} {...VIEW_VARIANTS}>
 
@@ -315,6 +335,14 @@ export function LumenAgent() {
 
         </motion.div>
       </AnimatePresence>
+      {activeTab === 'banco' && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+          <GlobalLeadsView
+            selectedLead={selectedLead}
+            onSelectLead={setSelectedLead}
+          />
+        </motion.div>
+      )}
       <LeadDetailPanel
         lead={selectedLead}
         onClose={() => setSelectedLead(null)}
