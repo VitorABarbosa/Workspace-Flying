@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X, ExternalLink, Loader2 } from 'lucide-react'
 import type { Lead, LeadDetail, ApolloContact } from '@/types/lumen'
@@ -13,7 +14,7 @@ interface LeadDetailPanelProps {
 function confidenceLabel(level?: number) {
   if (level === undefined || level === null) return null
   if (level >= 70) return <span className="text-[10px] uppercase ml-1 text-green-500">alta</span>
-  if (level >= 40) return <span className="text-[10px] uppercase ml-1 text-yellow-500">média</span>
+  if (level >= 40) return <span className="text-[10px] uppercase ml-1 text-yellow-500">media</span>
   return <span className="text-[10px] uppercase ml-1 text-gray-400">baixa</span>
 }
 
@@ -33,12 +34,8 @@ function ContactCard({ contact }: { contact: ApolloContact }) {
         </p>
       )}
       {contact.linkedin_url && (
-        <a
-          href={contact.linkedin_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-brand-purple hover:opacity-80 flex items-center gap-1 mt-1"
-        >
+        <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer"
+          className="text-xs text-brand-purple hover:opacity-80 flex items-center gap-1 mt-1">
           <ExternalLink size={10} /> LinkedIn
         </a>
       )}
@@ -50,13 +47,12 @@ function ContactCard({ contact }: { contact: ApolloContact }) {
 export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
   const [detail, setDetail] = useState<LeadDetail | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  // Fetch full lead detail when a lead is selected
+  useEffect(() => { setMounted(true) }, [])
+
   useEffect(() => {
-    if (!lead) {
-      setDetail(null)
-      return
-    }
+    if (!lead) { setDetail(null); return }
     setLoadingDetail(true)
     fetch(`/api/tools/lumen/leads/${lead.id}`)
       .then(res => res.ok ? res.json() as Promise<LeadDetail> : null)
@@ -65,52 +61,68 @@ export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
       .finally(() => setLoadingDetail(false))
   }, [lead?.id])
 
-  // Close on Escape
   useEffect(() => {
+    if (!lead) return
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [onClose])
+  }, [lead, onClose])
 
-  // Scroll lock
   useEffect(() => {
     if (lead) {
       document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
     }
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
+    return () => { document.body.style.overflow = 'unset' }
   }, [lead])
 
   const contacts = detail?.contacts ?? []
   const keywords = detail?.keywords ?? []
   const scoreBreakdown = detail?.score_breakdown ?? lead?.score_breakdown
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <AnimatePresence>
       {lead && (
         <>
           <motion.div
-            key="overlay"
+            key="lumen-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-40"
             onClick={onClose}
             aria-hidden="true"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.4)',
+              zIndex: 9998,
+            }}
           />
           <motion.aside
-            key="panel"
+            key="lumen-panel"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 h-full w-full max-w-[480px] bg-white dark:bg-[#0D0D0D] shadow-2xl z-50 overflow-y-auto"
+            className="bg-white dark:bg-[#0D0D0D] shadow-2xl"
             role="dialog"
             aria-modal="true"
-            aria-label={lead.name}
+            aria-label={lead.name ?? 'Detalhes do lead'}
+            style={{
+              position: 'fixed',
+              right: 0,
+              top: 0,
+              height: '100%',
+              width: '100%',
+              maxWidth: 480,
+              zIndex: 9999,
+              overflowY: 'auto',
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-[#0D0D0D] z-10">
@@ -151,28 +163,26 @@ export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
               )}
             </div>
 
-            {/* Apollo Contacts — always rendered */}
+            {/* Apollo Contacts */}
             <div className="py-4 border-b border-gray-100 dark:border-gray-800">
               <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 px-6">Contatos Apollo</p>
               {loadingDetail ? (
                 <div className="flex items-center gap-2 px-6 text-sm text-gray-400">
-                  <Loader2 size={14} className="animate-spin" />
-                  Carregando contatos...
+                  <Loader2 size={14} className="animate-spin" /> Carregando...
                 </div>
               ) : contacts.length > 0 ? (
-                contacts.map((contact, i) => <ContactCard key={contact.id ?? i} contact={contact} />)
+                contacts.map((c, i) => <ContactCard key={c.id ?? i} contact={c} />)
               ) : (
                 <p className="px-6 text-sm text-gray-400">Nenhum contato encontrado para este lead.</p>
               )}
             </div>
 
-            {/* Keywords — always rendered */}
+            {/* Keywords */}
             <div className="py-4 border-b border-gray-100 dark:border-gray-800">
               <p className="text-xs text-gray-400 uppercase tracking-wide mb-3 px-6">Keywords Detectadas</p>
               {loadingDetail ? (
                 <div className="flex items-center gap-2 px-6 text-sm text-gray-400">
-                  <Loader2 size={14} className="animate-spin" />
-                  Carregando keywords...
+                  <Loader2 size={14} className="animate-spin" /> Carregando...
                 </div>
               ) : keywords.length > 0 ? (
                 <div className="px-6 flex flex-wrap gap-2">
@@ -187,16 +197,12 @@ export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
               )}
             </div>
 
-            {/* Footer — Website + Phone */}
+            {/* Footer */}
             {(lead.website || lead.phone) && (
               <div className="px-6 py-4 flex flex-col gap-2">
                 {lead.website && (
-                  <a
-                    href={lead.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-brand-purple hover:opacity-80 flex items-center gap-1.5"
-                  >
+                  <a href={lead.website} target="_blank" rel="noopener noreferrer"
+                    className="text-sm text-brand-purple hover:opacity-80 flex items-center gap-1.5">
                     <ExternalLink size={14} />
                     {lead.website}
                   </a>
@@ -207,6 +213,7 @@ export function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
           </motion.aside>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
