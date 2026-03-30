@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-04-PLAN.md
-last_updated: "2026-03-30T02:49:38.269Z"
+stopped_at: Completed 06-05-PLAN.md (awaiting visual checkpoint)
+last_updated: "2026-03-30T02:57:16.726Z"
 last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 26
-  completed_plans: 25
+  completed_plans: 26
   percent: 90
 ---
 
@@ -90,6 +90,7 @@ Progress: [████████████░░░░░░░░░░░
 | Phase 06-lumen-global-leads-database P02 | 4 | 2 tasks | 3 files |
 | Phase 06-lumen-global-leads-database PP03 | 4 | 2 tasks | 3 files |
 | Phase 06-lumen-global-leads-database P04 | 8 | 2 tasks | 4 files |
+| Phase 06-lumen-global-leads-database PP05 | 5min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,8 @@ Recent decisions affecting current work:
 - [Phase 06-lumen-global-leads-database]: jest.config.ts async export post-processes Next.js config to replace all transformIgnorePatterns with unified ESM allowlist — fixes nuqs transform in every jest context
 - [Phase 06-04]: GlobalLeadsTable calls useGlobalLeadsFilters internally — no filter props accepted, enforces LUMEN-12 isolation at type boundary
 - [Phase 06-04]: min_score param only sent when value > 0 — prevents /api/tools/lumen/leads?min_score=0 noise
+- [Phase 06-05]: useGlobalLeadsFilters called inside GlobalLeadsView (not props) for export URL construction — single source of truth
+- [Phase 06-05]: module-level mockUseGlobalLeadsFilters = jest.fn() with getter accessor in jest.mock factory — enables per-test mockReturnValueOnce without jest.requireMock
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -193,7 +196,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-28 — v1.2 LUMEN roadmap defined (Phases 4–7 created, 18 requirements mapped)
-Last session: 2026-03-30T02:49:38.266Z
-Stopped at: Completed 06-04-PLAN.md
+Last session: 2026-03-30T02:57:16.722Z
+Stopped at: Completed 06-05-PLAN.md (awaiting visual checkpoint)
 Resume file: None
 Next step: `/gsd:plan-phase 5` (Phase 5 — LUMEN Leads List)

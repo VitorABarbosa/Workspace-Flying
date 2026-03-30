@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Pesquisador Agent Integration** - Integração completa do Pesquisador: upload PDF → polling → endereço condicional → relatório Markdown (completed 2026-03-23)
 - [x] **Phase 4: LUMEN Foundation — Backend + Search + Job Lifecycle** - Backend job_id isolation, registro do agente no catálogo, formulário de busca e ciclo de vida completo do job assíncrono com cancelamento (completed 2026-03-28)
 - [x] **Phase 5: LUMEN Search Results** - Visualização de leads isolada por job: lista com score, detalhes em slide-over e export XLSX da pesquisa (completed 2026-03-29)
-- [ ] **Phase 6: LUMEN Global Leads Database** - Banco global de leads com painel de filtros, paginação server-side e export XLSX com filtros ativos
+- [x] **Phase 6: LUMEN Global Leads Database** - Banco global de leads com painel de filtros, paginação server-side e export XLSX com filtros ativos (completed 2026-03-30)
 - [ ] **Phase 7: LUMEN Search History** - Histórico de pesquisas anteriores com re-abertura dos resultados por job_id
 
 ## Phase Details
@@ -152,5 +152,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Pesquisador Agent Integration | 4/4 | Complete | 2026-03-23 |
 | 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 4/4 | Complete    | 2026-03-29 |
 | 5. LUMEN Search Results | 5/5 | Complete   | 2026-03-29 |
-| 6. LUMEN Global Leads Database | 4/5 | In Progress|  |
+| 6. LUMEN Global Leads Database | 5/5 | Complete   | 2026-03-30 |
 | 7. LUMEN Search History | 0/? | Not started | - |
