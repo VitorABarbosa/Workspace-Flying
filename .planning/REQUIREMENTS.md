@@ -67,10 +67,10 @@
 
 ### Banco Global de Leads
 
-- [ ] **LUMEN-10**: Existe seção separada e explícita "Banco de Leads" — acesso manual pelo usuário, nunca exibida automaticamente após uma pesquisa
-- [ ] **LUMEN-11**: Banco global tem painel de filtros: cidade (texto), segmento (select), score mínimo (número) e data de criação a partir de (date picker)
-- [ ] **LUMEN-12**: Lista paginada com paginação server-side (50 leads por página), ordenada por score decrescente
-- [ ] **LUMEN-13**: Usuário pode exportar leads do banco global com os filtros ativos como XLSX
+- [x] **LUMEN-10**: Existe seção separada e explícita "Banco de Leads" — acesso manual pelo usuário, nunca exibida automaticamente após uma pesquisa
+- [x] **LUMEN-11**: Banco global tem painel de filtros: cidade (texto), segmento (select), score mínimo (número) e data de criação a partir de (date picker)
+- [x] **LUMEN-12**: Lista paginada com paginação server-side (50 leads por página), ordenada por score decrescente
+- [x] **LUMEN-13**: Usuário pode exportar leads do banco global com os filtros ativos como XLSX
 
 ### Histórico de Pesquisas
 
@@ -162,10 +162,10 @@
 | LUMEN-07 | Phase 5 | Complete |
 | LUMEN-08 | Phase 5 | Complete |
 | LUMEN-09 | Phase 5 | Complete |
-| LUMEN-10 | Phase 6 | Pending |
-| LUMEN-11 | Phase 6 | Pending |
-| LUMEN-12 | Phase 6 | Pending |
-| LUMEN-13 | Phase 6 | Pending |
+| LUMEN-10 | Phase 6 | Complete |
+| LUMEN-11 | Phase 6 | Complete |
+| LUMEN-12 | Phase 6 | Complete |
+| LUMEN-13 | Phase 6 | Complete |
 | LUMEN-14 | Phase 7 | Pending |
 | LUMEN-15 | Phase 7 | Pending |
 
