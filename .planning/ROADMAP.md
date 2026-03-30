@@ -2,7 +2,7 @@
 
 ## Overview
 
-Transformar o site institucional atual em um hub interno de ferramentas de IA. A jornada tem duas fases: primeiro limpar o codebase e estabelecer a fundação de auth (sem isso, nada pode ser construído com segurança); depois construir o produto em si — catálogo de ferramentas e o loop completo de interação com agente. Ao final da Phase 2, qualquer membro da equipe abre o browser, loga, escolhe uma ferramenta, interage com o agente e recebe o resultado em tempo real.
+Transformar o site institucional atual em um hub interno de ferramentas de IA. A jornada tem duas fases: primeiro limpar o codebase e estabelecer a fundação de auth (sem isso, nada pode ser construída com segurança); depois construir o produto em si — catálogo de ferramentas e o loop completo de interação com agente. Ao final da Phase 2, qualquer membro da equipe abre o browser, loga, escolhe uma ferramenta, interage com o agente e recebe o resultado em tempo real.
 
 ## Phases
 
@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Tool Catalog and Architecture Foundation** - Catálogo de ferramentas em `/tools`, padrão arquitetural de agentes e infraestrutura compartilhada de jobs (completed 2026-03-23)
 - [x] **Phase 3: Pesquisador Agent Integration** - Integração completa do Pesquisador: upload PDF → polling → endereço condicional → relatório Markdown (completed 2026-03-23)
 - [x] **Phase 4: LUMEN Foundation — Backend + Search + Job Lifecycle** - Backend job_id isolation, registro do agente no catálogo, formulário de busca e ciclo de vida completo do job assíncrono com cancelamento (completed 2026-03-28)
-- [x] **Phase 5: LUMEN Search Results** - Visualização de leads isolada por job: lista com score, detalhes em slide-over e export XLSX da pesquisa (completed 2026-03-29)
+- [x] **Phase 5: LUMEN Search Results** - Visualização de leads isolada por job: lista com score, detalhes em slide-over e export XLSX da pesquisa (completed 2026-03-29)
 - [ ] **Phase 6: LUMEN Global Leads Database** - Banco global de leads com painel de filtros, paginação server-side e export XLSX com filtros ativos
 - [ ] **Phase 7: LUMEN Search History** - Histórico de pesquisas anteriores com re-abertura dos resultados por job_id
 
@@ -122,7 +122,14 @@ Plans:
   2. Usuário aplica filtros de cidade (texto), segmento (select), score mínimo (número) e data de criação a partir de (date input) e a lista atualiza refletindo os filtros; ao trocar qualquer filtro a paginação volta à página 1
   3. A lista exibe até 50 leads por página ordenados por score decrescente, com controles de paginação funcionando via server-side pagination
   4. Usuário exporta os leads do banco global com os filtros ativos aplicados — o arquivo XLSX baixado contém apenas os registros correspondentes aos filtros selecionados
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Wave 1: instalar nuqs + jest ESM config + NuqsAdapter em Providers + 4 stub files + LumenAgent stubs
+- [ ] 06-02-PLAN.md — Wave 2: LumenAgent tab switcher ("Busca" / "Banco de Leads") + LUMEN-10 tests
+- [ ] 06-03-PLAN.md — Wave 2: GlobalLeadsFilters com nuqs useQueryStates + LUMEN-11 tests (parallel com 06-02)
+- [ ] 06-04-PLAN.md — Wave 3: GlobalLeadsTable + GlobalLeadsPagination + LUMEN-12 tests
+- [ ] 06-05-PLAN.md — Wave 4: GlobalLeadsView orchestrator + LUMEN-13 export + full suite + checkpoint visual
 
 ### Phase 7: LUMEN Search History
 **Goal**: O usuário pode consultar todas as pesquisas anteriores e re-abrir os resultados de qualquer busca concluída sem precisar repetir a pesquisa
@@ -145,5 +152,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Pesquisador Agent Integration | 4/4 | Complete | 2026-03-23 |
 | 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 4/4 | Complete    | 2026-03-29 |
 | 5. LUMEN Search Results | 5/5 | Complete   | 2026-03-29 |
-| 6. LUMEN Global Leads Database | 0/? | Not started | - |
+| 6. LUMEN Global Leads Database | 0/5 | Not started | - |
 | 7. LUMEN Search History | 0/? | Not started | - |
