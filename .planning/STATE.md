@@ -3,50 +3,34 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-05-PLAN.md (awaiting visual checkpoint)
-last_updated: "2026-03-30T02:57:16.726Z"
-last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
+stopped_at: Completed 07-lumen-search-history-01-PLAN.md
+last_updated: "2026-03-30T21:08:05.580Z"
+last_activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined, 16 requirements mapped)
 progress:
-  total_phases: 7
+  total_phases: 10
   completed_phases: 6
-  total_plans: 26
-  completed_plans: 26
-  percent: 90
----
-
----
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: planning
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-29T21:51:20.771Z"
-last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
-progress:
-  [█████████░] 90%
-  completed_phases: 4
-  total_plans: 21
-  completed_plans: 18
-  percent: 43
+  total_plans: 28
+  completed_plans: 27
+  percent: 60
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-28)
+See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** A equipe da Flying Studio acessa e usa agentes de IA diretamente no browser, sem fricção — abre a ferramenta, interage, recebe resultado.
-**Current focus:** Phase 4 — LUMEN Foundation (Backend + Search + Job Lifecycle)
+**Current focus:** Milestone v1.3 — Areas & Auth
 
 ## Current Position
 
-Phase: 4 — LUMEN Foundation — Backend + Search + Job Lifecycle
-Plan: Not started
-Status: Roadmap defined — ready to plan Phase 4
-Last activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
+Phase: Phase 7 (LUMEN Search History) — not started
+Plan: —
+Status: Roadmap created, ready to plan Phase 7 then Phases 8–10
+Last activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined, 16 requirements mapped)
 
-Progress: [████████████░░░░░░░░░░░░░░░░] 43% (3/7 phases complete)
+Progress: [████████████████░░░░░░░░░░░░] 60% (6/10 phases complete)
 
 ## Performance Metrics
 
@@ -91,6 +75,7 @@ Progress: [████████████░░░░░░░░░░░
 | Phase 06-lumen-global-leads-database PP03 | 4 | 2 tasks | 3 files |
 | Phase 06-lumen-global-leads-database P04 | 8 | 2 tasks | 4 files |
 | Phase 06-lumen-global-leads-database PP05 | 5min | 3 tasks | 2 files |
+| Phase 07-lumen-search-history P01 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -165,6 +150,13 @@ Recent decisions affecting current work:
 - [Phase 06-04]: min_score param only sent when value > 0 — prevents /api/tools/lumen/leads?min_score=0 noise
 - [Phase 06-05]: useGlobalLeadsFilters called inside GlobalLeadsView (not props) for export URL construction — single source of truth
 - [Phase 06-05]: module-level mockUseGlobalLeadsFilters = jest.fn() with getter accessor in jest.mock factory — enables per-test mockReturnValueOnce without jest.requireMock
+- [v1.3 roadmap]: tool_permissions table lives in Supabase Pesquisador project (aofgtwyszwfbdcauhlwp) temporarily — migration to dedicated frontend project planned for future milestone; migration = env var swap + migrations only (no hardcoded refs)
+- [v1.3 roadmap]: Phase 8 (Area Segmentation) is pure frontend — adds `areas: string[]` field to Tool config; no backend work
+- [v1.3 roadmap]: Phase 9 (Auth Infrastructure) depends on Phase 8 because `requiresAuth: boolean` field is added to Tool config alongside `areas` — single config extension
+- [v1.3 roadmap]: Blocked state UI for restricted tools is an in-page state, not a redirect — preserves context and explains next step ("Contate o administrador")
+- [v1.3 roadmap]: Admin panel uses Supabase Admin API (service role key) for user creation — avoids exposing signup endpoint publicly
+- [Phase 07-lumen-search-history]: SearchHistoryItem imports JobState from job.ts (Phase 7 intentional coupling — overrides Phase 5 no-import comment)
+- [Phase 07-lumen-search-history]: SearchHistoryList uses fetchKey integer increment for retry — same pattern as SearchLeadsList
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -180,6 +172,8 @@ Recent decisions affecting current work:
 - [v1.2] Confirmar com backend LUMEN: shape exato do job status response (campos top-level vs embedded em progress JSON)
 - [v1.2] Confirmar antes de Phase 6: mecanismo de export XLSX — direct file response vs pre-signed URL
 - [v1.2] Decidir antes de Phase 6: react-day-picker vs native <input type="date"> para filtro created_after
+- [v1.3] Confirmar antes de Phase 9: Supabase service role key disponível em env vars do projeto frontend (necessário para Supabase Admin API no painel admin)
+- [v1.3] Confirmar antes de Phase 9: RLS policies para tool_permissions — quem pode SELECT (autenticados), INSERT/DELETE (apenas admin via service role)
 
 ### Blockers/Concerns
 
@@ -195,8 +189,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last activity: 2026-03-28 — v1.2 LUMEN roadmap defined (Phases 4–7 created, 18 requirements mapped)
-Last session: 2026-03-30T02:57:16.722Z
-Stopped at: Completed 06-05-PLAN.md (awaiting visual checkpoint)
+Last activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined)
+Last session: 2026-03-30T21:08:05.577Z
+Stopped at: Completed 07-lumen-search-history-01-PLAN.md
 Resume file: None
-Next step: `/gsd:plan-phase 5` (Phase 5 — LUMEN Leads List)
+Next step: `/gsd:plan-phase 7` (Phase 7 — LUMEN Search History, still pending from v1.2)

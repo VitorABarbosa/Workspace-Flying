@@ -74,8 +74,35 @@
 
 ### Histórico de Pesquisas
 
-- [ ] **LUMEN-14**: Usuário vê histórico de pesquisas anteriores com cidade, segmentos, status, totais (encontrados / novos / duplicados) e data
-- [ ] **LUMEN-15**: Usuário clica em pesquisa do histórico e acessa os leads daquela busca específica
+- [x] **LUMEN-14**: Usuário vê histórico de pesquisas anteriores com cidade, segmentos, status, totais (encontrados / novos / duplicados) e data
+- [x] **LUMEN-15**: Usuário clica em pesquisa do histórico e acessa os leads daquela busca específica
+
+## v1.3 Requirements — Areas & Auth
+
+### Áreas de Ferramentas
+
+- [ ] **AREA-01**: Home `/tools` exibe 6 cards de área (PRODUÇÃO, RH, ANIMAÇÃO, MARKETING, COMERCIAL, OPERACIONAL) em vez de grid direto de ferramentas
+- [ ] **AREA-02**: Card de área mostra nome da área e contagem de ferramentas disponíveis
+- [ ] **AREA-03**: Clicar em uma área navega para `/tools/{slug}` (ex: `/tools/comercial`, `/tools/animacao`)
+- [ ] **AREA-04**: Página `/tools/{slug}` exibe as ferramentas daquela área com o mesmo padrão visual de cards atual
+- [ ] **AREA-05**: Áreas sem ferramentas exibem estado vazio: "Nenhuma ferramenta disponível nesta área ainda"
+- [ ] **AREA-06**: Uma ferramenta pode pertencer a múltiplas áreas (ex: PESQUISADOR aparece em ANIMAÇÃO e MARKETING)
+
+### Permissões por Ferramenta
+
+- [ ] **PERM-01**: Ferramentas marcadas como restritas exibem estado bloqueado para usuários sem permissão ("Você não tem acesso a esta ferramenta. Contate o administrador.")
+- [ ] **PERM-02**: Login compartilhado da equipe (team@flyingstudio.com.br) continua funcionando para ferramentas sem restrição
+- [ ] **PERM-03**: Contas individuais criadas via Supabase Auth (email + senha pessoal)
+- [ ] **PERM-04**: Acesso por ferramenta controlado via tabela `tool_permissions(user_id, tool_slug)` no projeto Supabase do Pesquisador (temporário — migração para projeto frontend dedicado planejada)
+- [ ] **PERM-05**: Campo `role` em `app_metadata` do Supabase Auth diferencia `admin` de `member`
+
+### Painel Admin
+
+- [ ] **PERM-06**: Usuário com `role=admin` acessa painel em `/admin` protegido por middleware
+- [ ] **PERM-07**: Admin visualiza lista de todos os membros com nome, email, role e ferramentas autorizadas
+- [ ] **PERM-08**: Admin cria novo membro (nome, email, senha temporária, role, ferramentas autorizadas)
+- [ ] **PERM-09**: Admin edita acesso de membro existente (adicionar/remover permissões por ferramenta)
+- [ ] **PERM-10**: Admin remove/desativa um membro
 
 ## v2 Requirements
 
@@ -118,7 +145,7 @@
 
 | Feature | Reason |
 |---------|--------|
-| Contas individuais por usuário | Senha compartilhada é suficiente para uso interno da equipe |
+| Contas individuais para todas as ferramentas | Apenas ferramentas sensíveis (ex: LUMEN) exigem permissão individual — demais usam login compartilhado |
 | Tool builder (criar ferramentas via UI) | Alta complexidade, equipe técnica adiciona tools via código |
 | Acesso público / plano freemium | Hub interno apenas |
 | App mobile | Web-first, mobile é v3+ |
@@ -166,16 +193,33 @@
 | LUMEN-11 | Phase 6 | Complete |
 | LUMEN-12 | Phase 6 | Complete |
 | LUMEN-13 | Phase 6 | Complete |
-| LUMEN-14 | Phase 7 | Pending |
-| LUMEN-15 | Phase 7 | Pending |
+| LUMEN-14 | Phase 7 | Complete |
+| LUMEN-15 | Phase 7 | Complete |
+| AREA-01 | Phase 8 | Pending |
+| AREA-02 | Phase 8 | Pending |
+| AREA-03 | Phase 8 | Pending |
+| AREA-04 | Phase 8 | Pending |
+| AREA-05 | Phase 8 | Pending |
+| AREA-06 | Phase 8 | Pending |
+| PERM-01 | Phase 9 | Pending |
+| PERM-02 | Phase 9 | Pending |
+| PERM-03 | Phase 9 | Pending |
+| PERM-04 | Phase 9 | Pending |
+| PERM-05 | Phase 9 | Pending |
+| PERM-06 | Phase 10 | Pending |
+| PERM-07 | Phase 10 | Pending |
+| PERM-08 | Phase 10 | Pending |
+| PERM-09 | Phase 10 | Pending |
+| PERM-10 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.0 requirements: 7 total — Complete ✓
 - v1.1 requirements: 10 total — Complete ✓
-- v1.2 requirements: 18 total
-- Mapped to phases: 18
+- v1.2 requirements: 18 total — 16 Complete, 2 Pending (Phase 7)
+- v1.3 requirements: 16 total — 16 Pending (Phases 8–10)
+- Mapped to phases: 51
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-22*
-*Last updated: 2026-03-28 — v1.2 milestone defined (LUMEN agent — busca de leads + backend job_id isolation)*
+*Last updated: 2026-03-30 — v1.3 milestone defined (Areas + Auth — segmentação por área + permissões por ferramenta + painel admin)*
