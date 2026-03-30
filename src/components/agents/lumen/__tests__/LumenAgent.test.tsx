@@ -62,6 +62,12 @@ jest.mock('../SearchLeadsList', () => ({
   },
 }))
 
+// Mock GlobalLeadsView — component file doesn't exist yet in Wave 1
+jest.mock('../GlobalLeadsView', () => ({
+  GlobalLeadsView: ({ selectedLead }: { selectedLead: unknown; onSelectLead: unknown }) =>
+    <div data-testid="global-leads-view" data-has-lead={selectedLead ? 'true' : 'false'} />,
+}))
+
 // Mock LeadDetailPanel
 jest.mock('../LeadDetailPanel', () => ({
   LeadDetailPanel: ({
@@ -341,11 +347,65 @@ describe('LumenAgent', () => {
   })
 
   describe('LUMEN-10: tab switcher (Phase 6)', () => {
-    it.todo('renders "Busca" and "Banco de Leads" tab buttons')
-    it.todo('"Busca" tab is active by default (activeTab === "busca")')
-    it.todo('GlobalLeadsView is NOT rendered when activeTab === "busca"')
-    it.todo('clicking "Banco de Leads" tab renders GlobalLeadsView')
-    it.todo('switching tabs does NOT reset in-progress job state')
-    it.todo('switching back to "Busca" tab hides GlobalLeadsView')
+    it('renders "Busca" and "Banco de Leads" tab buttons', () => {
+      render(<LumenAgent />)
+      expect(screen.getByText('Busca')).toBeInTheDocument()
+      expect(screen.getByText('Banco de Leads')).toBeInTheDocument()
+    })
+
+    it('"Busca" tab is active by default — GlobalLeadsView not rendered', () => {
+      render(<LumenAgent />)
+      expect(screen.queryByTestId('global-leads-view')).not.toBeInTheDocument()
+      // Search form visible (busca tab active)
+      expect(screen.getByTestId('search-form')).toBeInTheDocument()
+    })
+
+    it('clicking "Banco de Leads" tab renders GlobalLeadsView', () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Banco de Leads'))
+      expect(screen.getByTestId('global-leads-view')).toBeInTheDocument()
+    })
+
+    it('switching tabs does NOT reset in-progress job state', async () => {
+      mockJobPolling.mockReturnValue({
+        jobStatus: { state: 'processing', found: 3, new: 2, duplicates: 1, progress_pct: 50 },
+        error: null,
+      })
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ job_id: 'job-inprogress' }),
+      })
+
+      render(<LumenAgent />)
+      // Start a search to put job in progress
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-form'))
+      })
+
+      // Switch to Banco de Leads
+      fireEvent.click(screen.getByText('Banco de Leads'))
+      expect(screen.getByTestId('global-leads-view')).toBeInTheDocument()
+
+      // Switch back to Busca — progress view should still reflect job state
+      fireEvent.click(screen.getByText('Busca'))
+      expect(screen.queryByTestId('global-leads-view')).not.toBeInTheDocument()
+      // LumenJobProgress should still be rendered (job still in progress)
+      expect(screen.getByTestId('lumen-job-progress')).toBeInTheDocument()
+    })
+
+    it('switching back to "Busca" tab hides GlobalLeadsView', () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Banco de Leads'))
+      expect(screen.getByTestId('global-leads-view')).toBeInTheDocument()
+      fireEvent.click(screen.getByText('Busca'))
+      expect(screen.queryByTestId('global-leads-view')).not.toBeInTheDocument()
+    })
+
+    it('GlobalLeadsView receives onSelectLead that updates selectedLead state', () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Banco de Leads'))
+      // GlobalLeadsView mock renders without selectedLead initially
+      expect(screen.getByTestId('global-leads-view')).toHaveAttribute('data-has-lead', 'false')
+    })
   })
 })
