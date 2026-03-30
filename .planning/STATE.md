@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-30T02:37:38.752Z"
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-03-30T02:44:20.292Z"
 last_activity: 2026-03-28 — v1.2 LUMEN roadmap created (Phases 4–7)
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 26
-  completed_plans: 22
+  completed_plans: 24
   percent: 90
 ---
 
@@ -87,6 +87,8 @@ Progress: [████████████░░░░░░░░░░░
 | Phase 05-lumen-search-results P04 | 8 | 1 tasks | 2 files |
 | Phase 05-lumen-search-results P05 | 18 | 1 tasks | 2 files |
 | Phase 06-lumen-global-leads-database P01 | 8 | 2 tasks | 9 files |
+| Phase 06-lumen-global-leads-database P02 | 4 | 2 tasks | 3 files |
+| Phase 06-lumen-global-leads-database PP03 | 4 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -154,6 +156,9 @@ Recent decisions affecting current work:
 - [Phase 05-05]: mockSearchLeadsList as module-level jest.fn() with get accessor in mock factory — required for per-test mockImplementation to capture callback props with TypeScript
 - [Phase 06-lumen-global-leads-database]: NuqsAdapter placed inside ThemeProvider (wrapping its children) — keeps layout.tsx clean, avoids second use-client boundary
 - [Phase 06-lumen-global-leads-database]: nuqs added to Jest transformIgnorePatterns allowlist — ESM-only package crashes Jest without this
+- [Phase 06-02]: GlobalLeadsView.tsx stub created so Jest module resolution succeeds (jest.mock requires the file to exist)
+- [Phase 06-02]: Tab state (activeTab) is independent of AnimatePresence view derivation — switching tabs does not reset jobId/jobStatus/finalCounts
+- [Phase 06-lumen-global-leads-database]: jest.config.ts async export post-processes Next.js config to replace all transformIgnorePatterns with unified ESM allowlist — fixes nuqs transform in every jest context
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -185,7 +190,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-28 — v1.2 LUMEN roadmap defined (Phases 4–7 created, 18 requirements mapped)
-Last session: 2026-03-30T02:37:38.747Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-30T02:44:20.289Z
+Stopped at: Completed 06-03-PLAN.md
 Resume file: None
 Next step: `/gsd:plan-phase 5` (Phase 5 — LUMEN Leads List)
