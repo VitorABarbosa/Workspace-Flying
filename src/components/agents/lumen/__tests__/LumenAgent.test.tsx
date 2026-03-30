@@ -88,6 +88,16 @@ jest.mock('@/hooks/useJobPolling', () => ({
   useJobPolling: (...args: unknown[]) => mockJobPolling(...args),
 }))
 
+// Mock SearchHistoryList
+jest.mock('../SearchHistoryList', () => ({
+  SearchHistoryList: ({ onReopenSearch }: { onReopenSearch: (id: string) => void }) => (
+    <div
+      data-testid="search-history-list"
+      onClick={() => onReopenSearch('historical-job-id')}
+    />
+  ),
+}))
+
 import { LumenAgent } from '../LumenAgent'
 
 describe('LumenAgent', () => {
@@ -406,6 +416,209 @@ describe('LumenAgent', () => {
       fireEvent.click(screen.getByText('Banco de Leads'))
       // GlobalLeadsView mock renders without selectedLead initially
       expect(screen.getByTestId('global-leads-view')).toHaveAttribute('data-has-lead', 'false')
+    })
+  })
+
+  describe('LUMEN-14: Histórico tab', () => {
+    it('renders "Histórico" tab button', () => {
+      render(<LumenAgent />)
+      expect(screen.getByText('Histórico')).toBeInTheDocument()
+    })
+
+    it('clicking "Histórico" tab renders SearchHistoryList', () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Histórico'))
+      expect(screen.getByTestId('search-history-list')).toBeInTheDocument()
+    })
+
+    it('"Histórico" tab is between "Busca" and "Banco de Leads"', () => {
+      render(<LumenAgent />)
+      const tabButtons = screen.getAllByRole('button').filter(btn =>
+        ['Busca', 'Histórico', 'Banco de Leads'].includes(btn.textContent ?? '')
+      )
+      expect(tabButtons[0]).toHaveTextContent('Busca')
+      expect(tabButtons[1]).toHaveTextContent('Histórico')
+      expect(tabButtons[2]).toHaveTextContent('Banco de Leads')
+    })
+
+    it('SearchHistoryList is not rendered when busca tab is active', () => {
+      render(<LumenAgent />)
+      // Default tab is busca
+      expect(screen.queryByTestId('search-history-list')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('LUMEN-15: historical re-open', () => {
+    it('handleReopenSearch switches to busca tab and shows SearchLeadsList with historicalJobId', async () => {
+      render(<LumenAgent />)
+      // Navigate to historico tab
+      fireEvent.click(screen.getByText('Histórico'))
+      expect(screen.getByTestId('search-history-list')).toBeInTheDocument()
+
+      // Click on SearchHistoryList mock — triggers onReopenSearch('historical-job-id')
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-history-list'))
+      })
+
+      // Should be back on busca tab with SearchLeadsList showing historical job
+      await waitFor(() => {
+        expect(screen.getByTestId('search-leads-list')).toBeInTheDocument()
+        expect(screen.getByTestId('search-leads-list')).toHaveAttribute('data-job-id', 'historical-job-id')
+      })
+    })
+
+    it('historical view shows "Resultados históricos" heading (not "Busca concluída")', async () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Histórico'))
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-history-list'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Resultados históricos')).toBeInTheDocument()
+        expect(screen.queryByText('Busca concluída')).not.toBeInTheDocument()
+      })
+    })
+
+    it('historical view shows export XLSX link with historicalJobId in href', async () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Histórico'))
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-history-list'))
+      })
+
+      await waitFor(() => {
+        const exportLink = screen.getByRole('link', { name: /exportar leads/i })
+        expect(exportLink).toHaveAttribute(
+          'href',
+          `/api/tools/lumen/leads?job_id=${encodeURIComponent('historical-job-id')}&format=xlsx`,
+        )
+      })
+    })
+
+    it('historical view shows "Voltar ao histórico" button that switches back to historico tab', async () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Histórico'))
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-history-list'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Voltar ao histórico')).toBeInTheDocument()
+      })
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Voltar ao histórico'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByTestId('search-history-list')).toBeInTheDocument()
+        expect(screen.queryByText('Resultados históricos')).not.toBeInTheDocument()
+      })
+    })
+
+    it('historical view shows "Nova busca" button', async () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Histórico'))
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-history-list'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Nova busca')).toBeInTheDocument()
+      })
+    })
+
+    it('"Nova busca" in historical view calls handleNewSearch and clears historicalJobId', async () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Histórico'))
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-history-list'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Resultados históricos')).toBeInTheDocument()
+      })
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Nova busca'))
+      })
+
+      await waitFor(() => {
+        // After new search, historical view is gone, search form is shown
+        expect(screen.queryByText('Resultados históricos')).not.toBeInTheDocument()
+        expect(screen.getByTestId('search-form')).toBeInTheDocument()
+      })
+    })
+
+    it('handleNewSearch clears historicalJobId — live search result shows after new job', async () => {
+      mockJobPolling.mockReturnValue({
+        jobStatus: {
+          state: 'completed',
+          found: 5,
+          new: 3,
+          duplicates: 2,
+          progress_pct: 100,
+        },
+        error: null,
+      })
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ job_id: 'live-job-id' }),
+      })
+
+      render(<LumenAgent />)
+      // First open historical view
+      fireEvent.click(screen.getByText('Histórico'))
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-history-list'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Resultados históricos')).toBeInTheDocument()
+      })
+
+      // Click Nova busca
+      await act(async () => {
+        fireEvent.click(screen.getByText('Nova busca'))
+      })
+
+      // Start a live search
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-form'))
+      })
+
+      // Live search completed — should show "Busca concluída" not "Resultados históricos"
+      await waitFor(() => {
+        expect(screen.getByText('Busca concluída')).toBeInTheDocument()
+        expect(screen.queryByText('Resultados históricos')).not.toBeInTheDocument()
+      })
+    })
+
+    it('useJobPolling does NOT receive historicalJobId — polling is only for live jobId', async () => {
+      render(<LumenAgent />)
+      fireEvent.click(screen.getByText('Histórico'))
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('search-history-list'))
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('Resultados históricos')).toBeInTheDocument()
+      })
+
+      // useJobPolling should have been called with null (no live jobId)
+      // It should NOT have been called with 'historical-job-id'
+      const pollingCalls = mockJobPolling.mock.calls
+      for (const call of pollingCalls) {
+        expect(call[0]).not.toBe('historical-job-id')
+      }
     })
   })
 })

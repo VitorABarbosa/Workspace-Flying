@@ -11,11 +11,12 @@ import { LumenJobProgress } from './LumenJobProgress'
 import { SearchLeadsList } from './SearchLeadsList'
 import { LeadDetailPanel } from './LeadDetailPanel'
 import { GlobalLeadsView } from './GlobalLeadsView'
+import { SearchHistoryList } from './SearchHistoryList'
 import type { JobState, LumenProgress } from '@/types/job'
 import type { Lead } from '@/types/lumen'
 
 type View = 'idle' | 'submitting' | 'searching' | 'cancelled' | 'completed' | 'failed'
-type ActiveTab = 'busca' | 'banco'
+type ActiveTab = 'busca' | 'historico' | 'banco'
 
 function deriveView(
   createStatus: 'idle' | 'creating' | 'error',
@@ -41,6 +42,12 @@ const VIEW_VARIANTS = {
   transition: { duration: 0.25, ease: 'easeInOut' as const },
 }
 
+const TAB_LABELS: Record<ActiveTab, string> = {
+  busca: 'Busca',
+  historico: 'Histórico',
+  banco: 'Banco de Leads',
+}
+
 const API_BASE = '/api/tools/lumen'
 
 export function LumenAgent() {
@@ -53,6 +60,7 @@ export function LumenAgent() {
 
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [activeTab, setActiveTab] = useState<ActiveTab>('busca')
+  const [historicalJobId, setHistoricalJobId] = useState<string | null>(null)
 
   // Store last form values for retry
   const [lastFormValues, setLastFormValues] = useState<{
@@ -135,6 +143,7 @@ export function LumenAgent() {
   }
 
   function handleNewSearch() {
+    setHistoricalJobId(null)   // NEW — must clear before any other state reset
     setJobId(null)
     setCreateStatus('idle')
     setCreateError(null)
@@ -147,6 +156,17 @@ export function LumenAgent() {
   function handleRetry() {
     if (!lastFormValues) return
     handleSubmit(lastFormValues)
+  }
+
+  function handleReopenSearch(jobId: string) {
+    setHistoricalJobId(jobId)
+    setActiveTab('busca')
+    // Do NOT set live jobId — polling only tracks live searches
+  }
+
+  function handleBackToHistory() {
+    setHistoricalJobId(null)
+    setActiveTab('historico')
   }
 
   const statusBadge =
@@ -182,9 +202,9 @@ export function LumenAgent() {
       description="Busca leads do setor imobiliário por cidade e segmento"
       statusBadge={statusBadge}
     >
-      {/* Tab switcher — LUMEN-10: Banco de Leads accessible only via explicit user action */}
+      {/* Tab switcher — 3 tabs: Busca / Histórico / Banco de Leads */}
       <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-        {(['busca', 'banco'] as const).map(tab => (
+        {(['busca', 'historico', 'banco'] as const).map(tab => (
           <button
             key={tab}
             type="button"
@@ -195,146 +215,196 @@ export function LumenAgent() {
                 : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
             }`}
           >
-            {tab === 'busca' ? 'Busca' : 'Banco de Leads'}
+            {TAB_LABELS[tab]}
           </button>
         ))}
       </div>
-      {activeTab === 'busca' && <AnimatePresence mode="wait">
-        <motion.div key={view} {...VIEW_VARIANTS}>
+      {activeTab === 'busca' && historicalJobId ? (
+        <div className="flex flex-col gap-4">
+          {/* Historical view header */}
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <span className="text-base font-bold text-[#1A1A2E] dark:text-white">
+              Resultados históricos
+            </span>
+            <a
+              href={`/api/tools/lumen/leads?job_id=${encodeURIComponent(historicalJobId)}&format=xlsx`}
+              download
+              aria-label="Exportar leads desta pesquisa como XLSX"
+              className="flex items-center gap-2 text-sm text-brand-purple hover:opacity-80 transition-opacity"
+            >
+              <Download size={16} />
+              Exportar XLSX
+            </a>
+          </div>
 
-          {view === 'idle' && (
-            <LumenSearchForm
-              onSubmit={handleSubmit}
-              disabled={false}
-              isSubmitting={false}
-            />
-          )}
+          {/* Historical leads list */}
+          <SearchLeadsList
+            jobId={historicalJobId}
+            onSelectLead={setSelectedLead}
+            selectedLeadId={selectedLead?.id}
+          />
 
-          {view === 'submitting' && (
-            <div className="flex flex-col items-center py-16">
-              <Loader2 size={32} className="text-brand-purple animate-spin" aria-hidden="true" />
-              <p className="text-base text-gray-500 dark:text-gray-400 mt-3">Iniciando busca...</p>
-            </div>
-          )}
+          {/* Action buttons */}
+          <div className="flex gap-4 justify-center mt-4">
+            <button
+              type="button"
+              onClick={handleBackToHistory}
+              className="text-sm text-brand-purple hover:opacity-80"
+            >
+              Voltar ao histórico
+            </button>
+            <button
+              type="button"
+              onClick={handleNewSearch}
+              className="text-sm text-gray-500 dark:text-gray-400 hover:opacity-80"
+            >
+              Nova busca
+            </button>
+          </div>
+        </div>
+      ) : activeTab === 'busca' && (
+        <AnimatePresence mode="wait">
+          <motion.div key={view} {...VIEW_VARIANTS}>
 
-          {view === 'searching' && jobStatus && (
-            <LumenJobProgress
-              jobStatus={jobStatus}
-              onCancel={handleCancel}
-              isCancelling={isCancelling}
-            />
-          )}
-
-          {view === 'cancelled' && (
-            <div className="flex flex-col items-center py-16">
-              <XCircle size={40} className="text-gray-400 dark:text-gray-500" />
-              <h2 className="text-[22px] font-bold mt-4 text-[#1A1A2E] dark:text-white">
-                Busca cancelada
-              </h2>
-              <p className="text-base text-gray-500 dark:text-gray-400 mt-2 text-center max-w-[480px]">
-                {leadsSaved > 0
-                  ? `A busca foi interrompida. ${leadsSaved} leads foram salvos antes do cancelamento.`
-                  : 'A busca foi interrompida. Nenhum lead foi salvo.'}
-              </p>
-              {CounterRow}
-              <button
-                type="button"
-                onClick={handleNewSearch}
-                className={`mt-6 max-w-[300px] ${ctaButtonClasses}`}
-              >
-                Nova busca
-              </button>
-            </div>
-          )}
-
-          {view === 'completed' && jobId && (
-            <div className="flex flex-col gap-4">
-              {/* Header row */}
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <span className="flex items-center gap-2 text-base font-bold text-[#1A1A2E] dark:text-white">
-                  <CheckCircle size={20} className="text-green-500" />
-                  Busca concluída
-                </span>
-                {finalCounts && (
-                  <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { label: 'Encontrados', value: finalCounts.found },
-                      { label: 'Novos', value: finalCounts.new },
-                      { label: 'Duplicados', value: finalCounts.duplicates },
-                    ].map(({ label, value }) => (
-                      <div
-                        key={label}
-                        className="flex flex-col items-center bg-white dark:bg-[#0A0A0A] rounded-lg p-3"
-                      >
-                        <span className="text-xl font-bold text-[#1A1A2E] dark:text-white tabular-nums">
-                          {value}
-                        </span>
-                        <span className="text-xs text-gray-400 mt-1">{label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <a
-                  href={`/api/tools/lumen/leads?job_id=${encodeURIComponent(jobId)}&format=xlsx`}
-                  download
-                  aria-label="Exportar leads desta pesquisa como XLSX"
-                  className="flex items-center gap-2 text-sm text-brand-purple hover:opacity-80 transition-opacity"
-                >
-                  <Download size={16} />
-                  Exportar XLSX
-                </a>
-              </div>
-
-              {/* Leads table */}
-              <SearchLeadsList
-                jobId={jobId}
-                onSelectLead={setSelectedLead}
-                selectedLeadId={selectedLead?.id}
+            {view === 'idle' && (
+              <LumenSearchForm
+                onSubmit={handleSubmit}
+                disabled={false}
+                isSubmitting={false}
               />
+            )}
 
-              {/* Nova busca */}
-              <div className="flex justify-center">
+            {view === 'submitting' && (
+              <div className="flex flex-col items-center py-16">
+                <Loader2 size={32} className="text-brand-purple animate-spin" aria-hidden="true" />
+                <p className="text-base text-gray-500 dark:text-gray-400 mt-3">Iniciando busca...</p>
+              </div>
+            )}
+
+            {view === 'searching' && jobStatus && (
+              <LumenJobProgress
+                jobStatus={jobStatus}
+                onCancel={handleCancel}
+                isCancelling={isCancelling}
+              />
+            )}
+
+            {view === 'cancelled' && (
+              <div className="flex flex-col items-center py-16">
+                <XCircle size={40} className="text-gray-400 dark:text-gray-500" />
+                <h2 className="text-[22px] font-bold mt-4 text-[#1A1A2E] dark:text-white">
+                  Busca cancelada
+                </h2>
+                <p className="text-base text-gray-500 dark:text-gray-400 mt-2 text-center max-w-[480px]">
+                  {leadsSaved > 0
+                    ? `A busca foi interrompida. ${leadsSaved} leads foram salvos antes do cancelamento.`
+                    : 'A busca foi interrompida. Nenhum lead foi salvo.'}
+                </p>
+                {CounterRow}
                 <button
                   type="button"
                   onClick={handleNewSearch}
-                  className={`max-w-[300px] ${ctaButtonClasses}`}
+                  className={`mt-6 max-w-[300px] ${ctaButtonClasses}`}
                 >
                   Nova busca
                 </button>
               </div>
-            </div>
-          )}
+            )}
 
-          {view === 'failed' && (
-            <div role="alert" className="flex flex-col items-center py-16">
-              <AlertCircle size={40} className="text-red-500" />
-              <h2 className="text-[22px] font-bold mt-4 text-[#1A1A2E] dark:text-white">
-                Falha na busca
-              </h2>
-              <p className="text-base text-gray-500 dark:text-gray-400 mt-2 max-w-[480px] text-center">
-                {errorMessage}
-              </p>
-              <div className="flex flex-col items-center gap-4 mt-6">
-                <button
-                  type="button"
-                  onClick={handleRetry}
-                  className="text-sm text-brand-purple hover:opacity-80"
-                >
-                  Tentar novamente
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNewSearch}
-                  className="text-sm text-gray-500 dark:text-gray-400 hover:opacity-80"
-                >
-                  Nova busca
-                </button>
+            {view === 'completed' && jobId && (
+              <div className="flex flex-col gap-4">
+                {/* Header row */}
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <span className="flex items-center gap-2 text-base font-bold text-[#1A1A2E] dark:text-white">
+                    <CheckCircle size={20} className="text-green-500" />
+                    Busca concluída
+                  </span>
+                  {finalCounts && (
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { label: 'Encontrados', value: finalCounts.found },
+                        { label: 'Novos', value: finalCounts.new },
+                        { label: 'Duplicados', value: finalCounts.duplicates },
+                      ].map(({ label, value }) => (
+                        <div
+                          key={label}
+                          className="flex flex-col items-center bg-white dark:bg-[#0A0A0A] rounded-lg p-3"
+                        >
+                          <span className="text-xl font-bold text-[#1A1A2E] dark:text-white tabular-nums">
+                            {value}
+                          </span>
+                          <span className="text-xs text-gray-400 mt-1">{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <a
+                    href={`/api/tools/lumen/leads?job_id=${encodeURIComponent(jobId)}&format=xlsx`}
+                    download
+                    aria-label="Exportar leads desta pesquisa como XLSX"
+                    className="flex items-center gap-2 text-sm text-brand-purple hover:opacity-80 transition-opacity"
+                  >
+                    <Download size={16} />
+                    Exportar XLSX
+                  </a>
+                </div>
+
+                {/* Leads table */}
+                <SearchLeadsList
+                  jobId={jobId}
+                  onSelectLead={setSelectedLead}
+                  selectedLeadId={selectedLead?.id}
+                />
+
+                {/* Nova busca */}
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleNewSearch}
+                    className={`max-w-[300px] ${ctaButtonClasses}`}
+                  >
+                    Nova busca
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
+            {view === 'failed' && (
+              <div role="alert" className="flex flex-col items-center py-16">
+                <AlertCircle size={40} className="text-red-500" />
+                <h2 className="text-[22px] font-bold mt-4 text-[#1A1A2E] dark:text-white">
+                  Falha na busca
+                </h2>
+                <p className="text-base text-gray-500 dark:text-gray-400 mt-2 max-w-[480px] text-center">
+                  {errorMessage}
+                </p>
+                <div className="flex flex-col items-center gap-4 mt-6">
+                  <button
+                    type="button"
+                    onClick={handleRetry}
+                    className="text-sm text-brand-purple hover:opacity-80"
+                  >
+                    Tentar novamente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNewSearch}
+                    className="text-sm text-gray-500 dark:text-gray-400 hover:opacity-80"
+                  >
+                    Nova busca
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </motion.div>
+        </AnimatePresence>
+      )}
+      {activeTab === 'historico' && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+          <SearchHistoryList onReopenSearch={handleReopenSearch} />
         </motion.div>
-      </AnimatePresence>}
+      )}
       {activeTab === 'banco' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
           <GlobalLeadsView
