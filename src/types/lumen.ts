@@ -1,5 +1,6 @@
 // Types for LUMEN lead data — Phase 5
-// Do NOT import from job.ts here; these are independent domain types.
+// Phase 7 intentionally imports JobState from job.ts for SearchHistoryItem.
+import type { JobState } from '@/types/job'
 
 export interface ApolloContact {
   id?: string
@@ -46,4 +47,20 @@ export interface LeadsResponse {
 export interface LeadDetail extends Lead {
   contacts: ApolloContact[]
   keywords: string[]
+}
+
+// Phase 7 — Search History types
+export interface SearchHistoryItem {
+  id: string
+  city: string
+  segments: string[]
+  state: JobState
+  found?: number
+  new?: number
+  duplicates?: number
+  created_at: string
+}
+
+export interface SearchHistoryResponse {
+  data: SearchHistoryItem[]
 }

@@ -19,6 +19,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: LUMEN Search Results** - Visualização de leads isolada por job: lista com score, detalhes em slide-over e export XLSX da pesquisa (completed 2026-03-29)
 - [x] **Phase 6: LUMEN Global Leads Database** - Banco global de leads com painel de filtros, paginação server-side e export XLSX com filtros ativos (completed 2026-03-30)
 - [ ] **Phase 7: LUMEN Search History** - Histórico de pesquisas anteriores com re-abertura dos resultados por job_id
+- [ ] **Phase 8: Area Segmentation** - Home `/tools` reestruturada em cards de área com navegação para páginas por slug
+- [ ] **Phase 9: Auth Infrastructure** - Tabela tool_permissions, contas individuais, middleware de permissão e estado bloqueado no ToolCard
+- [ ] **Phase 10: Admin Panel** - Painel `/admin` com CRUD completo de membros e permissões por ferramenta
 
 ## Phase Details
 
@@ -138,12 +141,52 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Usuário vê uma lista cronológica de pesquisas anteriores com cidade, segmentos, status (badge visual), totais (encontrados / novos / duplicados) e data de execução
   2. Usuário clica em uma pesquisa concluída do histórico e vê os leads daquela busca específica carregados diretamente — sem disparar novo polling para jobs já terminados
+**Plans**: 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Wave 1: SearchHistoryItem types + SearchHistoryList component + full test coverage (LUMEN-14)
+- [ ] 07-02-PLAN.md — Wave 2: LumenAgent 3-tab wiring + historicalJobId state path + visual checkpoint (LUMEN-15)
+
+### Phase 8: Area Segmentation
+**Goal**: A home `/tools` organiza as ferramentas por área departamental, e cada área tem sua própria página com o catálogo filtrado
+**Depends on**: Phase 7
+**Requirements**: AREA-01, AREA-02, AREA-03, AREA-04, AREA-05, AREA-06
+**Success Criteria** (what must be TRUE):
+  1. Usuário autenticado acessa `/tools` e vê 6 cards de área (PRODUÇÃO, RH, ANIMAÇÃO, MARKETING, COMERCIAL, OPERACIONAL) — o grid direto de ferramentas não aparece mais na home
+  2. Cada card de área exibe o nome da área e a contagem de ferramentas disponíveis nela
+  3. Usuário clica em um card e navega para `/tools/{slug}` (ex: `/tools/comercial`), onde vê as ferramentas daquela área com o mesmo padrão visual de cards atual
+  4. Página de área sem ferramentas cadastradas exibe mensagem "Nenhuma ferramenta disponível nesta área ainda" em vez de grid vazio
+  5. Uma ferramenta configurada para múltiplas áreas aparece corretamente nas páginas de todas as suas áreas
+**Plans**: TBD
+
+### Phase 9: Auth Infrastructure
+**Goal**: Ferramentas restritas exibem estado bloqueado para quem não tem permissão, e contas individuais coexistem com o login compartilhado sem quebrar o acesso existente
+**Depends on**: Phase 8
+**Requirements**: PERM-01, PERM-02, PERM-03, PERM-04, PERM-05
+**Success Criteria** (what must be TRUE):
+  1. Ferramenta marcada como restrita exibe estado bloqueado ("Você não tem acesso a esta ferramenta. Contate o administrador.") para usuário sem entrada em `tool_permissions` — não é redirecionamento, é estado visual na própria página da ferramenta
+  2. Usuário autenticado via login compartilhado (team@flyingstudio.com.br) continua acessando ferramentas sem restrição normalmente — nenhuma regressão no fluxo existente
+  3. Usuário com conta individual (email + senha pessoal, criado via Supabase Auth) consegue fazer login e acessar as ferramentas para as quais tem permissão na tabela `tool_permissions`
+  4. Tabela `tool_permissions(user_id, tool_slug)` existe no Supabase e o middleware a consulta antes de renderizar ferramentas restritas
+  5. Campo `role` em `app_metadata` do usuário autenticado diferencia `admin` de `member` — acessível via session no frontend
+**Plans**: TBD
+
+### Phase 10: Admin Panel
+**Goal**: Administrador gerencia membros e seus acessos por ferramenta diretamente em `/admin`, sem precisar tocar no Supabase Dashboard
+**Depends on**: Phase 9
+**Requirements**: PERM-06, PERM-07, PERM-08, PERM-09, PERM-10
+**Success Criteria** (what must be TRUE):
+  1. Usuário com `role=admin` acessa `/admin` — usuário com `role=member` que tenta acessar `/admin` é redirecionado pelo middleware sem ver conteúdo da página
+  2. Admin vê lista de todos os membros com nome, email, role e ferramentas autorizadas para cada um
+  3. Admin cria novo membro preenchendo nome, email, senha temporária, role e ferramentas autorizadas — o usuário é criado via Supabase Admin API e aparece na lista imediatamente
+  4. Admin seleciona um membro existente e adiciona ou remove permissões por ferramenta — as mudanças persistem em `tool_permissions` e são refletidas na lista sem reload completo da página
+  5. Admin remove ou desativa um membro — o usuário perde acesso ao site imediatamente sem precisar aguardar expiração de sessão
 **Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -153,4 +196,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 4/4 | Complete    | 2026-03-29 |
 | 5. LUMEN Search Results | 5/5 | Complete   | 2026-03-29 |
 | 6. LUMEN Global Leads Database | 5/5 | Complete   | 2026-03-30 |
-| 7. LUMEN Search History | 0/? | Not started | - |
+| 7. LUMEN Search History | 0/2 | Not started | - |
+| 8. Area Segmentation | 0/? | Not started | - |
+| 9. Auth Infrastructure | 0/? | Not started | - |
+| 10. Admin Panel | 0/? | Not started | - |
