@@ -339,4 +339,13 @@ describe('LumenAgent', () => {
       })
     })
   })
+
+  describe('LUMEN-10: tab switcher (Phase 6)', () => {
+    it.todo('renders "Busca" and "Banco de Leads" tab buttons')
+    it.todo('"Busca" tab is active by default (activeTab === "busca")')
+    it.todo('GlobalLeadsView is NOT rendered when activeTab === "busca"')
+    it.todo('clicking "Banco de Leads" tab renders GlobalLeadsView')
+    it.todo('switching tabs does NOT reset in-progress job state')
+    it.todo('switching back to "Busca" tab hides GlobalLeadsView')
+  })
 })
