@@ -1,9 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
+import { LogOut, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import type { User } from '@supabase/supabase-js'
 
 interface SidebarProps {
   isOpen: boolean
@@ -15,6 +19,17 @@ const navLinks = [
 ]
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+  }, [isOpen])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -28,6 +43,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       document.body.style.overflow = ''
     }
   }, [isOpen, onClose])
+
+  async function handleLogout() {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    await supabase.auth.signOut()
+    onClose()
+    router.push('/login')
+    router.refresh()
+  }
+
+  const isAdmin = user?.app_metadata?.role === 'admin'
 
   return (
     <AnimatePresence>
@@ -60,7 +88,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           >
             {/* Header da sidebar */}
             <div className="flex items-center justify-between px-6 py-5">
-              {/* Logo placeholder branca */}
               <div className="w-28 h-7 bg-white/20 rounded" aria-hidden="true" />
               <button
                 aria-label="Fechar menu"
@@ -93,8 +120,42 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {label}
                 </Link>
               ))}
+
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={onClose}
+                  className={cn(
+                    'flex items-center gap-2 py-3 px-6 text-[20px] font-medium',
+                    'text-brand-purple hover:opacity-80',
+                    'transition-opacity duration-200'
+                  )}
+                >
+                  <ShieldCheck size={20} aria-hidden="true" />
+                  Painel Admin
+                </Link>
+              )}
             </nav>
 
+            {/* Rodapé: usuário + logout */}
+            {user && (
+              <>
+                <div className="border-t border-white/10 mx-6" />
+                <div className="px-6 py-5 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    aria-label="Sair da conta"
+                    className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-red-400 transition-colors shrink-0"
+                  >
+                    <LogOut size={16} aria-hidden="true" />
+                    Sair
+                  </button>
+                </div>
+              </>
+            )}
           </motion.aside>
         </>
       )}

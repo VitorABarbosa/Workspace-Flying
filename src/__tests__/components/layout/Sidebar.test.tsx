@@ -1,6 +1,19 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import Sidebar from '@/components/layout/Sidebar'
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }),
+}))
+
+jest.mock('@supabase/ssr', () => ({
+  createBrowserClient: () => ({
+    auth: {
+      getUser: () => Promise.resolve({ data: { user: null } }),
+      signOut: () => Promise.resolve({}),
+    },
+  }),
+}))
+
 const mockOnClose = jest.fn()
 
 describe('Sidebar', () => {
