@@ -157,7 +157,12 @@ Plans:
   3. Usuário clica em um card e navega para `/tools/{slug}` (ex: `/tools/comercial`), onde vê as ferramentas daquela área com o mesmo padrão visual de cards atual
   4. Página de área sem ferramentas cadastradas exibe mensagem "Nenhuma ferramenta disponível nesta área ainda" em vez de grid vazio
   5. Uma ferramenta configurada para múltiplas áreas aparece corretamente nas páginas de todas as suas áreas
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Wave 0: Extend tools.ts with AREAS config + area test stubs (AREA-01–AREA-06)
+- [ ] 08-02-PLAN.md — Wave 1: AreaCard implementation + /tools home rewrite as area hub (AREA-01–AREA-03)
+- [ ] 08-03-PLAN.md — Wave 2: [slug]/page.tsx area dispatch + AreaPageContent + visual checkpoint (AREA-03–AREA-06)
 
 ### Phase 9: Auth Infrastructure
 **Goal**: Ferramentas restritas exibem estado bloqueado para quem não tem permissão, e contas individuais coexistem com o login compartilhado sem quebrar o acesso existente

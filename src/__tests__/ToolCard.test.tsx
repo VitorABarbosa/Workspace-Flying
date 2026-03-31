@@ -8,6 +8,7 @@ const activeTool: Tool = {
   description: 'Descrição da ferramenta de teste',
   status: 'active',
   href: '/tools/test-tool',
+  areas: [],
 }
 
 const comingSoonTool: Tool = {
