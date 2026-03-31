@@ -76,8 +76,41 @@ describe('middleware — proteção de rotas (AUTH-02)', () => {
 })
 
 describe('middleware — proteção de rotas admin (PERM-06)', () => {
-  it.todo('redireciona role=member de /admin para /tools')
-  it.todo('redireciona usuário não autenticado de /admin para /login')
-  it.todo('permite role=admin acessar /admin sem redirecionamento')
-  it.todo('matcher config inclui /admin/:path*')
+  beforeEach(() => {
+    jest.clearAllMocks()
+    ;(NextResponse.next as jest.Mock).mockReturnValue({
+      type: 'next',
+      cookies: { set: jest.fn(), getAll: jest.fn(() => []) },
+    })
+  })
+
+  it('redireciona role=member de /admin para /tools', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'member-1', app_metadata: { role: 'member' } } },
+    })
+    await middleware(makeRequest('/admin'))
+    expect(NextResponse.redirect).toHaveBeenCalledTimes(1)
+    const redirectUrl = (NextResponse.redirect as jest.Mock).mock.calls[0][0] as URL
+    expect(redirectUrl.pathname).toBe('/tools')
+  })
+
+  it('redireciona usuário não autenticado de /admin para /login', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } })
+    await middleware(makeRequest('/admin'))
+    expect(NextResponse.redirect).toHaveBeenCalledTimes(1)
+    const redirectUrl = (NextResponse.redirect as jest.Mock).mock.calls[0][0] as URL
+    expect(redirectUrl.pathname).toBe('/login')
+  })
+
+  it('permite role=admin acessar /admin sem redirecionamento', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'admin-1', app_metadata: { role: 'admin' } } },
+    })
+    await middleware(makeRequest('/admin'))
+    expect(NextResponse.redirect).not.toHaveBeenCalled()
+  })
+
+  it('matcher config inclui /admin/:path*', () => {
+    expect(config.matcher).toContain('/admin/:path*')
+  })
 })

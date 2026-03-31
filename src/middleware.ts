@@ -33,9 +33,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  // PERM-06: admin route guard — checks app_metadata.role (no extra DB query)
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    const role = user.app_metadata?.role
+    if (role !== 'admin') {
+      return NextResponse.redirect(new URL('/tools', request.url))
+    }
+  }
+
   return response
 }
 
 export const config = {
-  matcher: ['/tools/:path*', '/api/tools/:path*', '/api/agents/:path*'],
+  matcher: ['/tools/:path*', '/api/tools/:path*', '/api/agents/:path*', '/admin/:path*'],
 }
