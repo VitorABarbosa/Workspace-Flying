@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 07-lumen-search-history-01-PLAN.md
-last_updated: "2026-03-30T21:08:05.580Z"
+stopped_at: Completed 07-02-PLAN.md — Phase 7 (LUMEN Search History) fully complete
+last_updated: "2026-03-31T03:14:56.242Z"
 last_activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined, 16 requirements mapped)
 progress:
   total_phases: 10
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 28
-  completed_plans: 27
+  completed_plans: 28
   percent: 60
 ---
 
@@ -76,6 +76,7 @@ Progress: [████████████████░░░░░░░
 | Phase 06-lumen-global-leads-database P04 | 8 | 2 tasks | 4 files |
 | Phase 06-lumen-global-leads-database PP05 | 5min | 3 tasks | 2 files |
 | Phase 07-lumen-search-history P01 | 3 | 2 tasks | 3 files |
+| Phase 07-lumen-search-history P02 | 10 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -157,6 +158,12 @@ Recent decisions affecting current work:
 - [v1.3 roadmap]: Admin panel uses Supabase Admin API (service role key) for user creation — avoids exposing signup endpoint publicly
 - [Phase 07-lumen-search-history]: SearchHistoryItem imports JobState from job.ts (Phase 7 intentional coupling — overrides Phase 5 no-import comment)
 - [Phase 07-lumen-search-history]: SearchHistoryList uses fetchKey integer increment for retry — same pattern as SearchLeadsList
+- [Phase 07-lumen-search-history]: historicalJobId state is separate from live jobId — useJobPolling only receives live jobId, preventing accidental polling of completed historical jobs
+- [Phase 07-lumen-search-history]: Historical view renders inside busca tab via ternary (historicalJobId ? historical : live) — avoids a fourth tab, keeps count at 3
+- [Phase 07-lumen-search-history]: handleNewSearch clears historicalJobId as first operation — ensures live search flow is clean after exiting historical view
+- [Phase 07-lumen-search-history]: historicalJobId state is separate from live jobId — useJobPolling only receives live jobId, preventing accidental polling of completed historical jobs
+- [Phase 07-lumen-search-history]: Historical view renders inside busca tab via ternary (historicalJobId ? historical : live) — avoids a fourth tab and keeps count at exactly 3
+- [Phase 07-lumen-search-history]: handleNewSearch clears historicalJobId as first operation — ensures live search flow is clean after exiting historical view
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -190,7 +197,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined)
-Last session: 2026-03-30T21:08:05.577Z
-Stopped at: Completed 07-lumen-search-history-01-PLAN.md
+Last session: 2026-03-31T03:14:56.239Z
+Stopped at: Completed 07-02-PLAN.md — Phase 7 (LUMEN Search History) fully complete
 Resume file: None
 Next step: `/gsd:plan-phase 7` (Phase 7 — LUMEN Search History, still pending from v1.2)

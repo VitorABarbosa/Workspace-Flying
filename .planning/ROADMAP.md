@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: LUMEN Foundation — Backend + Search + Job Lifecycle** - Backend job_id isolation, registro do agente no catálogo, formulário de busca e ciclo de vida completo do job assíncrono com cancelamento (completed 2026-03-28)
 - [x] **Phase 5: LUMEN Search Results** - Visualização de leads isolada por job: lista com score, detalhes em slide-over e export XLSX da pesquisa (completed 2026-03-29)
 - [x] **Phase 6: LUMEN Global Leads Database** - Banco global de leads com painel de filtros, paginação server-side e export XLSX com filtros ativos (completed 2026-03-30)
-- [ ] **Phase 7: LUMEN Search History** - Histórico de pesquisas anteriores com re-abertura dos resultados por job_id
+- [x] **Phase 7: LUMEN Search History** - Histórico de pesquisas anteriores com re-abertura dos resultados por job_id (completed 2026-03-30)
 - [ ] **Phase 8: Area Segmentation** - Home `/tools` reestruturada em cards de área com navegação para páginas por slug
 - [ ] **Phase 9: Auth Infrastructure** - Tabela tool_permissions, contas individuais, middleware de permissão e estado bloqueado no ToolCard
 - [ ] **Phase 10: Admin Panel** - Painel `/admin` com CRUD completo de membros e permissões por ferramenta
@@ -196,7 +196,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. LUMEN Foundation — Backend + Search + Job Lifecycle | 4/4 | Complete    | 2026-03-29 |
 | 5. LUMEN Search Results | 5/5 | Complete   | 2026-03-29 |
 | 6. LUMEN Global Leads Database | 5/5 | Complete   | 2026-03-30 |
-| 7. LUMEN Search History | 1/2 | In Progress|  |
+| 7. LUMEN Search History | 2/2 | Complete   | 2026-03-31 |
 | 8. Area Segmentation | 0/? | Not started | - |
 | 9. Auth Infrastructure | 0/? | Not started | - |
 | 10. Admin Panel | 0/? | Not started | - |
