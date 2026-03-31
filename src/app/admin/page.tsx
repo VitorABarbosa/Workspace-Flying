@@ -1,6 +1,7 @@
 import { createSupabaseAdminClient } from '@/lib/supabase-admin'
 import { MemberList } from '@/components/admin/MemberList'
 import type { Member } from '@/components/admin/MemberList'
+import { CreateMemberForm } from '@/components/admin/CreateMemberForm'
 
 export default async function AdminPage() {
   const admin = createSupabaseAdminClient()
@@ -38,6 +39,9 @@ export default async function AdminPage() {
       <h1 className="text-[22px] font-bold text-[#1A1A2E] dark:text-white mb-8">
         Painel Admin
       </h1>
+      <div className="mb-10">
+        <CreateMemberForm />
+      </div>
       <MemberList members={members} />
     </section>
   )

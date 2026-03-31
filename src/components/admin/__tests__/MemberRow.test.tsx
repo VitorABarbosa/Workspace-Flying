@@ -1,11 +1,77 @@
-// MemberRow.test.tsx — stubs para PERM-10 (disable/delete member)
-// Wave 0: it.todo() contracts — implementation in Wave 2 (plan 10-03)
+import React from 'react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+
+const mockDisableMember = jest.fn()
+const mockReactivateMember = jest.fn()
+const mockDeleteMember = jest.fn()
+
+jest.mock('@/app/admin/actions', () => ({
+  disableMember: (id: string) => mockDisableMember(id),
+  reactivateMember: (id: string) => mockReactivateMember(id),
+  deleteMember: (id: string) => mockDeleteMember(id),
+}))
+jest.mock('../EditPermissionsForm', () => ({
+  EditPermissionsForm: () => <tr><td>edit form</td></tr>,
+}))
+
+import { MemberRow } from '../MemberRow'
+import type { Member } from '../MemberList'
+
+const activeMember: Member = {
+  id: 'user-1',
+  name: 'Ana Lima',
+  email: 'ana@test.com',
+  role: 'member',
+  tools: ['lumen'],
+  bannedUntil: undefined,
+}
+const bannedMember: Member = { ...activeMember, bannedUntil: '2126-01-01T00:00:00Z' }
 
 describe('MemberRow — ações de membro (PERM-10)', () => {
-  it.todo('renderiza botão "Desativar" para membro ativo')
-  it.todo('clicar em "Desativar" chama disableMember com userId do membro')
-  it.todo('renderiza botão "Reativar" para membro com banned_until preenchido')
-  it.todo('renderiza botão "Remover permanentemente" que requer confirmação')
-  it.todo('confirmar remoção chama deleteMember com userId do membro')
-  it.todo('cancelar confirmação não chama deleteMember')
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockDisableMember.mockResolvedValue({})
+    mockReactivateMember.mockResolvedValue({})
+    mockDeleteMember.mockResolvedValue({})
+  })
+
+  it('renderiza botão "Desativar" para membro ativo', () => {
+    render(<table><tbody><MemberRow member={activeMember} /></tbody></table>)
+    expect(screen.getByRole('button', { name: /desativar/i })).toBeInTheDocument()
+  })
+
+  it('clicar em "Desativar" chama disableMember com userId do membro', async () => {
+    render(<table><tbody><MemberRow member={activeMember} /></tbody></table>)
+    fireEvent.click(screen.getByRole('button', { name: /desativar/i }))
+    await waitFor(() => {
+      expect(mockDisableMember).toHaveBeenCalledWith('user-1')
+    })
+  })
+
+  it('renderiza botão "Reativar" para membro com banned_until preenchido', () => {
+    render(<table><tbody><MemberRow member={bannedMember} /></tbody></table>)
+    expect(screen.getByRole('button', { name: /reativar/i })).toBeInTheDocument()
+  })
+
+  it('renderiza botão "Remover" que requer confirmação', () => {
+    render(<table><tbody><MemberRow member={activeMember} /></tbody></table>)
+    expect(screen.getByRole('button', { name: /remover/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /confirmar remoção/i })).not.toBeInTheDocument()
+  })
+
+  it('confirmar remoção chama deleteMember com userId do membro', async () => {
+    render(<table><tbody><MemberRow member={activeMember} /></tbody></table>)
+    fireEvent.click(screen.getByRole('button', { name: /remover/i }))
+    fireEvent.click(screen.getByRole('button', { name: /confirmar remoção/i }))
+    await waitFor(() => {
+      expect(mockDeleteMember).toHaveBeenCalledWith('user-1')
+    })
+  })
+
+  it('cancelar confirmação não chama deleteMember', () => {
+    render(<table><tbody><MemberRow member={activeMember} /></tbody></table>)
+    fireEvent.click(screen.getByRole('button', { name: /remover/i }))
+    fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
+    expect(mockDeleteMember).not.toHaveBeenCalled()
+  })
 })
