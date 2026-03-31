@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-31T12:52:04.968Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-31T12:57:18.037Z"
 last_activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined, 16 requirements mapped)
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 31
-  completed_plans: 29
+  completed_plans: 30
   percent: 60
 ---
 
@@ -78,6 +78,7 @@ Progress: [████████████████░░░░░░░
 | Phase 07-lumen-search-history P01 | 3 | 2 tasks | 3 files |
 | Phase 07-lumen-search-history P02 | 10 | 2 tasks | 2 files |
 | Phase 08-area-segmentation P01 | 138 | 2 tasks | 6 files |
+| Phase 08-area-segmentation P02 | 8 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -167,6 +168,9 @@ Recent decisions affecting current work:
 - [Phase 07-lumen-search-history]: handleNewSearch clears historicalJobId as first operation — ensures live search flow is clean after exiting historical view
 - [Phase 08-01]: areas: AreaSlug[] is required (not optional) on Tool interface — enforces area declaration at type level for all current and future tools
 - [Phase 08-01]: AreaCard.tsx stub returns null — minimal implementation to unblock jest.mock resolution in Plan 02 tests
+- [Phase 08-area-segmentation]: AreaCard 'use client' directive preserved — Link from next/link requires client boundary
+- [Phase 08-area-segmentation]: toolCount filters status === 'active' only — coming-soon tools do not count toward available
+- [Phase 08-area-segmentation]: No empty-state guard on /tools home — AREAS is a static array always containing 6 entries
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -200,7 +204,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined)
-Last session: 2026-03-31T12:52:04.965Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-03-31T12:57:18.034Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
 Next step: `/gsd:plan-phase 7` (Phase 7 — LUMEN Search History, still pending from v1.2)
