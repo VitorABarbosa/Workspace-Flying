@@ -1,10 +1,13 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getToolBySlug } from '@/config/tools'
+import { getToolBySlug, getAreaBySlug, getToolsByArea } from '@/config/tools'
+import type { Tool, Area } from '@/config/tools'
 import { AgentShell } from '@/components/tools/AgentShell'
+import { ToolCard } from '@/components/tools/ToolCard'
 import { PesquisadorAgent } from '@/components/agents/pesquisador/PesquisadorAgent'
 import { LumenAgent } from '@/components/agents/lumen/LumenAgent'
-import type { Tool } from '@/config/tools'
+import FadeIn from '@/components/ui/FadeIn'
+import { cn } from '@/lib/cn'
 
 // Mapa de componentes de agente.
 // Para adicionar novo agente: importar o componente e adicionar uma linha aqui.
@@ -34,17 +37,71 @@ function ComingSoonShell({ tool }: { tool: Tool }) {
   )
 }
 
+function AreaPageContent({ area }: { area: Area }) {
+  const areaTools = getToolsByArea(area.slug)
+
+  return (
+    <section
+      className={cn(
+        'py-20 md:py-24',
+        'bg-white dark:bg-brand-dark',
+        'px-6 md:px-8',
+      )}
+    >
+      <div className="max-w-[1200px] mx-auto">
+        <Link
+          href="/tools"
+          className="text-sm text-brand-purple hover:opacity-80 transition-opacity duration-150 mb-6 inline-block"
+        >
+          ← Ferramentas
+        </Link>
+
+        <h1 className="text-[22px] font-bold text-[#1A1A2E] dark:text-white mt-2">
+          {area.name}
+        </h1>
+
+        {areaTools.length === 0 ? (
+          <div className="mt-12 text-center">
+            <p className="text-base text-gray-600 dark:text-gray-400">
+              Nenhuma ferramenta disponível nesta área ainda
+            </p>
+          </div>
+        ) : (
+          <ul
+            role="list"
+            className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {areaTools.map((tool, index) => (
+              <li key={tool.id}>
+                <FadeIn delay={index * 0.1}>
+                  <ToolCard tool={tool} />
+                </FadeIn>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )
+}
+
 export default function ToolPage({ params }: { params: { slug: string } }) {
+  // 1. Check tool registry first — existing tool pages are unaffected
   const tool = getToolBySlug(params.slug)
-
-  // Slug não existe no registry → 404
-  if (!tool) notFound()
-
-  // Ferramenta existe mas componente ainda não foi construído
-  const AgentComponent = AGENT_COMPONENTS[params.slug]
-  if (!AgentComponent) {
-    return <ComingSoonShell tool={tool} />
+  if (tool) {
+    const AgentComponent = AGENT_COMPONENTS[params.slug]
+    if (!AgentComponent) {
+      return <ComingSoonShell tool={tool} />
+    }
+    return <AgentComponent />
   }
 
-  return <AgentComponent />
+  // 2. Check area registry
+  const area = getAreaBySlug(params.slug)
+  if (area) {
+    return <AreaPageContent area={area} />
+  }
+
+  // 3. Neither — 404
+  notFound()
 }
