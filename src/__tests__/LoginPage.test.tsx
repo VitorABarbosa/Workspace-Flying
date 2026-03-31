@@ -86,3 +86,15 @@ describe('LoginPage — formulário de senha compartilhada (AUTH-01)', () => {
     })
   })
 })
+
+describe('LoginForm — individual account toggle (PERM-02, PERM-03)', () => {
+  it.todo('team mode is the default — only password field visible, email field not rendered')
+  it.todo('team mode uses TEAM_EMAIL (team@flyingstudio.com.br) constant in signInWithPassword call')
+  it.todo('clicking "Entrar com conta individual" toggles to individual mode')
+  it.todo('individual mode renders email field with type="email" and aria-label="E-mail"')
+  it.todo('individual mode subheading changes to "Digite seu e-mail e senha para continuar"')
+  it.todo('individual mode uses user-supplied email (not TEAM_EMAIL) in signInWithPassword call')
+  it.todo('clicking "Usar senha da equipe" returns to team mode — email field hidden again')
+  it.todo('individual mode error shows "E-mail ou senha incorretos. Tente novamente."')
+  it.todo('team mode error shows "Senha incorreta. Tente novamente."')
+})
