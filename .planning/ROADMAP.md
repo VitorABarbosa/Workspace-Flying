@@ -191,7 +191,12 @@ Plans:
   3. Admin cria novo membro preenchendo nome, email, senha temporária, role e ferramentas autorizadas — o usuário é criado via Supabase Admin API e aparece na lista imediatamente
   4. Admin seleciona um membro existente e adiciona ou remove permissões por ferramenta — as mudanças persistem em `tool_permissions` e são refletidas na lista sem reload completo da página
   5. Admin remove ou desativa um membro — o usuário perde acesso ao site imediatamente sem precisar aguardar expiração de sessão
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Wave 0: test stubs — middleware admin guard stubs + 5 component stub files (PERM-06–PERM-10)
+- [ ] 10-02-PLAN.md — Wave 1: supabase-admin.ts + middleware /admin guard + admin page server component + MemberList/MemberRow (PERM-06, PERM-07)
+- [ ] 10-03-PLAN.md — Wave 2: Server Actions (createMember, updatePermissions, disableMember, deleteMember) + CreateMemberForm + EditPermissionsForm + MemberRow actions + visual checkpoint (PERM-08, PERM-09, PERM-10)
 
 ## Progress
 
@@ -209,4 +214,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. LUMEN Search History | 2/2 | Complete    | 2026-03-31 |
 | 8. Area Segmentation | 3/3 | Complete    | 2026-03-31 |
 | 9. Auth Infrastructure | 3/3 | Complete   | 2026-03-31 |
-| 10. Admin Panel | 0/? | Not started | - |
+| 10. Admin Panel | 0/3 | Not started | - |
