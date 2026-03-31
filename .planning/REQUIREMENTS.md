@@ -81,12 +81,12 @@
 
 ### Áreas de Ferramentas
 
-- [ ] **AREA-01**: Home `/tools` exibe 6 cards de área (PRODUÇÃO, RH, ANIMAÇÃO, MARKETING, COMERCIAL, OPERACIONAL) em vez de grid direto de ferramentas
-- [ ] **AREA-02**: Card de área mostra nome da área e contagem de ferramentas disponíveis
-- [ ] **AREA-03**: Clicar em uma área navega para `/tools/{slug}` (ex: `/tools/comercial`, `/tools/animacao`)
-- [ ] **AREA-04**: Página `/tools/{slug}` exibe as ferramentas daquela área com o mesmo padrão visual de cards atual
-- [ ] **AREA-05**: Áreas sem ferramentas exibem estado vazio: "Nenhuma ferramenta disponível nesta área ainda"
-- [ ] **AREA-06**: Uma ferramenta pode pertencer a múltiplas áreas (ex: PESQUISADOR aparece em ANIMAÇÃO e MARKETING)
+- [x] **AREA-01**: Home `/tools` exibe 6 cards de área (PRODUÇÃO, RH, ANIMAÇÃO, MARKETING, COMERCIAL, OPERACIONAL) em vez de grid direto de ferramentas
+- [x] **AREA-02**: Card de área mostra nome da área e contagem de ferramentas disponíveis
+- [x] **AREA-03**: Clicar em uma área navega para `/tools/{slug}` (ex: `/tools/comercial`, `/tools/animacao`)
+- [x] **AREA-04**: Página `/tools/{slug}` exibe as ferramentas daquela área com o mesmo padrão visual de cards atual
+- [x] **AREA-05**: Áreas sem ferramentas exibem estado vazio: "Nenhuma ferramenta disponível nesta área ainda"
+- [x] **AREA-06**: Uma ferramenta pode pertencer a múltiplas áreas (ex: PESQUISADOR aparece em ANIMAÇÃO e MARKETING)
 
 ### Permissões por Ferramenta
 
@@ -195,12 +195,12 @@
 | LUMEN-13 | Phase 6 | Complete |
 | LUMEN-14 | Phase 7 | Complete |
 | LUMEN-15 | Phase 7 | Complete |
-| AREA-01 | Phase 8 | Pending |
-| AREA-02 | Phase 8 | Pending |
-| AREA-03 | Phase 8 | Pending |
-| AREA-04 | Phase 8 | Pending |
-| AREA-05 | Phase 8 | Pending |
-| AREA-06 | Phase 8 | Pending |
+| AREA-01 | Phase 8 | Complete |
+| AREA-02 | Phase 8 | Complete |
+| AREA-03 | Phase 8 | Complete |
+| AREA-04 | Phase 8 | Complete |
+| AREA-05 | Phase 8 | Complete |
+| AREA-06 | Phase 8 | Complete |
 | PERM-01 | Phase 9 | Pending |
 | PERM-02 | Phase 9 | Pending |
 | PERM-03 | Phase 9 | Pending |
