@@ -12,11 +12,32 @@ describe('ToolsPage (area hub)', () => {
     )
   })
 
-  it.todo('importa AREAS de @/config/tools')
-  it.todo('usa AreaCard para renderizar cada área (não ToolCard)')
-  it.todo('não renderiza ToolCard diretamente na home')
-  it.todo('usa grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')
-  it.todo('aplica FadeIn com delay escalonado (index * 0.1)')
-  it.todo('grid usa role="list" para acessibilidade')
-  it.todo('eyebrow é "ÁREAS DISPONÍVEIS"')
+  it('importa AREAS de @/config/tools', () => {
+    expect(source).toContain('AREAS')
+    expect(source).toContain("from '@/config/tools'")
+  })
+
+  it('usa AreaCard para renderizar cada área (não ToolCard)', () => {
+    expect(source).toContain('<AreaCard')
+  })
+
+  it('não renderiza ToolCard diretamente na home', () => {
+    expect(source).not.toContain('<ToolCard')
+  })
+
+  it('usa grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3', () => {
+    expect(source).toContain('grid-cols-1 sm:grid-cols-2 lg:grid-cols-3')
+  })
+
+  it('aplica FadeIn com delay escalonado (index * 0.1)', () => {
+    expect(source).toContain('index * 0.1')
+  })
+
+  it('grid usa role="list" para acessibilidade', () => {
+    expect(source).toContain('role="list"')
+  })
+
+  it('eyebrow é "ÁREAS DISPONÍVEIS"', () => {
+    expect(source).toContain('ÁREAS DISPONÍVEIS')
+  })
 })
