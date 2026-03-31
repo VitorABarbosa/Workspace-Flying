@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Completed 08-03-PLAN.md — Phase 8 Area Segmentation fully complete"
-last_updated: "2026-03-31T14:00:00.000Z"
+stopped_at: Completed 09-auth-infrastructure-09-01-PLAN.md
+last_updated: "2026-03-31T19:21:04.976Z"
 last_activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined, 16 requirements mapped)
 progress:
   total_phases: 10
+  completed_phases: 8
+  total_plans: 34
+  completed_plans: 32
+  percent: 94
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
+stopped_at: Phase 9 UI-SPEC approved
+last_updated: "2026-03-31T16:15:13.933Z"
+last_activity: 2026-03-30 — v1.3 roadmap created (Phases 8–10 defined, 16 requirements mapped)
+progress:
+  [█████████░] 94%
   completed_phases: 8
   total_plans: 31
   completed_plans: 31
@@ -80,6 +96,7 @@ Progress: [████████████████░░░░░░░
 | Phase 08-area-segmentation P01 | 138 | 2 tasks | 6 files |
 | Phase 08-area-segmentation P02 | 8 | 2 tasks | 4 files |
 | Phase 08-area-segmentation P03 | 2 | 1 tasks | 2 files |
+| Phase 09-auth-infrastructure P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -174,6 +191,9 @@ Recent decisions affecting current work:
 - [Phase 08-area-segmentation]: No empty-state guard on /tools home — AREAS is a static array always containing 6 entries
 - [Phase 08-03]: AreaPageContent inlined in [slug]/page.tsx — 30-line sub-component; separate file adds no value
 - [Phase 08-03]: Tool dispatch runs FIRST, area dispatch SECOND — preserves existing pesquisador/lumen routes without regression
+- [Phase 09-auth-infrastructure]: LockedToolShell stub returns null — minimal to unblock jest.mock resolution, real UI in Plan 02
+- [Phase 09-auth-infrastructure]: [Phase 09-01 Wave 0]: it.todo() stubs committed before implementation (Nyquist Rule) for LockedToolShell (PERM-01) and LoginForm toggle (PERM-02/PERM-03)
+- [Phase 09-auth-infrastructure]: [Phase 09-01]: LoginPage.test.tsx extended with append-only describe block — existing AUTH-01 tests untouched
 
 ### Phase 4 Prerequisites (confirm before planning)
 
@@ -207,7 +227,7 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last activity: 2026-03-31 — Phase 8 Area Segmentation fully complete (08-03 visual checkpoint approved)
-Last session: 2026-03-31T14:00:00.000Z
-Stopped at: Completed 08-03-PLAN.md — Phase 8 Area Segmentation fully complete
+Last session: 2026-03-31T19:21:04.973Z
+Stopped at: Completed 09-auth-infrastructure-09-01-PLAN.md
 Resume file: None
 Next step: `/gsd:plan-phase 9` (Phase 9 — Auth Infrastructure)

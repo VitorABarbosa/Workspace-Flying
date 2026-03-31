@@ -90,9 +90,9 @@
 
 ### Permissões por Ferramenta
 
-- [ ] **PERM-01**: Ferramentas marcadas como restritas exibem estado bloqueado para usuários sem permissão ("Você não tem acesso a esta ferramenta. Contate o administrador.")
-- [ ] **PERM-02**: Login compartilhado da equipe (team@flyingstudio.com.br) continua funcionando para ferramentas sem restrição
-- [ ] **PERM-03**: Contas individuais criadas via Supabase Auth (email + senha pessoal)
+- [x] **PERM-01**: Ferramentas marcadas como restritas exibem estado bloqueado para usuários sem permissão ("Você não tem acesso a esta ferramenta. Contate o administrador.")
+- [x] **PERM-02**: Login compartilhado da equipe (team@flyingstudio.com.br) continua funcionando para ferramentas sem restrição
+- [x] **PERM-03**: Contas individuais criadas via Supabase Auth (email + senha pessoal)
 - [ ] **PERM-04**: Acesso por ferramenta controlado via tabela `tool_permissions(user_id, tool_slug)` no projeto Supabase do Pesquisador (temporário — migração para projeto frontend dedicado planejada)
 - [ ] **PERM-05**: Campo `role` em `app_metadata` do Supabase Auth diferencia `admin` de `member`
 
@@ -201,9 +201,9 @@
 | AREA-04 | Phase 8 | Complete |
 | AREA-05 | Phase 8 | Complete |
 | AREA-06 | Phase 8 | Complete |
-| PERM-01 | Phase 9 | Pending |
-| PERM-02 | Phase 9 | Pending |
-| PERM-03 | Phase 9 | Pending |
+| PERM-01 | Phase 9 | Complete |
+| PERM-02 | Phase 9 | Complete |
+| PERM-03 | Phase 9 | Complete |
 | PERM-04 | Phase 9 | Pending |
 | PERM-05 | Phase 9 | Pending |
 | PERM-06 | Phase 10 | Pending |
