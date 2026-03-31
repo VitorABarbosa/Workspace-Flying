@@ -8,6 +8,8 @@ import { PesquisadorAgent } from '@/components/agents/pesquisador/PesquisadorAge
 import { LumenAgent } from '@/components/agents/lumen/LumenAgent'
 import FadeIn from '@/components/ui/FadeIn'
 import { cn } from '@/lib/cn'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { LockedToolShell } from '@/components/tools/LockedToolShell'
 
 // Mapa de componentes de agente.
 // Para adicionar novo agente: importar o componente e adicionar uma linha aqui.
@@ -85,10 +87,31 @@ function AreaPageContent({ area }: { area: Area }) {
   )
 }
 
-export default function ToolPage({ params }: { params: { slug: string } }) {
+export default async function ToolPage({ params }: { params: { slug: string } }) {
   // 1. Check tool registry first — existing tool pages are unaffected
   const tool = getToolBySlug(params.slug)
   if (tool) {
+    // Permission check runs FIRST — before any dispatch (avoids Pitfall 5)
+    if (tool.requiresAuth) {
+      const supabase = createSupabaseServerClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      // user is non-null here — middleware already validated session
+
+      // PERM-05: role available in app_metadata for current and future use
+      // const role = user?.app_metadata?.role as 'admin' | 'member' | undefined
+
+      const { data: permission } = await supabase
+        .from('tool_permissions')
+        .select('tool_slug')
+        .eq('user_id', user!.id)
+        .eq('tool_slug', tool.id)
+        .maybeSingle()
+
+      if (!permission) {
+        return <LockedToolShell toolName={tool.name} />
+      }
+    }
+
     const AgentComponent = AGENT_COMPONENTS[params.slug]
     if (!AgentComponent) {
       return <ComingSoonShell tool={tool} />
