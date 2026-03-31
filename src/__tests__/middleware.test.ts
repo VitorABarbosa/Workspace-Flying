@@ -74,3 +74,10 @@ describe('middleware — proteção de rotas (AUTH-02)', () => {
     expect(config.matcher).toContain('/api/tools/:path*')
   })
 })
+
+describe('middleware — proteção de rotas admin (PERM-06)', () => {
+  it.todo('redireciona role=member de /admin para /tools')
+  it.todo('redireciona usuário não autenticado de /admin para /login')
+  it.todo('permite role=admin acessar /admin sem redirecionamento')
+  it.todo('matcher config inclui /admin/:path*')
+})
