@@ -54,7 +54,7 @@ export const tools: Tool[] = [
     status: 'active',
     href: '/tools/pesquisador',
     icon: 'Search',
-    areas: ['comercial'],
+    areas: ['marketing', 'animacao'],
   },
   {
     id: 'lumen',
@@ -63,6 +63,6 @@ export const tools: Tool[] = [
     status: 'active',
     href: '/tools/lumen',
     icon: 'Building2',
-    areas: ['comercial', 'marketing'],
+    areas: ['comercial'],
   },
 ]
