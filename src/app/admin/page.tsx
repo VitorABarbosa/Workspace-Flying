@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createSupabaseAdminClient } from '@/lib/supabase-admin'
 import { MemberList } from '@/components/admin/MemberList'
 import type { Member } from '@/components/admin/MemberList'
