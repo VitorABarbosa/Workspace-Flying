@@ -98,11 +98,11 @@
 
 ### Painel Admin
 
-- [ ] **PERM-06**: Usuário com `role=admin` acessa painel em `/admin` protegido por middleware
-- [ ] **PERM-07**: Admin visualiza lista de todos os membros com nome, email, role e ferramentas autorizadas
-- [ ] **PERM-08**: Admin cria novo membro (nome, email, senha temporária, role, ferramentas autorizadas)
-- [ ] **PERM-09**: Admin edita acesso de membro existente (adicionar/remover permissões por ferramenta)
-- [ ] **PERM-10**: Admin remove/desativa um membro
+- [x] **PERM-06**: Usuário com `role=admin` acessa painel em `/admin` protegido por middleware
+- [x] **PERM-07**: Admin visualiza lista de todos os membros com nome, email, role e ferramentas autorizadas
+- [x] **PERM-08**: Admin cria novo membro (nome, email, senha temporária, role, ferramentas autorizadas)
+- [x] **PERM-09**: Admin edita acesso de membro existente (adicionar/remover permissões por ferramenta)
+- [x] **PERM-10**: Admin remove/desativa um membro
 
 ## v2 Requirements
 
@@ -206,11 +206,11 @@
 | PERM-03 | Phase 9 | Complete |
 | PERM-04 | Phase 9 | Complete |
 | PERM-05 | Phase 9 | Complete |
-| PERM-06 | Phase 10 | Pending |
-| PERM-07 | Phase 10 | Pending |
-| PERM-08 | Phase 10 | Pending |
-| PERM-09 | Phase 10 | Pending |
-| PERM-10 | Phase 10 | Pending |
+| PERM-06 | Phase 10 | Complete |
+| PERM-07 | Phase 10 | Complete |
+| PERM-08 | Phase 10 | Complete |
+| PERM-09 | Phase 10 | Complete |
+| PERM-10 | Phase 10 | Complete |
 
 **Coverage:**
 - v1.0 requirements: 7 total — Complete ✓
