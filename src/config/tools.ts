@@ -23,6 +23,7 @@ export interface Tool {
   href: string
   icon?: string  // Lucide icon name (optional): 'Search', 'FileText', etc.
   areas: AreaSlug[]   // required — tool must declare its areas
+  requiresAuth?: boolean  // undefined/false = no permission check required
 }
 
 export const AREAS: Area[] = [
@@ -64,5 +65,6 @@ export const tools: Tool[] = [
     href: '/tools/lumen',
     icon: 'Building2',
     areas: ['comercial'],
+    requiresAuth: true,
   },
 ]
