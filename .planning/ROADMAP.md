@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 6: LUMEN Global Leads Database** - Banco global de leads com painel de filtros, paginação server-side e export XLSX com filtros ativos (completed 2026-03-30)
 - [x] **Phase 7: LUMEN Search History** - Histórico de pesquisas anteriores com re-abertura dos resultados por job_id (completed 2026-03-30)
 - [x] **Phase 8: Area Segmentation** - Home `/tools` reestruturada em cards de área com navegação para páginas por slug (completed 2026-03-31)
-- [ ] **Phase 9: Auth Infrastructure** - Tabela tool_permissions, contas individuais, middleware de permissão e estado bloqueado no ToolCard
+- [x] **Phase 9: Auth Infrastructure** - Tabela tool_permissions, contas individuais, middleware de permissão e estado bloqueado no ToolCard (completed 2026-03-31)
 - [ ] **Phase 10: Admin Panel** - Painel `/admin` com CRUD completo de membros e permissões por ferramenta
 
 ## Phase Details
@@ -208,5 +208,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. LUMEN Global Leads Database | 5/5 | Complete   | 2026-03-30 |
 | 7. LUMEN Search History | 2/2 | Complete    | 2026-03-31 |
 | 8. Area Segmentation | 3/3 | Complete    | 2026-03-31 |
-| 9. Auth Infrastructure | 2/3 | In Progress|  |
+| 9. Auth Infrastructure | 3/3 | Complete   | 2026-03-31 |
 | 10. Admin Panel | 0/? | Not started | - |
