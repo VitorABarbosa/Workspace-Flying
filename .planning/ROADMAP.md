@@ -174,7 +174,12 @@ Plans:
   3. Usuário com conta individual (email + senha pessoal, criado via Supabase Auth) consegue fazer login e acessar as ferramentas para as quais tem permissão na tabela `tool_permissions`
   4. Tabela `tool_permissions(user_id, tool_slug)` existe no Supabase e o middleware a consulta antes de renderizar ferramentas restritas
   5. Campo `role` em `app_metadata` do usuário autenticado diferencia `admin` de `member` — acessível via session no frontend
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Wave 1: Nyquist stubs — LockedToolShell stub file + test stubs + LoginPage.test.tsx PERM-02/03 stubs
+- [ ] 09-02-PLAN.md — Wave 2: Tool config extension (requiresAuth) + LockedToolShell real implementation + Supabase migration checkpoint
+- [ ] 09-03-PLAN.md — Wave 3: page.tsx permission guard + LoginForm individual toggle + visual checkpoint
 
 ### Phase 10: Admin Panel
 **Goal**: Administrador gerencia membros e seus acessos por ferramenta diretamente em `/admin`, sem precisar tocar no Supabase Dashboard
@@ -202,6 +207,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. LUMEN Search Results | 5/5 | Complete   | 2026-03-29 |
 | 6. LUMEN Global Leads Database | 5/5 | Complete   | 2026-03-30 |
 | 7. LUMEN Search History | 2/2 | Complete    | 2026-03-31 |
-| 8. Area Segmentation | 3/3 | Complete   | 2026-03-31 |
-| 9. Auth Infrastructure | 0/? | Not started | - |
+| 8. Area Segmentation | 3/3 | Complete    | 2026-03-31 |
+| 9. Auth Infrastructure | 0/3 | Not started | - |
 | 10. Admin Panel | 0/? | Not started | - |
