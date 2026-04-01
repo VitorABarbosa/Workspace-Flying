@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
-import { LogOut, ShieldCheck } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import type { User } from '@supabase/supabase-js'
 
@@ -126,12 +126,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   href="/admin"
                   onClick={onClose}
                   className={cn(
-                    'flex items-center gap-2 py-3 px-6 text-[20px] font-medium',
-                    'text-brand-purple hover:opacity-80',
-                    'transition-opacity duration-200'
+                    'block py-3 px-6 text-[20px] font-medium',
+                    'text-white hover:text-brand-purple',
+                    'transition-colors duration-200'
                   )}
                 >
-                  <ShieldCheck size={20} aria-hidden="true" />
                   Painel Admin
                 </Link>
               )}

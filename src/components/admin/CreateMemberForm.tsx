@@ -14,6 +14,13 @@ export function CreateMemberForm() {
 
   const activeTools = tools.filter((t) => t.status === 'active')
 
+  function handleRoleChange(newRole: 'admin' | 'member') {
+    setRole(newRole)
+    if (newRole === 'admin') {
+      setSelectedTools(activeTools.map((t) => t.id))
+    }
+  }
+
   function toggleTool(slug: string) {
     setSelectedTools((prev) =>
       prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
@@ -76,7 +83,7 @@ export function CreateMemberForm() {
         />
         <select
           value={role}
-          onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
+          onChange={(e) => handleRoleChange(e.target.value as 'admin' | 'member')}
           className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-[#1A1A2E] dark:text-white"
           aria-label="Role"
         >
