@@ -243,11 +243,12 @@ Recent decisions affecting current work:
 |---|-------------|------|--------|-----------|
 | 260324-ijt | Tela de gerenciamento de relatórios do Pesquisador (lista, delete individual e bulk com limpeza Supabase Storage) | 2026-03-24 | 56d643a | [260324-ijt-quando-acesso-o-pesquisador-no-front-end](.planning/quick/260324-ijt-quando-acesso-o-pesquisador-no-front-end/) |
 | 260325-qwr | Botões de download .md e PDF no Pesquisador: links diretos às rotas backend em ReportView e ReportsManager | 2026-03-25 | 9d33d85 | [260325-qwr-adicionar-bot-es-de-download-md-e-pdf-no](.planning/quick/260325-qwr-adicionar-bot-es-de-download-md-e-pdf-no/) |
+| 260401-f32 | Fix JWT caching bug in requireAdmin() — reads role from Supabase auth DB via getUserById(), closes 1-hour bypass window after admin downgrade | 2026-04-01 | a5b2591 | [260401-f32-investigar-bug-de-remocao-de-admin-no-pa](.planning/quick/260401-f32-investigar-bug-de-remocao-de-admin-no-pa/) |
 
 ## Session Continuity
 
-Last activity: 2026-03-31 — Phase 8 Area Segmentation fully complete (08-03 visual checkpoint approved)
-Last session: 2026-04-01T00:10:37.751Z
-Stopped at: Completed 10-03-PLAN.md — Wave 2 admin mutations: Server Actions, CreateMemberForm, EditPermissionsForm, MemberRow action buttons, 36 tests passing
+Last activity: 2026-04-01 — Quick task 260401-f32: requireAdmin() JWT caching bug fixed
+Last session: 2026-04-01T13:57:27Z
+Stopped at: Completed quick task 260401-f32 — requireAdmin() now reads role from DB, not JWT
 Resume file: None
 Next step: `/gsd:plan-phase 9` (Phase 9 — Auth Infrastructure)
