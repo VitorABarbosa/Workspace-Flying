@@ -5,10 +5,15 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { revalidatePath } from 'next/cache'
 
 // Internal guard — must be first call in every exported action
+// Reads role from the Supabase auth DB (not the JWT) to catch downgrades immediately.
 async function requireAdmin() {
   const supabase = createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (user?.app_metadata?.role !== 'admin') {
+  if (!user) throw new Error('Unauthorized')
+
+  const admin = createSupabaseAdminClient()
+  const { data: { user: freshUser } } = await admin.auth.admin.getUserById(user.id)
+  if (freshUser?.app_metadata?.role !== 'admin') {
     throw new Error('Unauthorized')
   }
 }
