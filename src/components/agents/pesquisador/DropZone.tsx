@@ -24,8 +24,8 @@ export function DropZone({ onFileAccepted, onSubmit, isUploading = false }: Drop
       setValidationError('Apenas arquivos PDF são aceitos.')
       return
     }
-    if (candidate.size > 20 * 1024 * 1024) {
-      setValidationError('O arquivo deve ter no máximo 20 MB.')
+    if (candidate.size > 35 * 1024 * 1024) {
+      setValidationError('O arquivo deve ter no máximo 35 MB.')
       return
     }
     setValidationError(null)
@@ -96,7 +96,7 @@ export function DropZone({ onFileAccepted, onSubmit, isUploading = false }: Drop
             <Upload size={40} className="text-brand-purple" />
             <p className="text-base">Arraste o PDF aqui</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">ou clique para selecionar</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">PDF · máximo 20 MB</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">PDF · máximo 35 MB</p>
           </>
         )}
       </label>

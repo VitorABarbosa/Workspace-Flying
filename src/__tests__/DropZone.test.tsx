@@ -24,13 +24,13 @@ describe('DropZone', () => {
     expect(screen.getByText('Apenas arquivos PDF são aceitos.')).toBeInTheDocument()
   })
 
-  it('rejeita arquivo PDF acima de 20MB e exibe mensagem de erro', () => {
+  it('rejeita arquivo PDF acima de 35MB e exibe mensagem de erro', () => {
     render(<DropZone onFileAccepted={jest.fn()} onSubmit={jest.fn()} />)
     const input = document.querySelector('input[type="file"]') as HTMLInputElement
     const bigFile = new File(['x'], 'big.pdf', { type: 'application/pdf' })
-    Object.defineProperty(bigFile, 'size', { value: 21 * 1024 * 1024 })
+    Object.defineProperty(bigFile, 'size', { value: 36 * 1024 * 1024 })
     fireEvent.change(input, { target: { files: [bigFile] } })
-    expect(screen.getByText('O arquivo deve ter no máximo 20 MB.')).toBeInTheDocument()
+    expect(screen.getByText('O arquivo deve ter no máximo 35 MB.')).toBeInTheDocument()
   })
 
   it('exibe FilePreview com nome do arquivo após seleção válida', () => {
