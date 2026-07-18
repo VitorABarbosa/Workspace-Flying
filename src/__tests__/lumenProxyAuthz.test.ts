@@ -9,12 +9,12 @@ import { hasToolPermission } from '@/lib/permissions'
 const mockGetSession = (auth as unknown as { api: { getSession: jest.Mock } }).api.getSession
 const mockHasPerm = hasToolPermission as jest.Mock
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let GET: (req: any, ctx: any) => Promise<Response>
 
-beforeAll(() => {
-  // require após setar env e mocks (LUMEN_URL é lido no load do módulo)
-  GET = require('@/app/api/tools/lumen/[...route]/route').GET
+beforeAll(async () => {
+  // import dinâmico após setar env e mocks (LUMEN_URL é lido no load do módulo)
+  ;({ GET } = await import('@/app/api/tools/lumen/[...route]/route'))
 })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
