@@ -37,6 +37,21 @@ const ESM_PACKAGES = [
   'character-entities',
   'devlop',
   'nuqs',
+  // better-auth e sua árvore de dependências publicam apenas ESM (.mjs) —
+  // precisam ser transformados pelo Jest em vez de ignorados.
+  'better-auth',
+  '@better-auth',
+  'better-call',
+  '@better-fetch',
+  '@noble',
+  'jose',
+  'defu',
+  'nanostores',
+  'uncrypto',
+  'rou3',
+  'unstorage',
+  'std-env',
+  'kysely',
 ].join('|')
 
 const customConfig: Config = {

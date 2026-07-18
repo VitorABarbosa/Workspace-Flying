@@ -71,8 +71,11 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/',
 }))
 
-// Mock window.scrollTo
-Object.defineProperty(window, 'scrollTo', {
-  value: jest.fn(),
-  writable: true,
-})
+// Mock window.scrollTo (guarded: alguns testes de integração usam @jest-environment node,
+// onde window não existe)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'scrollTo', {
+    value: jest.fn(),
+    writable: true,
+  })
+}
