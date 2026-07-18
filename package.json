@@ -10,7 +10,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.2",
     "better-auth": "^1.6.23",
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
