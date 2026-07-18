@@ -111,18 +111,53 @@ describe('useJobPolling', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
 
-  it('para o polling em erro de rede e define error="Falha ao verificar status"', async () => {
+  it('tolera falha transitória e só encerra após MAX_CONSECUTIVE_FAILURES falhas seguidas', async () => {
     mockFetch.mockRejectedValue(new TypeError('Network error'))
     const { result } = renderHook(() => useJobPolling('job-6', '/api/jobs', 1000))
+    // 1ª falha (poll imediato): NÃO encerra, ainda sem erro
     await act(async () => {
       await Promise.resolve()
     })
+    expect(result.current.error).toBeNull()
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    // polls 2, 3, 4 — na 4ª falha consecutiva declara erro e encerra
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        jest.advanceTimersByTime(1000)
+        await Promise.resolve()
+      })
+    }
+    expect(mockFetch).toHaveBeenCalledTimes(4)
     expect(result.current.error).toBe('Falha ao verificar status')
+    // já terminal: não faz mais fetch
     await act(async () => {
       jest.advanceTimersByTime(3000)
       await Promise.resolve()
     })
-    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockFetch).toHaveBeenCalledTimes(4)
+  })
+
+  it('recupera de falha transitória: um sucesso zera o contador e limpa o erro', async () => {
+    mockFetch
+      .mockRejectedValueOnce(new TypeError('blip'))
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ id: 'job-r', state: 'processing' }),
+      })
+    const { result } = renderHook(() => useJobPolling('job-r', '/api/jobs', 1000))
+    // 1ª falha transitória: sem erro, segue tentando
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(result.current.error).toBeNull()
+    // próximo poll tem sucesso → atualiza status e mantém erro limpo
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+      await Promise.resolve()
+    })
+    expect(result.current.jobStatus?.state).toBe('processing')
+    expect(result.current.error).toBeNull()
   })
 
   it('limpa o setInterval no cleanup do useEffect (sem memory leak)', async () => {
