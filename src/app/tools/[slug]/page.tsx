@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { getToolBySlug, getAreaBySlug, getToolsByArea } from '@/config/tools'
 import type { Tool, Area } from '@/config/tools'
@@ -8,7 +9,8 @@ import { PesquisadorAgent } from '@/components/agents/pesquisador/PesquisadorAge
 import { LumenAgent } from '@/components/agents/lumen/LumenAgent'
 import FadeIn from '@/components/ui/FadeIn'
 import { cn } from '@/lib/cn'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { auth } from '@/lib/auth'
+import { hasToolPermission } from '@/lib/permissions'
 import { LockedToolShell } from '@/components/tools/LockedToolShell'
 
 // Mapa de componentes de agente.
@@ -93,21 +95,9 @@ export default async function ToolPage({ params }: { params: { slug: string } })
   if (tool) {
     // Permission check runs FIRST — before any dispatch (avoids Pitfall 5)
     if (tool.requiresAuth) {
-      const supabase = createSupabaseServerClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      // user is non-null here — middleware already validated session
-
-      // PERM-05: role available in app_metadata for current and future use
-      // const role = user?.app_metadata?.role as 'admin' | 'member' | undefined
-
-      const { data: permission } = await supabase
-        .from('tool_permissions')
-        .select('tool_slug')
-        .eq('user_id', user!.id)
-        .eq('tool_slug', tool.id)
-        .maybeSingle()
-
-      if (!permission) {
+      const session = await auth.api.getSession({ headers: await headers() })
+      const allowed = session ? await hasToolPermission(session.user.id, tool.id) : false
+      if (!allowed) {
         return <LockedToolShell toolName={tool.name} />
       }
     }
