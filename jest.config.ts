@@ -56,7 +56,9 @@ const ESM_PACKAGES = [
 
 const customConfig: Config = {
   coverageProvider: 'v8',
-  testEnvironment: 'jsdom',
+  // jest-fixed-jsdom = jsdom + globais do Node (Request/Response/fetch/ReadableStream/
+  // TextEncoder), exigidas pelo cliente do Better Auth no import.
+  testEnvironment: 'jest-fixed-jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/src/__tests__/setup\\.ts$'],
   moduleNameMapper: {
