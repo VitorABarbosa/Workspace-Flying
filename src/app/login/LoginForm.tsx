@@ -1,17 +1,14 @@
 'use client'
 import { useState } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { authClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
-const TEAM_EMAIL = 'team@flyingstudio.com.br'
-
 export default function LoginForm() {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showIndividualLogin, setShowIndividualLogin] = useState(false)
-  const [email, setEmail] = useState('')
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -19,30 +16,18 @@ export default function LoginForm() {
     setLoading(true)
     setError('')
 
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-
-    const loginEmail = showIndividualLogin ? email : TEAM_EMAIL
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: loginEmail,
+    const { error: authError } = await authClient.signIn.email({
+      email,
       password,
     })
 
     if (authError) {
-      if (authError.message?.toLowerCase().includes('network') || authError.status === 0) {
-        setError('Erro ao conectar. Verifique sua conexão e tente novamente.')
-      } else if (showIndividualLogin) {
-        setError('E-mail ou senha incorretos. Tente novamente.')
-      } else {
-        setError('Senha incorreta. Tente novamente.')
-      }
+      setError('Email ou senha inválidos')
       setLoading(false)
       return
     }
 
-    router.push('/tools')
+    router.push('/')
     router.refresh()
   }
 
@@ -64,33 +49,31 @@ export default function LoginForm() {
 
         {/* Subheading */}
         <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
-          {showIndividualLogin
-            ? 'Digite seu e-mail e senha para continuar'
-            : 'Digite a senha da equipe para continuar'}
+          Digite seu e-mail e senha para continuar
         </p>
 
         {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
-          {showIndividualLogin && (
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="E-mail"
-              aria-label="E-mail"
-              autoComplete="email"
-              required
-              className={`
-                w-full h-12 px-4 mb-4 rounded-lg text-base
-                bg-white dark:bg-[#0A0A0A]
-                text-[#0A0A0A] dark:text-white
-                border focus:outline-none focus:ring-2 focus:ring-brand-purple
-                transition-colors
-                border-gray-300 dark:border-gray-600
-              `}
-            />
-          )}
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="E-mail"
+            aria-label="E-mail"
+            autoComplete="email"
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
+            required
+            className={`
+              w-full h-12 px-4 mb-4 rounded-lg text-base
+              bg-white dark:bg-[#0A0A0A]
+              text-[#0A0A0A] dark:text-white
+              border focus:outline-none focus:ring-2 focus:ring-brand-purple
+              transition-colors
+              border-gray-300 dark:border-gray-600
+            `}
+          />
 
           <input
             id="password"
@@ -100,8 +83,6 @@ export default function LoginForm() {
             placeholder="Senha"
             aria-label="Senha de acesso"
             autoComplete="current-password"
-            // eslint-disable-next-line jsx-a11y/no-autofocus
-            autoFocus
             required
             className={`
               w-full h-12 px-4 mb-4 rounded-lg text-base
@@ -139,26 +120,6 @@ export default function LoginForm() {
             </p>
           )}
         </form>
-
-        <div className="mt-4 text-center">
-          {showIndividualLogin ? (
-            <button
-              type="button"
-              onClick={() => { setShowIndividualLogin(false); setEmail(''); setError('') }}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-purple focus-visible:outline-none py-3"
-            >
-              Usar senha da equipe
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => { setShowIndividualLogin(true); setError('') }}
-              className="text-sm text-brand-purple hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-brand-purple focus-visible:outline-none py-3"
-            >
-              Entrar com conta individual
-            </button>
-          )}
-        </div>
       </div>
     </div>
   )

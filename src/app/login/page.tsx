@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
 import LoginForm from './LoginForm'
 
 export default async function LoginPage() {
-  const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const session = await auth.api.getSession({ headers: await headers() })
 
-  if (user) {
+  if (session) {
     redirect('/')
   }
 
