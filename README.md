@@ -34,3 +34,17 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Auth (Better Auth + Neon)
+
+O Workspace usa Better Auth com um banco Neon dedicado (`DATABASE_URL`). Só admins criam usuários (cadastro público desabilitado).
+
+Para criar o primeiro admin (uma vez):
+
+```bash
+DATABASE_URL=... BETTER_AUTH_SECRET=... BETTER_AUTH_URL=http://localhost:3000 \
+ADMIN_EMAIL=voce@flyingstudio.com.br ADMIN_PASSWORD='<senha forte>' ADMIN_NAME='Seu Nome' \
+npx tsx scripts/bootstrap-admin.ts
+```
+
+Depois, entre em `/login` e cadastre os demais membros pelo painel `/admin`.

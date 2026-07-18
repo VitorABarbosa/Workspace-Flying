@@ -5,13 +5,11 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }),
 }))
 
-jest.mock('@supabase/ssr', () => ({
-  createBrowserClient: () => ({
-    auth: {
-      getUser: () => Promise.resolve({ data: { user: null } }),
-      signOut: () => Promise.resolve({}),
-    },
-  }),
+jest.mock('@/lib/auth-client', () => ({
+  authClient: {
+    useSession: () => ({ data: null }),
+    signOut: () => Promise.resolve({}),
+  },
 }))
 
 const mockOnClose = jest.fn()

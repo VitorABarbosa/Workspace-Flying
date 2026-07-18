@@ -1,13 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
 import { LogOut } from 'lucide-react'
 import { cn } from '@/lib/cn'
-import type { User } from '@supabase/supabase-js'
+import { authClient } from '@/lib/auth-client'
 
 interface SidebarProps {
   isOpen: boolean
@@ -19,16 +18,9 @@ const navLinks = [
 ]
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const [user, setUser] = useState<User | null>(null)
+  const { data: session } = authClient.useSession()
+  const user = session?.user ?? null
   const router = useRouter()
-
-  useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
-  }, [isOpen])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,17 +37,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   }, [isOpen, onClose])
 
   async function handleLogout() {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    await supabase.auth.signOut()
+    await authClient.signOut()
     onClose()
     router.push('/login')
     router.refresh()
   }
 
-  const isAdmin = user?.app_metadata?.role === 'admin'
+  const isAdmin = (user as { role?: string } | null)?.role === 'admin'
 
   return (
     <AnimatePresence>
