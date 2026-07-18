@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { hasToolPermission } from '@/lib/permissions'
 
 const LUMEN_URL = process.env.NEXT_PUBLIC_LUMEN_URL ?? ''
 
@@ -14,6 +16,16 @@ const LUMEN_URL = process.env.NEXT_PUBLIC_LUMEN_URL ?? ''
 async function handler(req: NextRequest, { params }: { params: { route: string[] } }) {
   if (!LUMEN_URL) {
     return NextResponse.json({ error: 'NEXT_PUBLIC_LUMEN_URL not configured' }, { status: 503 })
+  }
+
+  // Autorização por-ferramenta: o gate de UI em tools/[slug]/page.tsx NÃO protege
+  // esta superfície de dados. Exige sessão + permissão da ferramenta 'lumen'.
+  const session = await auth.api.getSession({ headers: req.headers })
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  if (!(await hasToolPermission(session.user.id, 'lumen'))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   let path = params.route.join('/')
