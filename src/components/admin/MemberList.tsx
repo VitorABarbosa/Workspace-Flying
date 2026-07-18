@@ -7,7 +7,7 @@ export interface Member {
   name: string
   role: 'admin' | 'member'
   tools: string[]
-  bannedUntil?: string
+  bannedUntil?: string | null
 }
 
 interface MemberListProps {

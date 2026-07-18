@@ -27,9 +27,7 @@ export function EditPermissionsForm({ member, onClose }: EditPermissionsFormProp
     e.preventDefault()
     setLoading(true)
     setError(null)
-    // Pass existing app_metadata as empty object — server will spread it
-    // (member object does not carry full app_metadata; server reads fresh from getUser)
-    const result = await updatePermissions(member.id, selectedTools, role, {})
+    const result = await updatePermissions(member.id, selectedTools, role)
     setLoading(false)
     if (result.error) {
       setError(result.error)

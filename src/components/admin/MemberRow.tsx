@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { disableMember, reactivateMember, deleteMember } from '@/app/admin/actions'
+import { disableMember, reactivateMember, deleteMember, resetPassword } from '@/app/admin/actions'
 import { EditPermissionsForm } from './EditPermissionsForm'
 import type { Member } from './MemberList'
 
@@ -13,6 +13,8 @@ export function MemberRow({ member }: MemberRowProps) {
   const [showEdit, setShowEdit] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
 
   async function handleDisable() {
     setLoading(true)
@@ -30,6 +32,15 @@ export function MemberRow({ member }: MemberRowProps) {
     setLoading(true)
     await deleteMember(member.id)
     setLoading(false)
+  }
+
+  async function handleResetPassword() {
+    if (!newPassword) return
+    setLoading(true)
+    await resetPassword(member.id, newPassword)
+    setLoading(false)
+    setNewPassword('')
+    setShowReset(false)
   }
 
   return (
@@ -61,6 +72,13 @@ export function MemberRow({ member }: MemberRowProps) {
               className="text-xs text-brand-purple hover:opacity-80 transition-opacity"
             >
               Editar
+            </button>
+
+            <button
+              onClick={() => setShowReset((v) => !v)}
+              className="text-xs text-brand-purple hover:opacity-80 transition-opacity"
+            >
+              Redefinir senha
             </button>
 
             {isDisabled ? (
@@ -106,6 +124,31 @@ export function MemberRow({ member }: MemberRowProps) {
               </span>
             )}
           </div>
+          {showReset && (
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Nova senha"
+                aria-label="Nova senha"
+                className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-[#1A1A2E] dark:text-white"
+              />
+              <button
+                onClick={handleResetPassword}
+                disabled={loading || !newPassword}
+                className="text-xs font-semibold text-brand-purple hover:opacity-80 transition-opacity disabled:opacity-50"
+              >
+                Salvar senha
+              </button>
+              <button
+                onClick={() => { setShowReset(false); setNewPassword('') }}
+                className="text-xs text-gray-500 hover:opacity-80 transition-opacity"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
         </td>
       </tr>
       {showEdit && (

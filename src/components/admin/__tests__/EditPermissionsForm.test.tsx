@@ -45,7 +45,7 @@ describe('EditPermissionsForm — edição de permissões (PERM-09)', () => {
     render(<EditPermissionsForm member={baseMember} onClose={jest.fn()} />)
     fireEvent.submit(screen.getByRole('button', { name: /salvar/i }).closest('form')!)
     await waitFor(() => {
-      expect(mockUpdatePermissions).toHaveBeenCalledWith('user-1', ['lumen'], 'member', {})
+      expect(mockUpdatePermissions).toHaveBeenCalledWith('user-1', ['lumen'], 'member')
     })
   })
 
@@ -53,7 +53,7 @@ describe('EditPermissionsForm — edição de permissões (PERM-09)', () => {
     render(<EditPermissionsForm member={{ ...baseMember, tools: [] }} onClose={jest.fn()} />)
     fireEvent.submit(screen.getByRole('button', { name: /salvar/i }).closest('form')!)
     await waitFor(() => {
-      expect(mockUpdatePermissions).toHaveBeenCalledWith('user-1', [], 'member', {})
+      expect(mockUpdatePermissions).toHaveBeenCalledWith('user-1', [], 'member')
     })
   })
 
@@ -67,7 +67,7 @@ describe('EditPermissionsForm — edição de permissões (PERM-09)', () => {
     fireEvent.change(screen.getByLabelText(/role/i), { target: { value: 'admin' } })
     fireEvent.submit(screen.getByRole('button', { name: /salvar/i }).closest('form')!)
     await waitFor(() => {
-      expect(mockUpdatePermissions).toHaveBeenCalledWith('user-1', ['lumen'], 'admin', {})
+      expect(mockUpdatePermissions).toHaveBeenCalledWith('user-1', ['lumen'], 'admin')
     })
   })
 })

@@ -1,39 +1,33 @@
 export const dynamic = 'force-dynamic'
 
-import { createSupabaseAdminClient } from '@/lib/supabase-admin'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+import { getAllToolPermissions } from '@/lib/permissions'
 import { MemberList } from '@/components/admin/MemberList'
 import type { Member } from '@/components/admin/MemberList'
 import { CreateMemberForm } from '@/components/admin/CreateMemberForm'
 
 export default async function AdminPage() {
-  const admin = createSupabaseAdminClient()
-
-  // Fetch all auth users (team < 50 — no pagination needed per RESEARCH.md)
-  const { data: { users }, error: usersError } = await admin.auth.admin.listUsers({
-    page: 1,
-    perPage: 50,
+  // Fetch all users via Better Auth admin plugin (team < 50 — single page)
+  const { users } = await auth.api.listUsers({
+    query: { limit: 100 },
+    headers: await headers(),
   })
-  if (usersError) throw usersError
 
-  // Fetch all tool_permissions rows (admin client bypasses RLS)
-  const { data: allPermissions } = await admin
-    .from('tool_permissions')
-    .select('user_id, tool_slug')
-
-  // Join in JavaScript: user_id → tool_slug[]
-  const permissionsMap = new Map<string, string[]>()
-  for (const row of (allPermissions ?? [])) {
-    const existing = permissionsMap.get(row.user_id) ?? []
-    permissionsMap.set(row.user_id, [...existing, row.tool_slug])
+  // Fetch all tool_permissions rows (bypasses RLS via direct pg pool)
+  const perms = await getAllToolPermissions()
+  const permsByUser = new Map<string, string[]>()
+  for (const p of perms) {
+    permsByUser.set(p.userId, [...(permsByUser.get(p.userId) ?? []), p.toolSlug])
   }
 
   const members: Member[] = users.map((u) => ({
     id: u.id,
-    email: u.email ?? '',
-    name: (u.user_metadata?.full_name as string | undefined) ?? '',
-    role: (u.app_metadata?.role as 'admin' | 'member' | undefined) ?? 'member',
-    tools: permissionsMap.get(u.id) ?? [],
-    bannedUntil: u.banned_until,
+    email: u.email,
+    name: u.name ?? '',
+    role: (u.role as 'admin' | 'member' | undefined) ?? 'member',
+    tools: permsByUser.get(u.id) ?? [],
+    bannedUntil: u.banned ? (u.banExpires ? String(u.banExpires) : 'banned') : null,
   }))
 
   return (

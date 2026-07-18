@@ -4,11 +4,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 const mockDisableMember = jest.fn()
 const mockReactivateMember = jest.fn()
 const mockDeleteMember = jest.fn()
+const mockResetPassword = jest.fn()
 
 jest.mock('@/app/admin/actions', () => ({
   disableMember: (id: string) => mockDisableMember(id),
   reactivateMember: (id: string) => mockReactivateMember(id),
   deleteMember: (id: string) => mockDeleteMember(id),
+  resetPassword: (id: string, pw: string) => mockResetPassword(id, pw),
 }))
 jest.mock('../EditPermissionsForm', () => ({
   EditPermissionsForm: () => <tr><td>edit form</td></tr>,
@@ -33,6 +35,7 @@ describe('MemberRow — ações de membro (PERM-10)', () => {
     mockDisableMember.mockResolvedValue({})
     mockReactivateMember.mockResolvedValue({})
     mockDeleteMember.mockResolvedValue({})
+    mockResetPassword.mockResolvedValue({})
   })
 
   it('renderiza botão "Desativar" para membro ativo', () => {
@@ -73,5 +76,20 @@ describe('MemberRow — ações de membro (PERM-10)', () => {
     fireEvent.click(screen.getByRole('button', { name: /remover/i }))
     fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
     expect(mockDeleteMember).not.toHaveBeenCalled()
+  })
+
+  it('renderiza botão "Redefinir senha"', () => {
+    render(<table><tbody><MemberRow member={activeMember} /></tbody></table>)
+    expect(screen.getByRole('button', { name: /redefinir senha/i })).toBeInTheDocument()
+  })
+
+  it('redefinir senha chama resetPassword com userId e a nova senha', async () => {
+    render(<table><tbody><MemberRow member={activeMember} /></tbody></table>)
+    fireEvent.click(screen.getByRole('button', { name: /redefinir senha/i }))
+    fireEvent.change(screen.getByLabelText(/nova senha/i), { target: { value: 'nova-senha-123' } })
+    fireEvent.click(screen.getByRole('button', { name: /salvar senha/i }))
+    await waitFor(() => {
+      expect(mockResetPassword).toHaveBeenCalledWith('user-1', 'nova-senha-123')
+    })
   })
 })
