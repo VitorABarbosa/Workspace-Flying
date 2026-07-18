@@ -1,47 +1,17 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getSessionCookie } from 'better-auth/cookies'
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: { headers: request.headers },
-  })
+// AUTH-02: proteção de rotas por checagem OTIMISTA de cookie de sessão.
+// Sem hit no banco — compatível com edge runtime. O guard de ROLE de admin
+// não vive mais aqui: ver src/app/admin/layout.tsx.
+export function middleware(request: NextRequest) {
+  const sessionCookie = getSessionCookie(request)
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
+  if (!sessionCookie) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // PERM-06: admin route guard — checks app_metadata.role (no extra DB query)
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    const role = user.app_metadata?.role
-    if (role !== 'admin') {
-      return NextResponse.redirect(new URL('/tools', request.url))
-    }
-  }
-
-  return response
+  return NextResponse.next()
 }
 
 export const config = {

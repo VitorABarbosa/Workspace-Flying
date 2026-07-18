@@ -1,9 +1,9 @@
 'use server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export async function logout() {
-  const supabase = createSupabaseServerClient()
-  await supabase.auth.signOut()
+  await auth.api.signOut({ headers: await headers() })
   redirect('/login')
 }

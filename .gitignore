@@ -42,3 +42,4 @@ next-env.d.ts
 # GSD planning docs (local only)
 .planning/
 !.planning/codebase/
+.superpowers/

@@ -1,5 +1,8 @@
 import '@testing-library/jest-dom'
 import React from 'react'
+// As globais de fetch (Request/Response/Headers/fetch/ReadableStream), exigidas
+// pelo cliente do Better Auth (auth-client.ts) no import, são providas pelo
+// testEnvironment `jest-fixed-jsdom` (ver jest.config.ts).
 
 interface MotionDivProps {
   children?: React.ReactNode
@@ -71,8 +74,11 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/',
 }))
 
-// Mock window.scrollTo
-Object.defineProperty(window, 'scrollTo', {
-  value: jest.fn(),
-  writable: true,
-})
+// Mock window.scrollTo (guarded: alguns testes de integração usam @jest-environment node,
+// onde window não existe)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'scrollTo', {
+    value: jest.fn(),
+    writable: true,
+  })
+}

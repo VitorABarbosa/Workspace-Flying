@@ -1,11 +1,16 @@
 // LogoutAction.test.ts — testa server action de logout (AUTH-03)
 
-// Mock supabase-server antes de importar o módulo alvo
+// Mock @/lib/auth antes de importar o módulo alvo
 const mockSignOut = jest.fn().mockResolvedValue({})
-jest.mock('@/lib/supabase-server', () => ({
-  createSupabaseServerClient: () => ({
-    auth: { signOut: mockSignOut },
-  }),
+jest.mock('@/lib/auth', () => ({
+  auth: {
+    api: { signOut: mockSignOut },
+  },
+}))
+
+// Mock next/headers
+jest.mock('next/headers', () => ({
+  headers: jest.fn().mockResolvedValue(new Map()),
 }))
 
 // Mock next/navigation redirect
@@ -25,7 +30,7 @@ describe('logout action (AUTH-03)', () => {
     mockSignOut.mockResolvedValue({})
   })
 
-  it('chama supabase.auth.signOut()', async () => {
+  it('chama auth.api.signOut()', async () => {
     try {
       await logout()
     } catch {

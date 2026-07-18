@@ -1,21 +1,20 @@
 'use server'
 
-import { createSupabaseAdminClient } from '@/lib/supabase-admin'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { auth } from '@/lib/auth'
+import { setUserTools } from '@/lib/permissions'
+import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
-// Internal guard — must be first call in every exported action
-// Reads role from the Supabase auth DB (not the JWT) to catch downgrades immediately.
+// Internal guard — must be first call in every exported action.
+// Reads role from the Better Auth session; throws so callers reject on non-admin.
 async function requireAdmin() {
-  const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session || session.user.role !== 'admin') throw new Error('Unauthorized')
+  return session
+}
 
-  const admin = createSupabaseAdminClient()
-  const { data: { user: freshUser } } = await admin.auth.admin.getUserById(user.id)
-  if (freshUser?.app_metadata?.role !== 'admin') {
-    throw new Error('Unauthorized')
-  }
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : 'Erro inesperado'
 }
 
 export async function createMember(
@@ -23,96 +22,84 @@ export async function createMember(
   email: string,
   password: string,
   role: 'admin' | 'member',
-  authorizedTools: string[]
+  tools: string[]
 ): Promise<{ error?: string }> {
   await requireAdmin()
-  const admin = createSupabaseAdminClient()
-
-  const { data: { user }, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { full_name: name },
-    app_metadata: { role },
-  })
-
-  if (error) return { error: error.message }
-
-  if (user && authorizedTools.length > 0) {
-    await admin
-      .from('tool_permissions')
-      .insert(authorizedTools.map((slug) => ({ user_id: user.id, tool_slug: slug })))
+  try {
+    const res = await auth.api.createUser({
+      // role cast: app uses 'member' (configured defaultRole) which the schema
+      // accepts at runtime; the plugin's inferred type only narrows to 'admin' | 'user'.
+      body: { name, email, password, role: role as 'admin' | 'user' },
+    })
+    await setUserTools(res.user.id, tools)
+    revalidatePath('/admin')
+    return {}
+  } catch (e) {
+    return { error: errorMessage(e) }
   }
-
-  revalidatePath('/admin')
-  return {}
 }
 
 export async function updatePermissions(
   userId: string,
   tools: string[],
-  role: 'admin' | 'member',
-  currentAppMetadata: Record<string, unknown>
+  role: 'admin' | 'member'
 ): Promise<{ error?: string }> {
   await requireAdmin()
-  const admin = createSupabaseAdminClient()
-
-  // Delete all existing permissions for this user, then insert the new set
-  await admin.from('tool_permissions').delete().eq('user_id', userId)
-
-  if (tools.length > 0) {
-    await admin
-      .from('tool_permissions')
-      .insert(tools.map((slug) => ({ user_id: userId, tool_slug: slug })))
+  try {
+    await auth.api.setRole({
+      body: { userId, role: role as 'admin' | 'user' },
+      headers: await headers(),
+    })
+    await setUserTools(userId, tools)
+    revalidatePath('/admin')
+    return {}
+  } catch (e) {
+    return { error: errorMessage(e) }
   }
-
-  // Update role — spread existing app_metadata to avoid overwriting other fields (Pitfall 6)
-  const { error } = await admin.auth.admin.updateUserById(userId, {
-    app_metadata: { ...currentAppMetadata, role },
-  })
-
-  if (error) return { error: error.message }
-
-  revalidatePath('/admin')
-  return {}
 }
 
 export async function disableMember(userId: string): Promise<{ error?: string }> {
   await requireAdmin()
-  const admin = createSupabaseAdminClient()
-
-  const { error } = await admin.auth.admin.updateUserById(userId, {
-    ban_duration: '876600h',
-  })
-
-  if (error) return { error: error.message }
-
-  revalidatePath('/admin')
-  return {}
+  try {
+    await auth.api.banUser({ body: { userId }, headers: await headers() })
+    revalidatePath('/admin')
+    return {}
+  } catch (e) {
+    return { error: errorMessage(e) }
+  }
 }
 
 export async function reactivateMember(userId: string): Promise<{ error?: string }> {
   await requireAdmin()
-  const admin = createSupabaseAdminClient()
-
-  const { error } = await admin.auth.admin.updateUserById(userId, {
-    ban_duration: 'none',
-  })
-
-  if (error) return { error: error.message }
-
-  revalidatePath('/admin')
-  return {}
+  try {
+    await auth.api.unbanUser({ body: { userId }, headers: await headers() })
+    revalidatePath('/admin')
+    return {}
+  } catch (e) {
+    return { error: errorMessage(e) }
+  }
 }
 
 export async function deleteMember(userId: string): Promise<{ error?: string }> {
   await requireAdmin()
-  const admin = createSupabaseAdminClient()
+  try {
+    await auth.api.removeUser({ body: { userId }, headers: await headers() })
+    revalidatePath('/admin')
+    return {}
+  } catch (e) {
+    return { error: errorMessage(e) }
+  }
+}
 
-  const { error } = await admin.auth.admin.deleteUser(userId)
-
-  if (error) return { error: error.message }
-
-  revalidatePath('/admin')
-  return {}
+export async function resetPassword(
+  userId: string,
+  newPassword: string
+): Promise<{ error?: string }> {
+  await requireAdmin()
+  try {
+    await auth.api.setUserPassword({ body: { userId, newPassword }, headers: await headers() })
+    return {}
+  } catch (e) {
+    return { error: errorMessage(e) }
+  }
 }

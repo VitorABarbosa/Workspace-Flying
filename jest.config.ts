@@ -37,11 +37,28 @@ const ESM_PACKAGES = [
   'character-entities',
   'devlop',
   'nuqs',
+  // better-auth e sua árvore de dependências publicam apenas ESM (.mjs) —
+  // precisam ser transformados pelo Jest em vez de ignorados.
+  'better-auth',
+  '@better-auth',
+  'better-call',
+  '@better-fetch',
+  '@noble',
+  'jose',
+  'defu',
+  'nanostores',
+  'uncrypto',
+  'rou3',
+  'unstorage',
+  'std-env',
+  'kysely',
 ].join('|')
 
 const customConfig: Config = {
   coverageProvider: 'v8',
-  testEnvironment: 'jsdom',
+  // jest-fixed-jsdom = jsdom + globais do Node (Request/Response/fetch/ReadableStream/
+  // TextEncoder), exigidas pelo cliente do Better Auth no import.
+  testEnvironment: 'jest-fixed-jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/src/__tests__/setup\\.ts$'],
   moduleNameMapper: {
