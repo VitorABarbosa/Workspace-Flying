@@ -75,3 +75,14 @@ export interface PropostaListada {
   download: string
   pdf: string
 }
+
+export interface MensagemChat {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface RespostaChat {
+  mensagem: string
+  quick_replies: string[]
+  levantamento: Levantamento | null
+}

@@ -1,7 +1,14 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import type { Estrutura, Levantamento, PropostaGerada, PropostaListada } from './types'
+import type {
+  Estrutura,
+  Levantamento,
+  MensagemChat,
+  PropostaGerada,
+  PropostaListada,
+  RespostaChat,
+} from './types'
 
 const BASE = '/api/tools/proposta'
 
@@ -24,6 +31,7 @@ export function useProposta() {
   const [levantamento, setLevantamento] = useState<Levantamento | null>(null)
   const [gerada, setGerada] = useState<PropostaGerada | null>(null)
   const [historico, setHistorico] = useState<PropostaListada[] | null>(null)
+  const [chat, setChat] = useState<{ mensagens: MensagemChat[]; resposta: RespostaChat } | null>(null)
 
   const executar = useCallback(async (fn: () => Promise<void>) => {
     setCarregando(true)
@@ -82,6 +90,16 @@ export function useProposta() {
     [executar]
   )
 
+  const conversar = useCallback(
+    (mensagens: MensagemChat[]) =>
+      executar(async () => {
+        const resp = await postJson<RespostaChat>('/chat', { mensagens })
+        setChat({ mensagens, resposta: resp })
+        if (resp.levantamento) setLevantamento(resp.levantamento)
+      }),
+    [executar]
+  )
+
   const reiniciar = useCallback(() => {
     setLevantamento(null)
     setGerada(null)
@@ -94,11 +112,13 @@ export function useProposta() {
     levantamento,
     gerada,
     historico,
+    chat,
     levantarPorTexto,
     reprecificar,
     gerar,
     reiniciar,
     listarHistorico,
     excluirProposta,
+    conversar,
   }
 }
