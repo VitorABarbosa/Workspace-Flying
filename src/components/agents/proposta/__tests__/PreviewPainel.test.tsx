@@ -69,4 +69,25 @@ describe('PreviewPainel', () => {
       expect.objectContaining({ externas: [] })
     )
   })
+
+  it('mudar estratégia no select dispara onEditar imediatamente', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    fireEvent.change(screen.getByLabelText('Estratégia'), { target: { value: 'historico' } })
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ estrategia: 'historico' })
+    )
+  })
+
+  it('editar desconto (%) só dispara onEditar no blur, não a cada tecla', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Desconto (%)')
+    fireEvent.change(campo, { target: { value: '15' } })
+    expect(onEditar).not.toHaveBeenCalled()
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ desconto_pct: 15 })
+    )
+  })
 })

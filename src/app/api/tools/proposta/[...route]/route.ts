@@ -58,7 +58,8 @@ async function handler(req: NextRequest, { params }: { params: { route: string[]
   const isBinary = upstreamContentType.includes('spreadsheetml') ||
     upstreamContentType.includes('wordprocessingml') ||
     upstreamContentType.includes('octet-stream') ||
-    upstreamContentType.includes('zip')
+    upstreamContentType.includes('zip') ||
+    upstreamContentType.includes('application/pdf')
   const responseBody = isBinary
     ? await upstream.arrayBuffer()
     : await upstream.text()

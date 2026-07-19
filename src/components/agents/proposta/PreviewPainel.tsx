@@ -42,6 +42,39 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
     }
   }
 
+  // Mesmo padrão de rascunho para desconto (% e rótulo): commit no blur/Enter
+  // para evitar POSTs de reprecificação a cada tecla (podem resolver fora de ordem).
+  const [descontoPct, setDescontoPct] = useState(String(estrutura.desconto_pct))
+  useEffect(() => {
+    setDescontoPct(String(estrutura.desconto_pct))
+  }, [estrutura.desconto_pct])
+
+  const commitDesconto = () => {
+    const pct = parseFloat(descontoPct)
+    const valor = Number.isFinite(pct) ? pct : 0
+    if (valor !== estrutura.desconto_pct) {
+      onEditar({ ...estrutura, desconto_pct: valor })
+    }
+  }
+
+  const [descontoLabel, setDescontoLabel] = useState(estrutura.desconto_label ?? '')
+  useEffect(() => {
+    setDescontoLabel(estrutura.desconto_label ?? '')
+  }, [estrutura.desconto_label])
+
+  const commitDescontoLabel = () => {
+    const valor = descontoLabel.trim()
+    if (valor !== (estrutura.desconto_label ?? '')) {
+      onEditar({ ...estrutura, desconto_label: valor || null })
+    }
+  }
+
+  const ESTRATEGIAS = [
+    { valor: 'auto', rotulo: 'Automática' },
+    { valor: 'planilha', rotulo: 'Planilha' },
+    { valor: 'historico', rotulo: 'Histórico do cliente' },
+  ] as const
+
   const CAMPOS_CLIENTE = [
     { chave: 'empresa', rotulo: 'Cliente', placeholder: 'construtora/incorporadora' },
     { chave: 'ref', rotulo: 'Empreendimento', placeholder: 'nome do projeto' },
@@ -57,9 +90,6 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
     setNovoItem((s) => ({ ...s, [cat]: '' }))
     onEditar({ ...estrutura, [cat]: [...estrutura[cat], desc] })
   }
-
-  const mudarDesconto = (pct: number) =>
-    onEditar({ ...estrutura, desconto_pct: Number.isFinite(pct) ? pct : 0 })
 
   return (
     <div
@@ -84,7 +114,24 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
           </label>
         ))}
       </div>
-      <p className="mb-3 text-xs text-gray-400">estratégia: {estrategia_usada}</p>
+      <div className="mb-3 flex items-center gap-2 text-xs">
+        <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+          Estratégia
+          <select
+            aria-label="Estratégia"
+            value={estrutura.estrategia}
+            onChange={(e) =>
+              onEditar({ ...estrutura, estrategia: e.target.value as Estrutura['estrategia'] })
+            }
+            className="rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          >
+            {ESTRATEGIAS.map(({ valor, rotulo }) => (
+              <option key={valor} value={valor}>{rotulo}</option>
+            ))}
+          </select>
+        </label>
+        <span className="text-gray-400">(usada: {estrategia_usada})</span>
+      </div>
 
       {pendencias.length > 0 && (
         <ul className="mb-4 space-y-1 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
@@ -157,14 +204,26 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
           <span className="flex items-center gap-2">
             Desconto
             <input
+              aria-label="Desconto (%)"
               type="number"
               min={0}
               max={100}
-              value={estrutura.desconto_pct}
-              onChange={(e) => mudarDesconto(parseFloat(e.target.value))}
+              value={descontoPct}
+              onChange={(e) => setDescontoPct(e.target.value)}
+              onBlur={commitDesconto}
+              onKeyDown={(e) => e.key === 'Enter' && commitDesconto()}
               className="w-16 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
             />
             %
+            <input
+              aria-label="Rótulo do desconto"
+              value={descontoLabel}
+              placeholder="rótulo (ex: parceria)"
+              onChange={(e) => setDescontoLabel(e.target.value)}
+              onBlur={commitDescontoLabel}
+              onKeyDown={(e) => e.key === 'Enter' && commitDescontoLabel()}
+              className="w-32 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+            />
           </span>
           <span>-{brl(fechado.financeiro.desconto_valor)}</span>
         </div>
