@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FileText } from 'lucide-react'
 import { AgentShell } from '@/components/tools/AgentShell'
 import { cn } from '@/lib/cn'
@@ -9,7 +9,7 @@ import { EntradaPainel } from './EntradaPainel'
 import { HistoricoPainel } from './HistoricoPainel'
 import { PreviewPainel } from './PreviewPainel'
 import { ResultadoPainel } from './ResultadoPainel'
-import type { MensagemChat } from './types'
+import type { Estrutura, Levantamento, MensagemChat } from './types'
 import { useProposta } from './useProposta'
 
 type Aba = 'chat' | 'texto' | 'historico'
@@ -20,19 +20,56 @@ const ABAS: { key: Aba; label: string }[] = [
   { key: 'historico', label: 'Histórico' },
 ]
 
+function PreviewComGerar({
+  levantamento,
+  onEditar,
+  onGerar,
+  carregando,
+}: {
+  levantamento: Levantamento
+  onEditar: (estrutura: Estrutura) => void
+  onGerar: () => void
+  carregando: boolean
+}) {
+  return (
+    <div>
+      <PreviewPainel levantamento={levantamento} onEditar={onEditar} carregando={carregando} />
+      <button
+        onClick={onGerar}
+        disabled={carregando || levantamento.pendencias.length > 0}
+        className={cn(
+          'mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg',
+          'bg-brand-purple px-4 py-2.5 text-sm font-semibold text-white',
+          'hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50'
+        )}
+      >
+        <FileText className="h-4 w-4" />
+        {carregando ? 'Gerando…' : 'Gerar proposta'}
+      </button>
+      {levantamento.pendencias.length > 0 && (
+        <p className="mt-1 text-center text-xs text-amber-600 dark:text-amber-400">
+          Complete as pendências para gerar.
+        </p>
+      )}
+    </div>
+  )
+}
+
 export function PropostaAgent() {
   const {
     carregando, erro, levantamento, gerada, historico, chat,
     levantarPorTexto, reprecificar, gerar, reiniciar,
-    listarHistorico, excluirProposta, conversar,
+    listarHistorico, excluirProposta, conversar, limparErro,
   } = useProposta()
 
   const [aba, setAba] = useState<Aba>('chat')
   const [mensagens, setMensagens] = useState<MensagemChat[]>([])
   const [quickReplies, setQuickReplies] = useState<string[]>([])
+  const saudacaoPedida = useRef(false)
 
   useEffect(() => {
-    if (aba === 'chat' && mensagens.length === 0) {
+    if (aba === 'chat' && !saudacaoPedida.current) {
+      saudacaoPedida.current = true
       conversar([])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,6 +79,11 @@ export function PropostaAgent() {
     if (aba === 'historico') {
       listarHistorico()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aba])
+
+  useEffect(() => {
+    limparErro()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aba])
 
@@ -100,30 +142,12 @@ export function PropostaAgent() {
                 carregando={carregando}
               />
               {levantamento && (
-                <div>
-                  <PreviewPainel
-                    levantamento={levantamento}
-                    onEditar={reprecificar}
-                    carregando={carregando}
-                  />
-                  <button
-                    onClick={() => gerar(levantamento.estrutura)}
-                    disabled={carregando || levantamento.pendencias.length > 0}
-                    className={cn(
-                      'mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg',
-                      'bg-brand-purple px-4 py-2.5 text-sm font-semibold text-white',
-                      'hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50'
-                    )}
-                  >
-                    <FileText className="h-4 w-4" />
-                    {carregando ? 'Gerando…' : 'Gerar proposta'}
-                  </button>
-                  {levantamento.pendencias.length > 0 && (
-                    <p className="mt-1 text-center text-xs text-amber-600 dark:text-amber-400">
-                      Complete as pendências para gerar.
-                    </p>
-                  )}
-                </div>
+                <PreviewComGerar
+                  levantamento={levantamento}
+                  onEditar={reprecificar}
+                  onGerar={() => gerar(levantamento.estrutura)}
+                  carregando={carregando}
+                />
               )}
             </div>
           )}
@@ -132,30 +156,12 @@ export function PropostaAgent() {
             <div className={cn('grid gap-6', levantamento && 'lg:grid-cols-2')}>
               <EntradaPainel onPrecificar={levantarPorTexto} carregando={carregando} />
               {levantamento && (
-                <div>
-                  <PreviewPainel
-                    levantamento={levantamento}
-                    onEditar={reprecificar}
-                    carregando={carregando}
-                  />
-                  <button
-                    onClick={() => gerar(levantamento.estrutura)}
-                    disabled={carregando || levantamento.pendencias.length > 0}
-                    className={cn(
-                      'mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg',
-                      'bg-brand-purple px-4 py-2.5 text-sm font-semibold text-white',
-                      'hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50'
-                    )}
-                  >
-                    <FileText className="h-4 w-4" />
-                    {carregando ? 'Gerando…' : 'Gerar proposta'}
-                  </button>
-                  {levantamento.pendencias.length > 0 && (
-                    <p className="mt-1 text-center text-xs text-amber-600 dark:text-amber-400">
-                      Complete as pendências para gerar.
-                    </p>
-                  )}
-                </div>
+                <PreviewComGerar
+                  levantamento={levantamento}
+                  onEditar={reprecificar}
+                  onGerar={() => gerar(levantamento.estrutura)}
+                  carregando={carregando}
+                />
               )}
             </div>
           )}

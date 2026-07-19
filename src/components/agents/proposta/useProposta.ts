@@ -106,6 +106,10 @@ export function useProposta() {
     setErro(null)
   }, [])
 
+  const limparErro = useCallback(() => {
+    setErro(null)
+  }, [])
+
   return {
     carregando,
     erro,
@@ -120,5 +124,6 @@ export function useProposta() {
     listarHistorico,
     excluirProposta,
     conversar,
+    limparErro,
   }
 }
