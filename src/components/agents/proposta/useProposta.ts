@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import type { Estrutura, Levantamento, PropostaGerada } from './types'
+import type { Estrutura, Levantamento, PropostaGerada, PropostaListada } from './types'
 
 const BASE = '/api/tools/proposta'
 
@@ -23,6 +23,7 @@ export function useProposta() {
   const [erro, setErro] = useState<string | null>(null)
   const [levantamento, setLevantamento] = useState<Levantamento | null>(null)
   const [gerada, setGerada] = useState<PropostaGerada | null>(null)
+  const [historico, setHistorico] = useState<PropostaListada[] | null>(null)
 
   const executar = useCallback(async (fn: () => Promise<void>) => {
     setCarregando(true)
@@ -60,11 +61,44 @@ export function useProposta() {
     [executar]
   )
 
+  const listarHistorico = useCallback(
+    (cliente?: string) =>
+      executar(async () => {
+        const q = cliente ? `?cliente=${encodeURIComponent(cliente)}` : ''
+        const resp = await fetch(`${BASE}/propostas${q}`)
+        if (!resp.ok) throw new Error(`Erro ${resp.status}`)
+        setHistorico((await resp.json()).propostas)
+      }),
+    [executar]
+  )
+
+  const excluirProposta = useCallback(
+    (id: number) =>
+      executar(async () => {
+        const resp = await fetch(`${BASE}/propostas/${id}`, { method: 'DELETE' })
+        if (!resp.ok) throw new Error(`Erro ${resp.status}`)
+        setHistorico((h) => (h ?? []).filter((p) => p.id !== id))
+      }),
+    [executar]
+  )
+
   const reiniciar = useCallback(() => {
     setLevantamento(null)
     setGerada(null)
     setErro(null)
   }, [])
 
-  return { carregando, erro, levantamento, gerada, levantarPorTexto, reprecificar, gerar, reiniciar }
+  return {
+    carregando,
+    erro,
+    levantamento,
+    gerada,
+    historico,
+    levantarPorTexto,
+    reprecificar,
+    gerar,
+    reiniciar,
+    listarHistorico,
+    excluirProposta,
+  }
 }

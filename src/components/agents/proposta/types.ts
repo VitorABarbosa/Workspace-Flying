@@ -64,3 +64,14 @@ export interface PropostaGerada {
   fechado: Fechado
   avisos: string[]
 }
+
+export interface PropostaListada {
+  id: number
+  cliente: string
+  referencia: string | null
+  data: string
+  total: number
+  docx_url: string | null
+  download: string
+  pdf: string
+}
