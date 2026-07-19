@@ -67,4 +67,14 @@ export const tools: Tool[] = [
     areas: ['comercial'],
     requiresAuth: true,
   },
+  {
+    id: 'proposta',
+    name: 'Proposta',
+    description: 'Propostas comerciais em .docx: descreva o pedido, revise o preço e gere o documento.',
+    status: 'active',
+    href: '/tools/proposta',
+    icon: 'FileText',
+    areas: ['comercial'],
+    requiresAuth: true,
+  },
 ]
