@@ -7,6 +7,7 @@ import { AgentShell } from '@/components/tools/AgentShell'
 import { ToolCard } from '@/components/tools/ToolCard'
 import { PesquisadorAgent } from '@/components/agents/pesquisador/PesquisadorAgent'
 import { LumenAgent } from '@/components/agents/lumen/LumenAgent'
+import { PropostaAgent } from '@/components/agents/proposta/PropostaAgent'
 import FadeIn from '@/components/ui/FadeIn'
 import { cn } from '@/lib/cn'
 import { auth } from '@/lib/auth'
@@ -18,6 +19,7 @@ import { LockedToolShell } from '@/components/tools/LockedToolShell'
 const AGENT_COMPONENTS: Record<string, React.ComponentType> = {
   pesquisador: PesquisadorAgent,
   lumen: LumenAgent,
+  proposta: PropostaAgent,
 }
 
 function ComingSoonShell({ tool }: { tool: Tool }) {
