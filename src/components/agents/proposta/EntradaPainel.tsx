@@ -8,7 +8,9 @@ const EXEMPLO = `Cliente: GALLI, ref Residencial Aurora, a/c Daniel
 Externas: Fachada vista da calçada, Jardim
 Internas: Academia, Lobby
 Plantas: Implantação Térreo, Apartamento Tipo
-10% de desconto, preço de planilha`
+10% de desconto, preço de planilha
+
+Também dá para pedir filmes, tour virtual e tecnologia (ex: "Filme 3D de 60s", "Tour virtual do apartamento", "App touch para stand").`
 
 interface Props {
   onPrecificar: (texto: string) => void

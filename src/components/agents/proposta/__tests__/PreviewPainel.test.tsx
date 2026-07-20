@@ -90,4 +90,39 @@ describe('PreviewPainel', () => {
       expect.objectContaining({ desconto_pct: 15 })
     )
   })
+
+  it('renderiza categoria extra vinda de _categorias (ex: Filmes e Takes 3D)', () => {
+    const comFilmes: Levantamento = {
+      ...LEV,
+      estrutura: { ...LEV.estrutura, filmes: ['Filme 3D 60s'] },
+      fechado: {
+        ...LEV.fechado,
+        orcamento: {
+          ...LEV.fechado.orcamento,
+          _categorias: [
+            { nome: 'externas', rotulo: 'Ilustrações Externas' },
+            { nome: 'internas', rotulo: 'Ilustrações Internas' },
+            { nome: 'plantas', rotulo: 'Plantas Humanizadas' },
+            { nome: 'filmes', rotulo: 'Filmes e Takes 3D' },
+          ],
+          filmes: {
+            nome: 'filmes', qtd: 1, total: 15000,
+            itens: [{ descricao: 'Filme 3D — 60 segundos', preco: 15000, fonte: 'planilha:filme_3d_60s' }],
+          },
+        },
+      },
+    }
+    render(<PreviewPainel levantamento={comFilmes} onEditar={jest.fn()} carregando={false} />)
+    expect(screen.getByText('Filmes e Takes 3D')).toBeInTheDocument()
+    expect(screen.getByText('Filme 3D — 60 segundos')).toBeInTheDocument()
+  })
+
+  it('mudar tabela no select dispara onEditar com tabela_precos', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    fireEvent.change(screen.getByLabelText('Tabela'), { target: { value: 'mcmv' } })
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ tabela_precos: 'mcmv' })
+    )
+  })
 })

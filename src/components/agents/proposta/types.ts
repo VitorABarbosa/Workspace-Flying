@@ -1,4 +1,6 @@
-export type CategoriaKey = 'externas' | 'internas' | 'plantas'
+// Categorias deixaram de ser fixas: vêm dinamicamente do backend (preco_categoria).
+// Continua string simples — sem union — para aceitar qualquer categoria do catálogo.
+export type CategoriaKey = string
 
 export interface Cliente {
   empresa: string
@@ -6,16 +8,22 @@ export interface Cliente {
   contato: string
 }
 
+export interface CategoriaMeta {
+  nome: string
+  rotulo: string
+}
+
 export interface Estrutura {
   cliente: Cliente
-  externas: string[]
-  internas: string[]
-  plantas: string[]
   desconto_pct: number
   desconto_label: string | null
   estrategia: 'auto' | 'planilha' | 'historico'
   mostrar_precos_individuais: boolean
+  tabela_precos?: 'padrao' | 'mcmv'
   _avisos: string[]
+  // Categorias dinâmicas (externas, internas, plantas, filmes, tecnologia, ...):
+  // cada uma é uma lista de descrições em texto livre.
+  [categoria: string]: unknown
 }
 
 export interface ItemOrcado {
@@ -36,9 +44,11 @@ export interface Fechado {
     estrategia: string
     subtotal: number
     total_imagens: number
-    externas: CategoriaOrcada
-    internas: CategoriaOrcada
-    plantas: CategoriaOrcada
+    // Metadados ordenados das categorias presentes no orçamento (nome + rótulo de exibição).
+    // Ausente em respostas antigas do backend — usar fallback fixo nesse caso.
+    _categorias?: CategoriaMeta[]
+    // Categorias dinâmicas como chaves planas (compatibilidade), cada uma um CategoriaOrcada.
+    [categoria: string]: unknown
   }
   financeiro: {
     subtotal: number

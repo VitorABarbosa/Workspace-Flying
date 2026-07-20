@@ -3,16 +3,30 @@
 import { useEffect, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
-import type { CategoriaKey, Estrutura, Levantamento } from './types'
+import type { CategoriaMeta, CategoriaOrcada, Estrutura, Fechado, Levantamento } from './types'
 
 const brl = (v: number) =>
   v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-const ROTULOS: Record<CategoriaKey, string> = {
-  externas: 'Ilustrações Externas',
-  internas: 'Ilustrações Internas',
-  plantas: 'Plantas Humanizadas',
-}
+// Fallback para respostas antigas do backend sem "_categorias" (as 3 categorias fixas
+// de sempre). Assim que o backend emitir "_categorias" (dinâmico, ordenado), é essa
+// lista que passa a mandar — inclusive com categorias novas (ex: "filmes").
+const CATEGORIAS_FALLBACK: CategoriaMeta[] = [
+  { nome: 'externas', rotulo: 'Ilustrações Externas' },
+  { nome: 'internas', rotulo: 'Ilustrações Internas' },
+  { nome: 'plantas', rotulo: 'Plantas Humanizadas' },
+]
+
+const categoriasDe = (orcamento: Fechado['orcamento']): CategoriaMeta[] =>
+  orcamento._categorias ?? CATEGORIAS_FALLBACK
+
+const categoriaOrcadaDe = (orcamento: Fechado['orcamento'], nome: string): CategoriaOrcada =>
+  (orcamento[nome] as CategoriaOrcada | undefined) ?? { nome, qtd: 0, total: 0, itens: [] }
+
+const TABELAS = [
+  { valor: 'padrao', rotulo: 'Padrão' },
+  { valor: 'mcmv', rotulo: 'MCMV' },
+] as const
 
 interface Props {
   levantamento: Levantamento
@@ -22,9 +36,10 @@ interface Props {
 
 export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
   const { estrutura, fechado, estrategia_usada, avisos, pendencias } = levantamento
-  const [novoItem, setNovoItem] = useState<Record<CategoriaKey, string>>({
-    externas: '', internas: '', plantas: '',
-  })
+  const categorias = categoriasDe(fechado.orcamento)
+  // Estado do rascunho "novo item" derivado dinamicamente por categoria; chaves ausentes
+  // (categoria nova que ainda não foi digitada) caem no fallback '' na leitura.
+  const [novoItem, setNovoItem] = useState<Record<string, string>>({})
   // Rascunho local dos campos do cliente; commit no blur/Enter para não
   // reprecificar a cada tecla. Ressincroniza quando o backend responde.
   const [cliente, setCliente] = useState(estrutura.cliente)
@@ -81,14 +96,16 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
     { chave: 'contato', rotulo: 'A/C', placeholder: 'quem recebe a proposta' },
   ] as const
 
-  const remover = (cat: CategoriaKey, idx: number) =>
-    onEditar({ ...estrutura, [cat]: estrutura[cat].filter((_, i) => i !== idx) })
+  const listaDe = (cat: string): string[] => (estrutura[cat] as string[] | undefined) ?? []
 
-  const adicionar = (cat: CategoriaKey) => {
-    const desc = novoItem[cat].trim()
+  const remover = (cat: string, idx: number) =>
+    onEditar({ ...estrutura, [cat]: listaDe(cat).filter((_, i) => i !== idx) })
+
+  const adicionar = (cat: string) => {
+    const desc = (novoItem[cat] ?? '').trim()
     if (!desc) return
     setNovoItem((s) => ({ ...s, [cat]: '' }))
-    onEditar({ ...estrutura, [cat]: [...estrutura[cat], desc] })
+    onEditar({ ...estrutura, [cat]: [...listaDe(cat), desc] })
   }
 
   return (
@@ -131,6 +148,21 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
           </select>
         </label>
         <span className="text-gray-400">(usada: {estrategia_usada})</span>
+        <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+          Tabela
+          <select
+            aria-label="Tabela"
+            value={estrutura.tabela_precos ?? 'padrao'}
+            onChange={(e) =>
+              onEditar({ ...estrutura, tabela_precos: e.target.value as Estrutura['tabela_precos'] })
+            }
+            className="rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          >
+            {TABELAS.map(({ valor, rotulo }) => (
+              <option key={valor} value={valor}>{rotulo}</option>
+            ))}
+          </select>
+        </label>
       </div>
 
       {pendencias.length > 0 && (
@@ -143,12 +175,12 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
         </ul>
       )}
 
-      {(Object.keys(ROTULOS) as CategoriaKey[]).map((cat) => {
-        const bloco = fechado.orcamento[cat]
+      {categorias.map(({ nome: cat, rotulo }) => {
+        const bloco = categoriaOrcadaDe(fechado.orcamento, cat)
         return (
           <div key={cat} className="mb-4">
             <p className="mb-1 text-xs font-semibold uppercase text-brand-purple">
-              {ROTULOS[cat]}
+              {rotulo}
             </p>
             {bloco.itens.length === 0 && (
               <p className="text-xs text-gray-400">nenhum item</p>
@@ -165,7 +197,7 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
                       {brl(item.preco)}
                     </span>
                     <button
-                      aria-label={`Remover ${estrutura[cat][idx]}`}
+                      aria-label={`Remover ${listaDe(cat)[idx]}`}
                       onClick={() => remover(cat, idx)}
                       className="text-gray-400 hover:text-red-500"
                     >
@@ -177,14 +209,14 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
             </ul>
             <div className="mt-1 flex gap-2">
               <input
-                value={novoItem[cat]}
+                value={novoItem[cat] ?? ''}
                 onChange={(e) => setNovoItem((s) => ({ ...s, [cat]: e.target.value }))}
                 onKeyDown={(e) => e.key === 'Enter' && adicionar(cat)}
                 placeholder="adicionar item…"
                 className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-xs dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
               />
               <button
-                aria-label={`Adicionar em ${ROTULOS[cat]}`}
+                aria-label={`Adicionar em ${rotulo}`}
                 onClick={() => adicionar(cat)}
                 className="text-brand-purple hover:opacity-70"
               >
