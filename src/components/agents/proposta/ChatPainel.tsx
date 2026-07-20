@@ -1,18 +1,19 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Send } from 'lucide-react'
+import { Download, FileText, Send } from 'lucide-react'
 import { cn } from '@/lib/cn'
-import type { MensagemChat } from './types'
+import type { MensagemChat, PropostaCitada } from './types'
 
 interface Props {
   mensagens: MensagemChat[]
   quickReplies: string[]
   onEnviar: (texto: string) => void
   carregando: boolean
+  propostasCitadas?: PropostaCitada[]
 }
 
-export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando }: Props) {
+export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, propostasCitadas = [] }: Props) {
   const [texto, setTexto] = useState('')
   const fimRef = useRef<HTMLDivElement>(null)
 
@@ -45,6 +46,37 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando }: Pr
         ))}
         <div ref={fimRef} />
       </div>
+
+      {propostasCitadas.length > 0 && (
+        <div className="mt-3 flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-3 text-xs dark:border-gray-700 dark:bg-[#0F0F0F]">
+          {propostasCitadas.map((p) => (
+            <div key={p.id} className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[#1A1A2E] dark:text-white">
+                Proposta #{p.id} — {p.cliente}
+                {p.referencia ? ` (${p.referencia})` : ''}
+              </span>
+              <div className="flex items-center gap-3">
+                <a
+                  href={`/api/tools/proposta/propostas/${p.id}/pdf`}
+                  aria-label={`Baixar PDF da proposta ${p.id}`}
+                  download
+                  className="inline-flex items-center gap-1 text-brand-purple hover:opacity-80"
+                >
+                  <Download className="h-3.5 w-3.5" /> PDF
+                </a>
+                <a
+                  href={`/api/tools/proposta/propostas/${p.id}/docx`}
+                  aria-label={`Baixar DOCX da proposta ${p.id}`}
+                  download
+                  className="inline-flex items-center gap-1 text-brand-purple hover:opacity-80"
+                >
+                  <FileText className="h-3.5 w-3.5" /> DOCX
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {quickReplies.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
