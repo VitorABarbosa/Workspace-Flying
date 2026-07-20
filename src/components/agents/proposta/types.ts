@@ -91,8 +91,15 @@ export interface MensagemChat {
   content: string
 }
 
+export interface PropostaCitada {
+  id: number
+  cliente: string
+  referencia: string | null
+}
+
 export interface RespostaChat {
   mensagem: string
   quick_replies: string[]
   levantamento: Levantamento | null
+  propostas_citadas?: PropostaCitada[]
 }

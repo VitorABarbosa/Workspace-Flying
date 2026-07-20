@@ -9,7 +9,7 @@ import { EntradaPainel } from './EntradaPainel'
 import { HistoricoPainel } from './HistoricoPainel'
 import { PreviewPainel } from './PreviewPainel'
 import { ResultadoPainel } from './ResultadoPainel'
-import type { Estrutura, Levantamento, MensagemChat } from './types'
+import type { Estrutura, Levantamento, MensagemChat, PropostaCitada } from './types'
 import { useProposta } from './useProposta'
 
 type Aba = 'chat' | 'texto' | 'historico'
@@ -65,6 +65,7 @@ export function PropostaAgent() {
   const [aba, setAba] = useState<Aba>('chat')
   const [mensagens, setMensagens] = useState<MensagemChat[]>([])
   const [quickReplies, setQuickReplies] = useState<string[]>([])
+  const [propostasCitadas, setPropostasCitadas] = useState<PropostaCitada[]>([])
   const saudacaoPedida = useRef(false)
 
   useEffect(() => {
@@ -91,6 +92,7 @@ export function PropostaAgent() {
     if (!chat) return
     setMensagens([...chat.mensagens, { role: 'assistant', content: chat.resposta.mensagem }])
     setQuickReplies(chat.resposta.quick_replies)
+    setPropostasCitadas(chat.resposta.propostas_citadas ?? [])
   }, [chat])
 
   function enviarMensagem(texto: string) {
@@ -104,6 +106,7 @@ export function PropostaAgent() {
     reiniciar()
     setMensagens([])
     setQuickReplies([])
+    setPropostasCitadas([])
     saudacaoPedida.current = false
     conversar([])
     saudacaoPedida.current = true
@@ -149,6 +152,7 @@ export function PropostaAgent() {
                 quickReplies={quickReplies}
                 onEnviar={enviarMensagem}
                 carregando={carregando}
+                propostasCitadas={propostasCitadas}
               />
               {levantamento && (
                 <PreviewComGerar

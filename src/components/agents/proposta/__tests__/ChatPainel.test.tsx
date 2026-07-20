@@ -23,4 +23,34 @@ describe('ChatPainel', () => {
     fireEvent.click(screen.getByText('Nova proposta'))
     expect(onEnviar).toHaveBeenCalledWith('Nova proposta')
   })
+
+  it('propostas citadas mostram links de download PDF e DOCX', () => {
+    render(
+      <ChatPainel
+        mensagens={[{ role: 'assistant', content: 'Encontrei a proposta da Avita.' }]}
+        quickReplies={[]}
+        onEnviar={jest.fn()}
+        carregando={false}
+        propostasCitadas={[{ id: 7, cliente: 'Avita', referencia: 'FRANCISCO POLITO' }]}
+      />
+    )
+    expect(screen.getByText(/Proposta #7 — Avita \(FRANCISCO POLITO\)/)).toBeInTheDocument()
+    const linkPdf = screen.getByRole('link', { name: 'Baixar PDF da proposta 7' })
+    const linkDocx = screen.getByRole('link', { name: 'Baixar DOCX da proposta 7' })
+    expect(linkPdf).toHaveAttribute('href', '/api/tools/proposta/propostas/7/pdf')
+    expect(linkDocx).toHaveAttribute('href', '/api/tools/proposta/propostas/7/docx')
+  })
+
+  it('lista vazia de propostas citadas não renderiza nada', () => {
+    render(
+      <ChatPainel
+        mensagens={[{ role: 'assistant', content: 'Oi' }]}
+        quickReplies={[]}
+        onEnviar={jest.fn()}
+        carregando={false}
+        propostasCitadas={[]}
+      />
+    )
+    expect(screen.queryByText(/Proposta #/)).not.toBeInTheDocument()
+  })
 })
