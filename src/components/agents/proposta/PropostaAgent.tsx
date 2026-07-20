@@ -100,6 +100,15 @@ export function PropostaAgent() {
     conversar(proximas)
   }
 
+  function novaProposta() {
+    reiniciar()
+    setMensagens([])
+    setQuickReplies([])
+    saudacaoPedida.current = false
+    conversar([])
+    saudacaoPedida.current = true
+  }
+
   return (
     <AgentShell
       title="Proposta"
@@ -130,7 +139,7 @@ export function PropostaAgent() {
       )}
 
       {gerada ? (
-        <ResultadoPainel gerada={gerada} onNova={reiniciar} />
+        <ResultadoPainel gerada={gerada} onNova={novaProposta} />
       ) : (
         <>
           {aba === 'chat' && (
