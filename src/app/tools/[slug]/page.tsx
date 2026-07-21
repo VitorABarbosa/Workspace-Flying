@@ -8,6 +8,7 @@ import { ToolCard } from '@/components/tools/ToolCard'
 import { PesquisadorAgent } from '@/components/agents/pesquisador/PesquisadorAgent'
 import { LumenAgent } from '@/components/agents/lumen/LumenAgent'
 import { PropostaAgent } from '@/components/agents/proposta/PropostaAgent'
+import { FinanceiroAgent } from '@/components/agents/financeiro/FinanceiroAgent'
 import FadeIn from '@/components/ui/FadeIn'
 import { cn } from '@/lib/cn'
 import { auth } from '@/lib/auth'
@@ -20,6 +21,7 @@ const AGENT_COMPONENTS: Record<string, React.ComponentType> = {
   pesquisador: PesquisadorAgent,
   lumen: LumenAgent,
   proposta: PropostaAgent,
+  financeiro: FinanceiroAgent,
 }
 
 function ComingSoonShell({ tool }: { tool: Tool }) {

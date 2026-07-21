@@ -8,6 +8,7 @@ export type AreaSlug =
   | 'marketing'
   | 'comercial'
   | 'operacional'
+  | 'financeiro'
 
 export interface Area {
   slug: AreaSlug
@@ -33,6 +34,7 @@ export const AREAS: Area[] = [
   { slug: 'marketing',   name: 'MARKETING' },
   { slug: 'comercial',   name: 'COMERCIAL' },
   { slug: 'operacional', name: 'OPERACIONAL' },
+  { slug: 'financeiro',  name: 'FINANCEIRO' },
 ]
 
 export function getAreaBySlug(slug: string): Area | undefined {
@@ -75,6 +77,16 @@ export const tools: Tool[] = [
     href: '/tools/proposta',
     icon: 'FileText',
     areas: ['comercial'],
+    requiresAuth: true,
+  },
+  {
+    id: 'financeiro',
+    name: 'Financeiro',
+    description: 'Dashboard financeiro com dados do eGestor — faturamento, contas e indicadores.',
+    status: 'active',
+    href: '/tools/financeiro',
+    icon: 'Wallet',
+    areas: ['financeiro'],
     requiresAuth: true,
   },
 ]
