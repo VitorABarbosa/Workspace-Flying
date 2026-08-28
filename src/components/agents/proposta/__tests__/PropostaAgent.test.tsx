@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { PropostaAgent } from '../PropostaAgent'
 import type { Levantamento } from '../types'
 
@@ -121,5 +121,93 @@ describe('PropostaAgent — Nova proposta reseta o chat', () => {
     expect(screen.queryByText('Perfeito, revise abaixo.')).not.toBeInTheDocument()
     expect(screen.queryByText(/Proposta #42 gerada/)).not.toBeInTheDocument()
     expect(screen.getAllByText(/Saudação inicial #\d/)).toHaveLength(1)
+  })
+})
+
+describe('PropostaAgent — print anexado', () => {
+  // Data URL que o FileReader do jsdom produz para um File de conteúdo 'x'.
+  const PNG = 'data:image/png;base64,eA=='
+  const TRANSCRICAO =
+    'monta a proposta desse e-mail\n\n[LEITURA DO PRINT ANEXADO]\nCONSTRUTORA: GALLI'
+  let corpos: { mensagens: { role: string; content: unknown }[] }[]
+
+  beforeAll(() => {
+    // Sem canvas no jsdom o downscale é pulado — o backend encolhe do lado dele.
+    jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null)
+  })
+  afterAll(() => jest.restoreAllMocks())
+
+  beforeEach(() => {
+    corpos = []
+    global.fetch = jest.fn((url: string, opts?: { body?: string }) => {
+      if (!url.endsWith('/chat')) return Promise.reject(new Error(`URL inesperada: ${url}`))
+      const body = opts?.body ? JSON.parse(opts.body) : { mensagens: [] }
+      corpos.push(body)
+      const primeira = body.mensagens.length === 0
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          mensagem: primeira ? 'Oi!' : `Resposta ${corpos.length}`,
+          quick_replies: [],
+          levantamento: null,
+          // O backend só devolve transcrição na rodada que trouxe imagem.
+          transcricao: body.mensagens.some((m) => Array.isArray(m.content)) ? TRANSCRICAO : null,
+        }),
+      })
+    }) as unknown as typeof fetch
+  })
+
+  async function enviar(texto: string, comPrint = false) {
+    if (comPrint) {
+      const arquivo = new File(['x'], 'print.png', { type: 'image/png' })
+      Object.defineProperty(arquivo, 'size', { value: 1024 })
+      await act(async () => {
+        fireEvent.change(screen.getByTestId('input-print'), { target: { files: [arquivo] } })
+      })
+      await screen.findByAltText('print.png')
+    }
+    fireEvent.change(screen.getByPlaceholderText(/Escreva aqui/), { target: { value: texto } })
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText('Enviar mensagem'))
+    })
+  }
+
+  it('manda o print em partes e depois troca a imagem pelo texto lido', async () => {
+    render(<PropostaAgent />)
+    await waitFor(() => expect(screen.getByText('Oi!')).toBeInTheDocument())
+
+    await enviar('monta a proposta desse e-mail', true)
+    await waitFor(() => expect(screen.getByText('Resposta 2')).toBeInTheDocument())
+
+    // Rodada 1: sobe em partes, texto + imagem.
+    expect(corpos[1].mensagens.at(-1)).toEqual({
+      role: 'user',
+      content: [
+        { type: 'text', text: 'monta a proposta desse e-mail' },
+        { type: 'image_url', image_url: { url: PNG } },
+      ],
+    })
+
+    await enviar('o A/C é o Daniel')
+    await waitFor(() => expect(screen.getByText('Resposta 3')).toBeInTheDocument())
+
+    // Rodada 2: o base64 não sobe de novo — no lugar dele vai a leitura em texto.
+    const enviadas = corpos[2].mensagens
+    expect(enviadas.every((m) => typeof m.content === 'string')).toBe(true)
+    expect(enviadas.some((m) => m.content === TRANSCRICAO)).toBe(true)
+    expect(JSON.stringify(corpos[2])).not.toContain('base64')
+  })
+
+  it('print sem texto junto também sobe', async () => {
+    render(<PropostaAgent />)
+    await waitFor(() => expect(screen.getByText('Oi!')).toBeInTheDocument())
+
+    await enviar('', true)
+    await waitFor(() => expect(screen.getByText('Resposta 2')).toBeInTheDocument())
+
+    expect(corpos[1].mensagens.at(-1)).toEqual({
+      role: 'user',
+      content: [{ type: 'image_url', image_url: { url: PNG } }],
+    })
   })
 })

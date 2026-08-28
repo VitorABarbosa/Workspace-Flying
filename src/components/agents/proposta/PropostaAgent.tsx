@@ -7,9 +7,10 @@ import { cn } from '@/lib/cn'
 import { ChatPainel } from './ChatPainel'
 import { EntradaPainel } from './EntradaPainel'
 import { HistoricoPainel } from './HistoricoPainel'
+import type { PrintPreparado } from './prepararPrint'
 import { PreviewPainel } from './PreviewPainel'
 import { ResultadoPainel } from './ResultadoPainel'
-import type { Estrutura, Levantamento, MensagemChat, PropostaCitada } from './types'
+import type { Estrutura, Levantamento, MensagemChat, ParteConteudo, PropostaCitada } from './types'
 import { useProposta } from './useProposta'
 
 type Aba = 'chat' | 'texto' | 'historico'
@@ -95,8 +96,28 @@ export function PropostaAgent() {
     setPropostasCitadas(chat.resposta.propostas_citadas ?? [])
   }, [chat])
 
-  function enviarMensagem(texto: string) {
-    const proximas: MensagemChat[] = [...mensagens, { role: 'user', content: texto }]
+  // Print lido vira texto no histórico: o chat é stateless e reenvia tudo a
+  // cada mensagem — sem isso o mesmo base64 subiria em toda rodada.
+  useEffect(() => {
+    const transcricao = chat?.resposta.transcricao
+    if (!transcricao) return
+    setMensagens((atuais) => {
+      const i = atuais.findLastIndex((m) => typeof m.content !== 'string')
+      if (i < 0) return atuais
+      const trocadas = [...atuais]
+      trocadas[i] = { ...trocadas[i], content: transcricao }
+      return trocadas
+    })
+  }, [chat])
+
+  function enviarMensagem(texto: string, prints: PrintPreparado[] = []) {
+    const conteudo: string | ParteConteudo[] = prints.length
+      ? [
+          ...(texto ? [{ type: 'text' as const, text: texto }] : []),
+          ...prints.map((p) => ({ type: 'image_url' as const, image_url: { url: p.dataUrl } })),
+        ]
+      : texto
+    const proximas: MensagemChat[] = [...mensagens, { role: 'user', content: conteudo }]
     setMensagens(proximas)
     setQuickReplies([])
     conversar(proximas)
