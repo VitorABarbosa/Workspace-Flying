@@ -1,31 +1,81 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Download, FileText, Send } from 'lucide-react'
+import { Download, FileText, ImagePlus, Send, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
-import type { MensagemChat, PropostaCitada } from './types'
+import { MAX_PRINTS, PrintInvalido, prepararPrint, type PrintPreparado } from './prepararPrint'
+import type { MensagemChat, ParteConteudo, PropostaCitada } from './types'
 
 interface Props {
   mensagens: MensagemChat[]
   quickReplies: string[]
-  onEnviar: (texto: string) => void
+  onEnviar: (texto: string, prints?: PrintPreparado[]) => void
   carregando: boolean
   propostasCitadas?: PropostaCitada[]
 }
 
+/** Bolha do chat: texto puro, ou texto + prints quando a mensagem tem anexo. */
+function Bolha({ mensagem }: { mensagem: MensagemChat }) {
+  if (typeof mensagem.content === 'string') return <>{mensagem.content}</>
+  const partes = mensagem.content as ParteConteudo[]
+  return (
+    <div className="flex flex-col gap-2">
+      {partes.map((parte, i) =>
+        parte.type === 'text' ? (
+          <span key={i}>{parte.text}</span>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={i}
+            src={parte.image_url.url}
+            alt="Print anexado"
+            className="max-h-48 w-auto rounded border border-white/30"
+          />
+        )
+      )}
+    </div>
+  )
+}
+
 export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, propostasCitadas = [] }: Props) {
   const [texto, setTexto] = useState('')
+  const [prints, setPrints] = useState<PrintPreparado[]>([])
+  const [erroAnexo, setErroAnexo] = useState<string | null>(null)
   const fimRef = useRef<HTMLDivElement>(null)
+  const arquivoRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fimRef.current?.scrollIntoView?.({ behavior: 'smooth' })
   }, [mensagens])
 
+  async function anexar(arquivos: FileList | null) {
+    if (!arquivos?.length) return
+    setErroAnexo(null)
+    const sobra = MAX_PRINTS - prints.length
+    if (sobra <= 0) {
+      setErroAnexo(`Dá para mandar até ${MAX_PRINTS} prints por mensagem.`)
+      return
+    }
+    const novos: PrintPreparado[] = []
+    for (const arquivo of Array.from(arquivos).slice(0, sobra)) {
+      try {
+        novos.push(await prepararPrint(arquivo))
+      } catch (e) {
+        setErroAnexo(e instanceof PrintInvalido ? e.message : 'Não consegui preparar esse print.')
+      }
+    }
+    if (novos.length) setPrints((atuais) => [...atuais, ...novos])
+    if (arquivoRef.current) arquivoRef.current.value = ''
+  }
+
   function enviar(valor: string) {
     const conteudo = valor.trim()
-    if (!conteudo || carregando) return
-    onEnviar(conteudo)
+    // Print sozinho já é um pedido — não exige texto junto.
+    if ((!conteudo && prints.length === 0) || carregando) return
+    onEnviar(conteudo, prints)
     setTexto('')
+    setPrints([])
+    setErroAnexo(null)
   }
 
   return (
@@ -41,7 +91,7 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, prop
                 : 'border border-gray-200 bg-white text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white'
             )}
           >
-            {m.content}
+            <Bolha mensagem={m} />
           </div>
         ))}
         <div ref={fimRef} />
@@ -93,7 +143,57 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, prop
         </div>
       )}
 
+      {prints.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {prints.map((print, i) => (
+            <div key={i} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={print.dataUrl}
+                alt={print.nome}
+                className="h-16 w-16 rounded border border-gray-300 object-cover dark:border-gray-600"
+              />
+              <button
+                onClick={() => setPrints((atuais) => atuais.filter((_, j) => j !== i))}
+                aria-label={`Remover print ${print.nome}`}
+                className="absolute -right-1.5 -top-1.5 rounded-full bg-[#1A1A2E] p-0.5 text-white hover:opacity-80"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {erroAnexo && (
+        <p role="alert" className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+          {erroAnexo}
+        </p>
+      )}
+
       <div className="mt-4 flex items-center gap-2">
+        <input
+          ref={arquivoRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          multiple
+          hidden
+          data-testid="input-print"
+          onChange={(e) => anexar(e.target.files)}
+        />
+        <button
+          onClick={() => arquivoRef.current?.click()}
+          disabled={carregando}
+          aria-label="Anexar print"
+          title="Anexar print de e-mail, WhatsApp ou briefing"
+          className={cn(
+            'inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white p-2.5',
+            'text-brand-purple hover:bg-brand-purple/10 disabled:cursor-not-allowed disabled:opacity-50',
+            'dark:border-gray-700 dark:bg-[#0F0F0F]'
+          )}
+        >
+          <ImagePlus className="h-4 w-4" />
+        </button>
         <input
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
@@ -110,7 +210,7 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, prop
         />
         <button
           onClick={() => enviar(texto)}
-          disabled={carregando || !texto.trim()}
+          disabled={carregando || (!texto.trim() && prints.length === 0)}
           aria-label="Enviar mensagem"
           className={cn(
             'inline-flex items-center justify-center rounded-lg bg-brand-purple p-2.5 text-white',

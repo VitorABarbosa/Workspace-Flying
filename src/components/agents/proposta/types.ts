@@ -86,9 +86,15 @@ export interface PropostaListada {
   pdf: string
 }
 
+// Conteúdo em partes (formato da OpenAI), aceito pelo backend quando a
+// mensagem leva print anexado.
+export type ParteConteudo =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } }
+
 export interface MensagemChat {
   role: 'user' | 'assistant'
-  content: string
+  content: string | ParteConteudo[]
 }
 
 export interface PropostaCitada {
@@ -102,4 +108,8 @@ export interface RespostaChat {
   quick_replies: string[]
   levantamento: Levantamento | null
   propostas_citadas?: PropostaCitada[]
+  // Leitura do print já em texto — exatamente o que o backend mandou ao
+  // modelo. Substitui a imagem no histórico para o base64 não ser reenviado
+  // nas rodadas seguintes (chat stateless: o front reenvia tudo a cada vez).
+  transcricao?: string | null
 }
