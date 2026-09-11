@@ -202,3 +202,42 @@ describe('PreviewPainel — ajuste sobre a planilha e preço por imagem', () => 
     expect(onEditar).not.toHaveBeenCalled()
   })
 })
+
+describe('PreviewPainel — preço fechado por item', () => {
+  it('clicar no preço abre o campo; Enter grava o item como {descricao, preco}', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    fireEvent.click(screen.getByLabelText('Preço de Fachada'))
+    const campo = screen.getByLabelText('Novo preço de Fachada')
+    fireEvent.change(campo, { target: { value: '15 mil' } })
+    fireEvent.keyDown(campo, { key: 'Enter' })
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ externas: [{ descricao: 'Fachada', preco: 15000 }] })
+    )
+  })
+
+  it('item já fechado mostra o preço marcado e vazio devolve à tabela', () => {
+    const onEditar = jest.fn()
+    const lev = { ...LEV, estrutura: { ...LEV.estrutura, externas: [{ descricao: 'Fachada', preco: 15000 }] } }
+    render(<PreviewPainel levantamento={lev} onEditar={onEditar} carregando={false} />)
+    const botao = screen.getByLabelText('Preço de Fachada')
+    expect(botao).toHaveAttribute('title', expect.stringMatching(/Valor fechado/))
+    fireEvent.click(botao)
+    const campo = screen.getByLabelText('Novo preço de Fachada')
+    expect(campo).toHaveValue('3000')
+    fireEvent.change(campo, { target: { value: '' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ externas: ['Fachada'] }))
+  })
+
+  it('Escape fecha sem gravar; remover item-objeto funciona pelo nome', () => {
+    const onEditar = jest.fn()
+    const lev = { ...LEV, estrutura: { ...LEV.estrutura, externas: [{ descricao: 'Fachada', preco: 15000 }] } }
+    render(<PreviewPainel levantamento={lev} onEditar={onEditar} carregando={false} />)
+    fireEvent.click(screen.getByLabelText('Preço de Fachada'))
+    fireEvent.keyDown(screen.getByLabelText('Novo preço de Fachada'), { key: 'Escape' })
+    expect(onEditar).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByLabelText('Remover Fachada'))
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ externas: [] }))
+  })
+})

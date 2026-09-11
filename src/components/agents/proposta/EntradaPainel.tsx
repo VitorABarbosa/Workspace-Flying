@@ -19,7 +19,7 @@ Internas: Academia, Lobby
 Plantas: Implantação Térreo, Apartamento Tipo
 10% de desconto, preço de planilha`,
   rinno: `Cliente: OUSY, ref Vila Mariana, a/c Yuri
-Filmes: Filme conceito, Filme corretor, Viral para redes sociais
+Filmes: Filme institucional de até 2:00 = 15.000, Filme corretor, Viral para redes sociais
 Takes: Take IA da piscina, Take IA do lobby`,
   nid: `Cliente: OUSY, ref Vila Mariana, a/c Yuri
 Fachada: Design de fachada
@@ -47,7 +47,8 @@ export function EntradaPainel({ onPrecificar, carregando, acao }: Props) {
       <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
         Cole o pedido inteiro de uma vez. Uma linha por categoria, itens separados por vírgula;
         quantidade pode ir por extenso (&quot;três fachadas&quot;). O preço sai da tabela da
-        empresa escolhida ou do histórico do cliente — nunca da IA.
+        empresa escolhida ou do histórico do cliente — nunca da IA. Item com valor fechado vai
+        com o número no fim: &quot;Filme institucional de até 2:00 = 15.000&quot;.
       </p>
 
       <label className="mb-3 flex items-center gap-2 text-sm font-medium text-[#1A1A2E] dark:text-white">

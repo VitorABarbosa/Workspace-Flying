@@ -32,7 +32,8 @@ export interface Estrutura {
   preco_por_imagem?: number | null
   _avisos: string[]
   // Categorias dinâmicas (externas, internas, plantas, filmes, tecnologia, ...):
-  // cada uma é uma lista de descrições em texto livre.
+  // cada uma é uma lista de ItemEntrada — descrição em texto livre, ou
+  // { descricao, preco } quando o valor daquele item foi fechado à parte.
   [categoria: string]: unknown
 }
 

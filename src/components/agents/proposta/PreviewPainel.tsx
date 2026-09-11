@@ -12,6 +12,7 @@ import {
   tabelaPadraoDe,
   tabelaValidaPara,
 } from './empresas'
+import { comPreco, descricaoDe, lerPreco, precoInformadoDe, type ItemEntrada } from './itens'
 import type { CategoriaMeta, CategoriaOrcada, Estrutura, Fechado, Levantamento } from './types'
 
 const brl = (v: number) =>
@@ -138,10 +139,29 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     { chave: 'contato', rotulo: 'A/C', placeholder: 'quem recebe a proposta' },
   ] as const
 
-  const listaDe = (cat: string): string[] => (estrutura[cat] as string[] | undefined) ?? []
+  const listaDe = (cat: string): ItemEntrada[] => (estrutura[cat] as ItemEntrada[] | undefined) ?? []
 
   const remover = (cat: string, idx: number) =>
     onEditar({ ...estrutura, [cat]: listaDe(cat).filter((_, i) => i !== idx) })
+
+  // Preço fechado de um item: clicar no valor abre o campo; Enter/blur grava,
+  // vazio volta ao preço da tabela. É o único jeito de a proposta sair com
+  // "institucional de 2:00 por 15.000" sem a tabela mandar 18.000.
+  const [editandoPreco, setEditandoPreco] = useState<{ cat: string; idx: number } | null>(null)
+  const [precoRascunho, setPrecoRascunho] = useState('')
+  const abrirPreco = (cat: string, idx: number, atual: number) => {
+    setEditandoPreco({ cat, idx })
+    setPrecoRascunho(precoInformadoDe(listaDe(cat)[idx]) == null ? '' : String(atual))
+  }
+  const commitPreco = () => {
+    if (!editandoPreco) return
+    const { cat, idx } = editandoPreco
+    setEditandoPreco(null)
+    const novo = lerPreco(precoRascunho)
+    const lista = listaDe(cat)
+    if (novo === precoInformadoDe(lista[idx])) return
+    onEditar({ ...estrutura, [cat]: lista.map((e, i) => (i === idx ? comPreco(e, novo) : e)) })
+  }
 
   const adicionar = (cat: string) => {
     const desc = (novoItem[cat] ?? '').trim()
@@ -278,7 +298,8 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
       <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
         Os dois entram no preço de cada item e não aparecem na proposta. &quot;Planilha +10%&quot;
         é o costume para cliente novo; o preço fixo vale para todas as perspectivas e plantas
-        (filme, tour e tecnologia ficam na tabela).
+        (filme, tour e tecnologia ficam na tabela). Para fechar o valor de um item só, clique no
+        preço dele na lista.
       </p>
 
       {pendencias.length > 0 && (
@@ -312,11 +333,42 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
                 >
                   <span className="text-[#1A1A2E] dark:text-white">{item.descricao}</span>
                   <span className="flex items-center gap-2">
-                    <span className="font-medium text-[#1A1A2E] dark:text-white">
-                      {brl(item.preco)}
-                    </span>
+                    {editandoPreco?.cat === cat && editandoPreco.idx === idx ? (
+                      <input
+                        autoFocus
+                        aria-label={`Novo preço de ${descricaoDe(listaDe(cat)[idx])}`}
+                        inputMode="numeric"
+                        placeholder="tabela"
+                        value={precoRascunho}
+                        onChange={(e) => setPrecoRascunho(e.target.value)}
+                        onBlur={commitPreco}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitPreco()
+                          if (e.key === 'Escape') setEditandoPreco(null)
+                        }}
+                        className="w-24 rounded border border-brand-purple bg-white px-1 py-0.5 text-right text-xs text-[#1A1A2E] dark:bg-[#0F0F0F] dark:text-white"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        aria-label={`Preço de ${descricaoDe(listaDe(cat)[idx])}`}
+                        title={
+                          precoInformadoDe(listaDe(cat)[idx]) == null
+                            ? 'Preço da tabela — clique para fechar outro valor'
+                            : 'Valor fechado para este item — clique para alterar'
+                        }
+                        onClick={() => abrirPreco(cat, idx, item.preco)}
+                        className={cn(
+                          'rounded px-1 font-medium text-[#1A1A2E] hover:bg-brand-purple/10 dark:text-white',
+                          precoInformadoDe(listaDe(cat)[idx]) != null &&
+                            'underline decoration-brand-purple decoration-dotted underline-offset-2'
+                        )}
+                      >
+                        {brl(item.preco)}
+                      </button>
+                    )}
                     <button
-                      aria-label={`Remover ${listaDe(cat)[idx]}`}
+                      aria-label={`Remover ${descricaoDe(listaDe(cat)[idx])}`}
                       onClick={() => remover(cat, idx)}
                       className="text-gray-400 hover:text-red-500"
                     >
