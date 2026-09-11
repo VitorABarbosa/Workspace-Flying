@@ -106,7 +106,9 @@ describe('EntradaPainel — instruções e espera', () => {
 
     fireEvent.click(screen.getByText('Usar este exemplo'))
     fireEvent.click(screen.getByText('Precificar'))
-    expect(onPrecificar).toHaveBeenCalledWith(expect.stringContaining('Filme conceito'), 'rinno')
+    expect(onPrecificar).toHaveBeenCalledWith(
+      expect.stringContaining('Filme institucional de até 2:00 = 15.000'), 'rinno'
+    )
   })
 
   it('enquanto precifica, o botão e a frase dizem isso', () => {

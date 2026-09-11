@@ -12,6 +12,7 @@ import {
   tabelaPadraoDe,
   tabelaValidaPara,
 } from './empresas'
+import { comPreco, descricaoDe, lerPreco, precoInformadoDe, type ItemEntrada } from './itens'
 import type { CategoriaMeta, CategoriaOrcada, Estrutura, Fechado, Levantamento } from './types'
 
 const brl = (v: number) =>
@@ -98,6 +99,34 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     }
   }
 
+  // Ajuste sobre a planilha e preço por imagem: mesmo rascunho com commit no
+  // blur/Enter, porque cada commit reprecifica no backend.
+  const [ajustePct, setAjustePct] = useState(String(estrutura.ajuste_planilha_pct ?? 0))
+  useEffect(() => {
+    setAjustePct(String(estrutura.ajuste_planilha_pct ?? 0))
+  }, [estrutura.ajuste_planilha_pct])
+  const commitAjuste = () => {
+    const n = parseFloat(ajustePct)
+    const valor = Number.isFinite(n) ? n : 0
+    if (valor !== (estrutura.ajuste_planilha_pct ?? 0)) {
+      onEditar({ ...estrutura, ajuste_planilha_pct: valor })
+    }
+  }
+
+  const [precoImagem, setPrecoImagem] = useState(
+    estrutura.preco_por_imagem == null ? '' : String(estrutura.preco_por_imagem)
+  )
+  useEffect(() => {
+    setPrecoImagem(estrutura.preco_por_imagem == null ? '' : String(estrutura.preco_por_imagem))
+  }, [estrutura.preco_por_imagem])
+  const commitPrecoImagem = () => {
+    const n = parseFloat(precoImagem.replace(/\./g, '').replace(',', '.'))
+    const valor = precoImagem.trim() === '' || !Number.isFinite(n) ? null : Math.round(n)
+    if (valor !== (estrutura.preco_por_imagem ?? null)) {
+      onEditar({ ...estrutura, preco_por_imagem: valor })
+    }
+  }
+
   const ESTRATEGIAS = [
     { valor: 'auto', rotulo: 'Automática' },
     { valor: 'planilha', rotulo: 'Planilha' },
@@ -110,10 +139,29 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     { chave: 'contato', rotulo: 'A/C', placeholder: 'quem recebe a proposta' },
   ] as const
 
-  const listaDe = (cat: string): string[] => (estrutura[cat] as string[] | undefined) ?? []
+  const listaDe = (cat: string): ItemEntrada[] => (estrutura[cat] as ItemEntrada[] | undefined) ?? []
 
   const remover = (cat: string, idx: number) =>
     onEditar({ ...estrutura, [cat]: listaDe(cat).filter((_, i) => i !== idx) })
+
+  // Preço fechado de um item: clicar no valor abre o campo; Enter/blur grava,
+  // vazio volta ao preço da tabela. É o único jeito de a proposta sair com
+  // "institucional de 2:00 por 15.000" sem a tabela mandar 18.000.
+  const [editandoPreco, setEditandoPreco] = useState<{ cat: string; idx: number } | null>(null)
+  const [precoRascunho, setPrecoRascunho] = useState('')
+  const abrirPreco = (cat: string, idx: number, atual: number) => {
+    setEditandoPreco({ cat, idx })
+    setPrecoRascunho(precoInformadoDe(listaDe(cat)[idx]) == null ? '' : String(atual))
+  }
+  const commitPreco = () => {
+    if (!editandoPreco) return
+    const { cat, idx } = editandoPreco
+    setEditandoPreco(null)
+    const novo = lerPreco(precoRascunho)
+    const lista = listaDe(cat)
+    if (novo === precoInformadoDe(lista[idx])) return
+    onEditar({ ...estrutura, [cat]: lista.map((e, i) => (i === idx ? comPreco(e, novo) : e)) })
+  }
 
   const adicionar = (cat: string) => {
     const desc = (novoItem[cat] ?? '').trim()
@@ -218,6 +266,42 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
         {AJUDA_ESTRATEGIA[estrutura.estrategia]}
       </p>
 
+      <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+        <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+          Planilha
+          <input
+            aria-label="Ajuste sobre a planilha (%)"
+            type="number"
+            step={1}
+            value={ajustePct}
+            onChange={(e) => setAjustePct(e.target.value)}
+            onBlur={commitAjuste}
+            onKeyDown={(e) => e.key === 'Enter' && commitAjuste()}
+            className="w-16 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          />
+          %
+        </label>
+        <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+          Preço fixo por imagem R$
+          <input
+            aria-label="Preço fixo por imagem (R$)"
+            inputMode="numeric"
+            placeholder="ex.: 2400"
+            value={precoImagem}
+            onChange={(e) => setPrecoImagem(e.target.value)}
+            onBlur={commitPrecoImagem}
+            onKeyDown={(e) => e.key === 'Enter' && commitPrecoImagem()}
+            className="w-24 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          />
+        </label>
+      </div>
+      <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
+        Os dois entram no preço de cada item e não aparecem na proposta. &quot;Planilha +10%&quot;
+        é o costume para cliente novo; o preço fixo vale para todas as perspectivas e plantas
+        (filme, tour e tecnologia ficam na tabela). Para fechar o valor de um item só, clique no
+        preço dele na lista.
+      </p>
+
       {pendencias.length > 0 && (
         <ul className="mb-4 space-y-1 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
           <li className="text-xs font-semibold text-amber-800 dark:text-amber-200">
@@ -249,11 +333,42 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
                 >
                   <span className="text-[#1A1A2E] dark:text-white">{item.descricao}</span>
                   <span className="flex items-center gap-2">
-                    <span className="font-medium text-[#1A1A2E] dark:text-white">
-                      {brl(item.preco)}
-                    </span>
+                    {editandoPreco?.cat === cat && editandoPreco.idx === idx ? (
+                      <input
+                        autoFocus
+                        aria-label={`Novo preço de ${descricaoDe(listaDe(cat)[idx])}`}
+                        inputMode="numeric"
+                        placeholder="tabela"
+                        value={precoRascunho}
+                        onChange={(e) => setPrecoRascunho(e.target.value)}
+                        onBlur={commitPreco}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitPreco()
+                          if (e.key === 'Escape') setEditandoPreco(null)
+                        }}
+                        className="w-24 rounded border border-brand-purple bg-white px-1 py-0.5 text-right text-xs text-[#1A1A2E] dark:bg-[#0F0F0F] dark:text-white"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        aria-label={`Preço de ${descricaoDe(listaDe(cat)[idx])}`}
+                        title={
+                          precoInformadoDe(listaDe(cat)[idx]) == null
+                            ? 'Preço da tabela — clique para fechar outro valor'
+                            : 'Valor fechado para este item — clique para alterar'
+                        }
+                        onClick={() => abrirPreco(cat, idx, item.preco)}
+                        className={cn(
+                          'rounded px-1 font-medium text-[#1A1A2E] hover:bg-brand-purple/10 dark:text-white',
+                          precoInformadoDe(listaDe(cat)[idx]) != null &&
+                            'underline decoration-brand-purple decoration-dotted underline-offset-2'
+                        )}
+                      >
+                        {brl(item.preco)}
+                      </button>
+                    )}
                     <button
-                      aria-label={`Remover ${listaDe(cat)[idx]}`}
+                      aria-label={`Remover ${descricaoDe(listaDe(cat)[idx])}`}
                       onClick={() => remover(cat, idx)}
                       className="text-gray-400 hover:text-red-500"
                     >

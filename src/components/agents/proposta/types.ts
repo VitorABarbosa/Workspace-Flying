@@ -25,9 +25,15 @@ export interface Estrutura {
   // Qual das três empresas do grupo emite. Ausente em proposta antiga: Flying.
   emissor?: Emissor
   tabela_precos?: TabelaPrecos
+  // Ajuste sobre a tabela, em %, no preço de cada item — invisível na proposta
+  // (cliente novo costuma ser +10). Diferente do desconto, que é linha visível.
+  ajuste_planilha_pct?: number
+  // Preço único fechado para todas as perspectivas e plantas (ex.: 2400).
+  preco_por_imagem?: number | null
   _avisos: string[]
   // Categorias dinâmicas (externas, internas, plantas, filmes, tecnologia, ...):
-  // cada uma é uma lista de descrições em texto livre.
+  // cada uma é uma lista de ItemEntrada — descrição em texto livre, ou
+  // { descricao, preco } quando o valor daquele item foi fechado à parte.
   [categoria: string]: unknown
 }
 
