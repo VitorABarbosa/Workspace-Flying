@@ -6,6 +6,12 @@ const LISTA = [
     total: 5085, docx_url: null, download: '/propostas/7/docx', pdf: '/propostas/7/pdf' },
 ]
 
+const LISTA_TRES_EMPRESAS = [
+  { ...LISTA[0], id: 7, emissor: 'flying' as const },
+  { ...LISTA[0], id: 8, emissor: 'rinno' as const, total: 39400 },
+  { ...LISTA[0], id: 9, emissor: 'nid' as const, total: 80000 },
+]
+
 describe('HistoricoPainel', () => {
   it('lista propostas com links de download', () => {
     render(<HistoricoPainel propostas={LISTA} onExcluir={jest.fn()} onFiltrar={jest.fn()} carregando={false} />)
@@ -22,5 +28,21 @@ describe('HistoricoPainel', () => {
     expect(onExcluir).not.toHaveBeenCalled()          // ainda não!
     fireEvent.click(screen.getByText('Confirmar exclusão'))
     expect(onExcluir).toHaveBeenCalledWith(7)
+  })
+
+  it('cada proposta mostra a empresa que a emitiu', () => {
+    // Mesmo cliente e mesmo projeto podem ter proposta das três.
+    render(
+      <HistoricoPainel propostas={LISTA_TRES_EMPRESAS} onExcluir={jest.fn()}
+                       onFiltrar={jest.fn()} carregando={false} />
+    )
+    expect(screen.getByText('Flying Studio')).toBeInTheDocument()
+    expect(screen.getByText('Rinno Films')).toBeInTheDocument()
+    expect(screen.getByText('NID Studio')).toBeInTheDocument()
+  })
+
+  it('proposta antiga, sem emissor, aparece como Flying', () => {
+    render(<HistoricoPainel propostas={LISTA} onExcluir={jest.fn()} onFiltrar={jest.fn()} carregando={false} />)
+    expect(screen.getByText('Flying Studio')).toBeInTheDocument()
   })
 })

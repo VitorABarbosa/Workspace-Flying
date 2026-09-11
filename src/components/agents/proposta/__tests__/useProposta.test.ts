@@ -29,6 +29,15 @@ describe('useProposta', () => {
     expect(result.current.erro).toBeNull()
   })
 
+  it('levantarPorTexto manda a empresa escolhida', async () => {
+    // O texto livre não diz de qual das três é a proposta.
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => LEVANTAMENTO })
+    const { result } = renderHook(() => useProposta())
+    await act(() => result.current.levantarPorTexto('filme conceito pra OUSY', 'rinno'))
+    const [, opcoes] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(JSON.parse(opcoes.body)).toEqual({ texto: 'filme conceito pra OUSY', emissor: 'rinno' })
+  })
+
   it('erro HTTP vira mensagem e não quebra', async () => {
     ;(global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
