@@ -98,6 +98,34 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     }
   }
 
+  // Ajuste sobre a planilha e preço por imagem: mesmo rascunho com commit no
+  // blur/Enter, porque cada commit reprecifica no backend.
+  const [ajustePct, setAjustePct] = useState(String(estrutura.ajuste_planilha_pct ?? 0))
+  useEffect(() => {
+    setAjustePct(String(estrutura.ajuste_planilha_pct ?? 0))
+  }, [estrutura.ajuste_planilha_pct])
+  const commitAjuste = () => {
+    const n = parseFloat(ajustePct)
+    const valor = Number.isFinite(n) ? n : 0
+    if (valor !== (estrutura.ajuste_planilha_pct ?? 0)) {
+      onEditar({ ...estrutura, ajuste_planilha_pct: valor })
+    }
+  }
+
+  const [precoImagem, setPrecoImagem] = useState(
+    estrutura.preco_por_imagem == null ? '' : String(estrutura.preco_por_imagem)
+  )
+  useEffect(() => {
+    setPrecoImagem(estrutura.preco_por_imagem == null ? '' : String(estrutura.preco_por_imagem))
+  }, [estrutura.preco_por_imagem])
+  const commitPrecoImagem = () => {
+    const n = parseFloat(precoImagem.replace(/\./g, '').replace(',', '.'))
+    const valor = precoImagem.trim() === '' || !Number.isFinite(n) ? null : Math.round(n)
+    if (valor !== (estrutura.preco_por_imagem ?? null)) {
+      onEditar({ ...estrutura, preco_por_imagem: valor })
+    }
+  }
+
   const ESTRATEGIAS = [
     { valor: 'auto', rotulo: 'Automática' },
     { valor: 'planilha', rotulo: 'Planilha' },
@@ -216,6 +244,41 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
       </div>
       <p className="-mt-2 mb-3 text-[11px] text-gray-400 dark:text-gray-500">
         {AJUDA_ESTRATEGIA[estrutura.estrategia]}
+      </p>
+
+      <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+        <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+          Planilha
+          <input
+            aria-label="Ajuste sobre a planilha (%)"
+            type="number"
+            step={1}
+            value={ajustePct}
+            onChange={(e) => setAjustePct(e.target.value)}
+            onBlur={commitAjuste}
+            onKeyDown={(e) => e.key === 'Enter' && commitAjuste()}
+            className="w-16 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          />
+          %
+        </label>
+        <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+          Preço fixo por imagem R$
+          <input
+            aria-label="Preço fixo por imagem (R$)"
+            inputMode="numeric"
+            placeholder="ex.: 2400"
+            value={precoImagem}
+            onChange={(e) => setPrecoImagem(e.target.value)}
+            onBlur={commitPrecoImagem}
+            onKeyDown={(e) => e.key === 'Enter' && commitPrecoImagem()}
+            className="w-24 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          />
+        </label>
+      </div>
+      <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
+        Os dois entram no preço de cada item e não aparecem na proposta. &quot;Planilha +10%&quot;
+        é o costume para cliente novo; o preço fixo vale para todas as perspectivas e plantas
+        (filme, tour e tecnologia ficam na tabela).
       </p>
 
       {pendencias.length > 0 && (
