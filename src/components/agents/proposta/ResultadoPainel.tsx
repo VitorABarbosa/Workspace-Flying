@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Download, ExternalLink, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { rotuloDaEmpresa } from './empresas'
 import type { PropostaGerada } from './types'
 
 interface Props {
@@ -15,6 +16,10 @@ export function ResultadoPainel({ gerada, onNova }: Props) {
       <CheckCircle2 className="mx-auto h-10 w-10 text-brand-lime" />
       <p className="mt-2 font-semibold text-[#1A1A2E] dark:text-white">
         Proposta #{gerada.proposta_id} gerada
+      </p>
+      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        No timbrado da {rotuloDaEmpresa(gerada.emissor)}. Já está salva no Histórico — dá para
+        baixar de novo, ou excluir, a qualquer hora.
       </p>
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
         <a
@@ -45,17 +50,22 @@ export function ResultadoPainel({ gerada, onNova }: Props) {
             <ExternalLink className="h-3.5 w-3.5" /> Ver no R2
           </a>
         )}
-        <button
-          onClick={onNova}
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-purple dark:text-gray-400"
-        >
-          <RotateCcw className="h-3.5 w-3.5" /> Nova proposta
-        </button>
       </div>
+      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+        O PDF é para enviar ao cliente; o .docx, para editar no Word se precisar de algum ajuste
+        de texto.
+      </p>
+      <button
+        onClick={onNova}
+        className="mt-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand-purple dark:text-gray-400"
+      >
+        <RotateCcw className="h-3.5 w-3.5" /> Nova proposta
+      </button>
       {gerada.avisos.length > 0 && (
-        <ul className="mt-4 space-y-1">
+        <ul className="mt-4 space-y-1 rounded-lg border border-amber-300 bg-amber-50 p-3 text-left dark:border-amber-700 dark:bg-amber-950">
+          <li className="text-xs font-semibold text-amber-700 dark:text-amber-300">Avisos</li>
           {gerada.avisos.map((a, i) => (
-            <li key={i} className="text-xs text-amber-600 dark:text-amber-400">
+            <li key={i} className="text-xs text-amber-700 dark:text-amber-300">
               {a}
             </li>
           ))}

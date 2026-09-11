@@ -13,6 +13,20 @@ import type {
 
 const BASE = '/api/tools/proposta'
 
+/**
+ * Qual ação está em curso. `carregando` sozinho só serve para desabilitar
+ * botão; é a ação que deixa a tela dizer "lendo o print", "gerando o .docx",
+ * em vez de um genérico "carregando" — ou pior, nada.
+ */
+export type AcaoProposta =
+  | 'saudacao'
+  | 'conversar'
+  | 'levantar'
+  | 'reprecificar'
+  | 'gerar'
+  | 'listar'
+  | 'excluir'
+
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   const resp = await fetch(`${BASE}${path}`, {
     method: 'POST',
@@ -27,22 +41,22 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 }
 
 export function useProposta() {
-  const [carregando, setCarregando] = useState(false)
+  const [acao, setAcao] = useState<AcaoProposta | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [levantamento, setLevantamento] = useState<Levantamento | null>(null)
   const [gerada, setGerada] = useState<PropostaGerada | null>(null)
   const [historico, setHistorico] = useState<PropostaListada[] | null>(null)
   const [chat, setChat] = useState<{ mensagens: MensagemChat[]; resposta: RespostaChat } | null>(null)
 
-  const executar = useCallback(async (fn: () => Promise<void>) => {
-    setCarregando(true)
+  const executar = useCallback(async (qual: AcaoProposta, fn: () => Promise<void>) => {
+    setAcao(qual)
     setErro(null)
     try {
       await fn()
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Erro inesperado')
     } finally {
-      setCarregando(false)
+      setAcao(null)
     }
   }, [])
 
@@ -50,7 +64,7 @@ export function useProposta() {
   // das três é a proposta, e sem isso o backend assume Flying.
   const levantarPorTexto = useCallback(
     (texto: string, emissor?: Emissor) =>
-      executar(async () => {
+      executar('levantar', async () => {
         setLevantamento(await postJson<Levantamento>('/levantamento', { texto, emissor }))
       }),
     [executar]
@@ -58,7 +72,7 @@ export function useProposta() {
 
   const reprecificar = useCallback(
     (estrutura: Estrutura) =>
-      executar(async () => {
+      executar('reprecificar', async () => {
         setLevantamento(await postJson<Levantamento>('/levantamento', { estrutura }))
       }),
     [executar]
@@ -66,7 +80,7 @@ export function useProposta() {
 
   const gerar = useCallback(
     (estrutura: Estrutura) =>
-      executar(async () => {
+      executar('gerar', async () => {
         setGerada(await postJson<PropostaGerada>('/propostas', { estrutura }))
       }),
     [executar]
@@ -74,7 +88,7 @@ export function useProposta() {
 
   const listarHistorico = useCallback(
     (cliente?: string) =>
-      executar(async () => {
+      executar('listar', async () => {
         const q = cliente ? `?cliente=${encodeURIComponent(cliente)}` : ''
         const resp = await fetch(`${BASE}/propostas${q}`)
         if (!resp.ok) throw new Error(`Erro ${resp.status}`)
@@ -85,7 +99,7 @@ export function useProposta() {
 
   const excluirProposta = useCallback(
     (id: number) =>
-      executar(async () => {
+      executar('excluir', async () => {
         const resp = await fetch(`${BASE}/propostas/${id}`, { method: 'DELETE' })
         if (!resp.ok) throw new Error(`Erro ${resp.status}`)
         setHistorico((h) => (h ?? []).filter((p) => p.id !== id))
@@ -95,7 +109,8 @@ export function useProposta() {
 
   const conversar = useCallback(
     (mensagens: MensagemChat[]) =>
-      executar(async () => {
+      // Sem mensagem é o pedido da saudação inicial: a tela mostra outra coisa.
+      executar(mensagens.length ? 'conversar' : 'saudacao', async () => {
         const resp = await postJson<RespostaChat>('/chat', { mensagens })
         setChat({ mensagens, resposta: resp })
         if (resp.levantamento) setLevantamento(resp.levantamento)
@@ -114,7 +129,8 @@ export function useProposta() {
   }, [])
 
   return {
-    carregando,
+    carregando: acao !== null,
+    acao,
     erro,
     levantamento,
     gerada,

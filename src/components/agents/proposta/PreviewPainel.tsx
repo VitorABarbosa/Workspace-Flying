@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { Carregando } from './Carregando'
+import type { AcaoProposta } from './useProposta'
 import {
   EMPRESAS,
   type Emissor,
@@ -35,10 +37,18 @@ interface Props {
   levantamento: Levantamento
   onEditar: (estrutura: Estrutura) => void
   carregando: boolean
+  acao?: AcaoProposta | null
 }
 
-export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
+const AJUDA_ESTRATEGIA: Record<Estrutura['estrategia'], string> = {
+  auto: 'Usa o histórico do cliente se ele já tiver proposta; senão, a tabela de preços.',
+  planilha: 'Preço da tabela oficial da empresa, ignorando o histórico do cliente.',
+  historico: 'Repete o preço médio que o cliente pagou no último projeto.',
+}
+
+export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Props) {
   const { estrutura, fechado, estrategia_usada, avisos, pendencias } = levantamento
+  const reprecificando = carregando && acao === 'reprecificar'
   const empresa = empresaDe(estrutura.emissor)
   const categorias = categoriasDe(fechado.orcamento)
   // Estado do rascunho "novo item" derivado dinamicamente por categoria; chaves ausentes
@@ -114,11 +124,22 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
 
   return (
     <div
+      aria-busy={carregando}
       className={cn(
-        'rounded-xl border border-gray-200 bg-[#F1F1F1] p-6 dark:border-gray-700 dark:bg-[#1A1A1A]',
-        carregando && 'pointer-events-none opacity-60'
+        'relative rounded-xl border border-gray-200 bg-[#F1F1F1] p-6 dark:border-gray-700 dark:bg-[#1A1A1A]',
+        carregando && 'pointer-events-none'
       )}
     >
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-semibold text-[#1A1A2E] dark:text-white">Preview da proposta</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Tudo aqui é editável; cada mudança reprecifica na hora. Nada é gravado até você gerar.
+          </p>
+        </div>
+        {reprecificando && <Carregando acao={acao} />}
+      </div>
+      <div className={cn('transition-opacity', carregando && 'opacity-60')}>
       <div className="mb-4 grid gap-2 sm:grid-cols-3">
         {CAMPOS_CLIENTE.map(({ chave, rotulo, placeholder }) => (
           <label key={chave} className="block">
@@ -135,7 +156,7 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
           </label>
         ))}
       </div>
-      <div className="mb-3 flex items-center gap-2 text-xs">
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
         <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
           Estratégia
           <select
@@ -151,7 +172,9 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
             ))}
           </select>
         </label>
-        <span className="text-gray-400">(usada: {estrategia_usada})</span>
+        <span className="text-gray-400" title={`Fonte dos preços desta rodada: ${estrategia_usada}`}>
+          (usada: {estrategia_usada})
+        </span>
         <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
           Empresa
           <select
@@ -191,9 +214,15 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
           </label>
         )}
       </div>
+      <p className="-mt-2 mb-3 text-[11px] text-gray-400 dark:text-gray-500">
+        {AJUDA_ESTRATEGIA[estrutura.estrategia]}
+      </p>
 
       {pendencias.length > 0 && (
         <ul className="mb-4 space-y-1 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
+          <li className="text-xs font-semibold text-amber-800 dark:text-amber-200">
+            Falta para gerar:
+          </li>
           {pendencias.map((p, i) => (
             <li key={i} className="text-xs font-medium text-amber-700 dark:text-amber-300">
               {p}
@@ -239,7 +268,7 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
                 value={novoItem[cat] ?? ''}
                 onChange={(e) => setNovoItem((s) => ({ ...s, [cat]: e.target.value }))}
                 onKeyDown={(e) => e.key === 'Enter' && adicionar(cat)}
-                placeholder="adicionar item…"
+                placeholder={`adicionar em ${rotulo.toLowerCase()}… (Enter)`}
                 className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-xs dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
               />
               <button
@@ -293,7 +322,10 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
       </div>
 
       {avisos.length > 0 && (
-        <ul className="mt-3 space-y-1">
+        <ul className="mt-3 space-y-1 rounded-lg border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-800 dark:bg-amber-950/40">
+          <li className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+            Avisos (não impedem de gerar)
+          </li>
           {avisos.map((a, i) => (
             <li key={i} className="text-xs text-amber-600 dark:text-amber-400">
               {a}
@@ -301,6 +333,7 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
           ))}
         </ul>
       )}
+      </div>
     </div>
   )
 }
