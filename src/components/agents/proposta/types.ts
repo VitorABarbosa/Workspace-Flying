@@ -1,5 +1,8 @@
+import type { Emissor, TabelaPrecos } from './empresas'
+
 // Categorias deixaram de ser fixas: vêm dinamicamente do backend (preco_categoria).
 // Continua string simples — sem union — para aceitar qualquer categoria do catálogo.
+// As da Rinno vêm prefixadas com `rinno_` e as da NID com `nid_`.
 export type CategoriaKey = string
 
 export interface Cliente {
@@ -19,7 +22,9 @@ export interface Estrutura {
   desconto_label: string | null
   estrategia: 'auto' | 'planilha' | 'historico'
   mostrar_precos_individuais: boolean
-  tabela_precos?: 'padrao' | 'mcmv'
+  // Qual das três empresas do grupo emite. Ausente em proposta antiga: Flying.
+  emissor?: Emissor
+  tabela_precos?: TabelaPrecos
   _avisos: string[]
   // Categorias dinâmicas (externas, internas, plantas, filmes, tecnologia, ...):
   // cada uma é uma lista de descrições em texto livre.
@@ -63,6 +68,7 @@ export interface Levantamento {
   estrutura: Estrutura
   fechado: Fechado
   estrategia_usada: string
+  emissor?: Emissor
   avisos: string[]
   pendencias: string[]
 }
@@ -72,12 +78,14 @@ export interface PropostaGerada {
   docx_url: string | null
   download: string
   fechado: Fechado
+  emissor?: Emissor
   avisos: string[]
 }
 
 export interface PropostaListada {
   id: number
   cliente: string
+  emissor?: Emissor
   referencia: string | null
   data: string
   total: number

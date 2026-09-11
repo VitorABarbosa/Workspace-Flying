@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Download, FileText, Search, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { rotuloDaEmpresa } from './empresas'
 import type { PropostaListada } from './types'
 
 interface Props {
@@ -60,6 +61,7 @@ export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando }:
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400">
+              <th className="py-2 pr-4 font-medium">Empresa</th>
               <th className="py-2 pr-4 font-medium">Cliente</th>
               <th className="py-2 pr-4 font-medium">Projeto</th>
               <th className="py-2 pr-4 font-medium">Data</th>
@@ -70,6 +72,9 @@ export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando }:
           <tbody>
             {propostas.map((p) => (
               <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800">
+                <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">
+                  {rotuloDaEmpresa(p.emissor)}
+                </td>
                 <td className="py-2 pr-4 text-[#1A1A2E] dark:text-white">{p.cliente}</td>
                 <td className="py-2 pr-4 text-[#1A1A2E] dark:text-white">{p.referencia ?? '—'}</td>
                 <td className="py-2 pr-4 text-[#1A1A2E] dark:text-white">{formatarData(p.data)}</td>

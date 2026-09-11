@@ -3,6 +3,13 @@
 import { useEffect, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import {
+  EMPRESAS,
+  type Emissor,
+  empresaDe,
+  tabelaPadraoDe,
+  tabelaValidaPara,
+} from './empresas'
 import type { CategoriaMeta, CategoriaOrcada, Estrutura, Fechado, Levantamento } from './types'
 
 const brl = (v: number) =>
@@ -23,10 +30,6 @@ const categoriasDe = (orcamento: Fechado['orcamento']): CategoriaMeta[] =>
 const categoriaOrcadaDe = (orcamento: Fechado['orcamento'], nome: string): CategoriaOrcada =>
   (orcamento[nome] as CategoriaOrcada | undefined) ?? { nome, qtd: 0, total: 0, itens: [] }
 
-const TABELAS = [
-  { valor: 'padrao', rotulo: 'Padrão' },
-  { valor: 'mcmv', rotulo: 'MCMV' },
-] as const
 
 interface Props {
   levantamento: Levantamento
@@ -36,6 +39,7 @@ interface Props {
 
 export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
   const { estrutura, fechado, estrategia_usada, avisos, pendencias } = levantamento
+  const empresa = empresaDe(estrutura.emissor)
   const categorias = categoriasDe(fechado.orcamento)
   // Estado do rascunho "novo item" derivado dinamicamente por categoria; chaves ausentes
   // (categoria nova que ainda não foi digitada) caem no fallback '' na leitura.
@@ -149,20 +153,43 @@ export function PreviewPainel({ levantamento, onEditar, carregando }: Props) {
         </label>
         <span className="text-gray-400">(usada: {estrategia_usada})</span>
         <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-          Tabela
+          Empresa
           <select
-            aria-label="Tabela"
-            value={estrutura.tabela_precos ?? 'padrao'}
-            onChange={(e) =>
-              onEditar({ ...estrutura, tabela_precos: e.target.value as Estrutura['tabela_precos'] })
-            }
+            aria-label="Empresa"
+            value={empresa.chave}
+            onChange={(e) => {
+              // Trocar de empresa troca a tabela junto: tabela que não é da
+              // empresa escolhida o backend recusa com 422.
+              const emissor = e.target.value as Emissor
+              onEditar({ ...estrutura, emissor, tabela_precos: tabelaPadraoDe(emissor) })
+            }}
             className="rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
           >
-            {TABELAS.map(({ valor, rotulo }) => (
-              <option key={valor} value={valor}>{rotulo}</option>
+            {EMPRESAS.map(({ chave, rotulo }) => (
+              <option key={chave} value={chave}>{rotulo}</option>
             ))}
           </select>
         </label>
+        {empresa.tabelas.length > 1 && (
+          <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+            Tabela
+            <select
+              aria-label="Tabela"
+              value={tabelaValidaPara(empresa.chave, estrutura.tabela_precos)}
+              onChange={(e) =>
+                onEditar({
+                  ...estrutura,
+                  tabela_precos: e.target.value as Estrutura['tabela_precos'],
+                })
+              }
+              className="rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+            >
+              {empresa.tabelas.map(({ valor, rotulo }) => (
+                <option key={valor} value={valor}>{rotulo}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       {pendencias.length > 0 && (

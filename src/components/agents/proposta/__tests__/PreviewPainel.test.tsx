@@ -126,3 +126,41 @@ describe('PreviewPainel', () => {
     )
   })
 })
+
+describe('PreviewPainel — empresa emissora', () => {
+  it('sem emissor na estrutura, mostra Flying (proposta antiga)', () => {
+    render(<PreviewPainel levantamento={LEV} onEditar={jest.fn()} carregando={false} />)
+    expect(screen.getByLabelText('Empresa')).toHaveValue('flying')
+  })
+
+  it('trocar de empresa leva a tabela da empresa junto', () => {
+    // Mandar a tabela da Flying com emissor da Rinno o backend recusa com 422.
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    fireEvent.change(screen.getByLabelText('Empresa'), { target: { value: 'rinno' } })
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ emissor: 'rinno', tabela_precos: 'rinno' })
+    )
+  })
+
+  it('só a Flying mostra o seletor de tabela (padrão/MCMV)', () => {
+    const { rerender } = render(
+      <PreviewPainel levantamento={LEV} onEditar={jest.fn()} carregando={false} />
+    )
+    expect(screen.getByLabelText('Tabela')).toBeInTheDocument()
+
+    const naNid = { ...LEV, estrutura: { ...LEV.estrutura, emissor: 'nid' as const } }
+    rerender(<PreviewPainel levantamento={naNid} onEditar={jest.fn()} carregando={false} />)
+    expect(screen.getByLabelText('Empresa')).toHaveValue('nid')
+    expect(screen.queryByLabelText('Tabela')).not.toBeInTheDocument()
+  })
+
+  it('tabela inválida para a empresa não fica presa no select', () => {
+    const inconsistente = {
+      ...LEV,
+      estrutura: { ...LEV.estrutura, emissor: 'flying' as const, tabela_precos: 'nid' as const },
+    }
+    render(<PreviewPainel levantamento={inconsistente} onEditar={jest.fn()} carregando={false} />)
+    expect(screen.getByLabelText('Tabela')).toHaveValue('padrao')
+  })
+})
