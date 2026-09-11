@@ -211,3 +211,65 @@ describe('PropostaAgent — print anexado', () => {
     })
   })
 })
+
+describe('PropostaAgent — orientação de fluxo', () => {
+  beforeEach(() => {
+    global.fetch = jest.fn((url: string, opts?: { body?: string }) => {
+      if (url.endsWith('/chat')) {
+        const body = opts?.body ? JSON.parse(opts.body) : { mensagens: [] }
+        const primeira = body.mensagens.length === 0
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            mensagem: primeira ? 'Oi!' : 'Perfeito, revise ao lado.',
+            quick_replies: [],
+            levantamento: primeira ? null : {
+              estrutura: { cliente: { empresa: 'GALLI', ref: 'Aurora', contato: 'Daniel' },
+                           desconto_pct: 0, desconto_label: null, estrategia: 'auto',
+                           mostrar_precos_individuais: false, _avisos: [] },
+              fechado: { orcamento: { estrategia: 'planilha', subtotal: 0, total_imagens: 0, _categorias: [] },
+                         financeiro: { subtotal: 0, desconto_pct: 0, desconto_valor: 0, total: 0, rotulo: '' } },
+              estrategia_usada: 'planilha', avisos: [], pendencias: [],
+            },
+            propostas_citadas: [],
+          }),
+        })
+      }
+      return Promise.reject(new Error(`URL inesperada: ${url}`))
+    }) as unknown as typeof fetch
+  })
+
+  it('o guia começa no passo 1 e avança para o 2 quando o preview aparece', async () => {
+    render(<PropostaAgent />)
+    await waitFor(() => expect(screen.getByText('Oi!')).toBeInTheDocument())
+
+    const passoAtual = () => screen.getAllByRole('listitem', { current: 'step' })[0]
+    expect(passoAtual()).toHaveTextContent('Descreva o pedido')
+
+    fireEvent.change(screen.getByPlaceholderText(/Escreva aqui/), { target: { value: 'proposta para GALLI' } })
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText('Enviar mensagem'))
+    })
+    await waitFor(() => expect(screen.getByText('Perfeito, revise ao lado.')).toBeInTheDocument())
+    expect(passoAtual()).toHaveTextContent('Revise o preview')
+  })
+
+  it('cada aba explica para que serve', () => {
+    render(<PropostaAgent />)
+    expect(screen.getByText(/Conversa guiada/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Texto direto' }))
+    expect(screen.getByText(/Cole o pedido inteiro de uma vez, sem conversa/)).toBeInTheDocument()
+  })
+
+  it('erro tem título, orientação e botão de fechar', async () => {
+    ;(global.fetch as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({ ok: false, status: 503, text: async () => 'fora do ar' })
+    )
+    render(<PropostaAgent />)
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument())
+    expect(screen.getByText('Não deu certo')).toBeInTheDocument()
+    expect(screen.getByText(/503/)).toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText('Fechar erro'))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})

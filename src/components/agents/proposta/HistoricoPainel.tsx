@@ -3,14 +3,17 @@
 import { useState } from 'react'
 import { Download, FileText, Search, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { Carregando, SpinnerBotao } from './Carregando'
 import { rotuloDaEmpresa } from './empresas'
 import type { PropostaListada } from './types'
+import type { AcaoProposta } from './useProposta'
 
 interface Props {
   propostas: PropostaListada[]
   onExcluir: (id: number) => void
   onFiltrar: (cliente: string) => void
   carregando: boolean
+  acao?: AcaoProposta | null
 }
 
 function formatarData(data: string) {
@@ -21,12 +24,20 @@ function formatarTotal(total: number) {
   return total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando }: Props) {
+export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando, acao }: Props) {
   const [cliente, setCliente] = useState('')
   const [confirmando, setConfirmando] = useState<number | null>(null)
+  const listando = carregando && acao === 'listar'
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-[#F1F1F1] p-6 dark:border-gray-700 dark:bg-[#1A1A1A]">
+    <div
+      aria-busy={carregando}
+      className="rounded-xl border border-gray-200 bg-[#F1F1F1] p-6 dark:border-gray-700 dark:bg-[#1A1A1A]"
+    >
+      <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        Todas as propostas geradas, da mais recente para a mais antiga. Baixe o PDF para enviar
+        ao cliente ou o .docx para editar; excluir apaga também o arquivo no Cloudflare.
+      </p>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <label className="text-sm font-medium text-[#1A1A2E] dark:text-white" htmlFor="filtro-cliente">
           Filtrar por cliente
@@ -36,7 +47,8 @@ export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando }:
             id="filtro-cliente"
             value={cliente}
             onChange={(e) => setCliente(e.target.value)}
-            placeholder="Nome do cliente"
+            placeholder="Nome do cliente (vazio = todos)"
+            onKeyDown={(e) => e.key === 'Enter' && onFiltrar(cliente)}
             className={cn(
               'rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm',
               'text-[#1A1A2E] placeholder:text-gray-400 focus:border-brand-purple focus:outline-none',
@@ -52,9 +64,10 @@ export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando }:
               'disabled:cursor-not-allowed disabled:opacity-50'
             )}
           >
-            <Search className="h-4 w-4" /> Filtrar
+            {listando ? <SpinnerBotao /> : <Search className="h-4 w-4" />} Filtrar
           </button>
         </div>
+        {carregando && <Carregando acao={acao} />}
       </div>
 
       <div className="overflow-x-auto">
@@ -133,9 +146,10 @@ export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando }:
             ))}
           </tbody>
         </table>
-        {propostas.length === 0 && (
+        {propostas.length === 0 && !listando && (
           <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            {carregando ? 'Carregando…' : 'Nenhuma proposta encontrada.'}
+            Nenhuma proposta encontrada. As que você gerar nas abas Chat e Texto direto aparecem
+            aqui.
           </p>
         )}
       </div>

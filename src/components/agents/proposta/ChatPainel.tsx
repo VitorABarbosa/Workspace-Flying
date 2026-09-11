@@ -1,17 +1,48 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Download, FileText, ImagePlus, Send, X } from 'lucide-react'
+import { Download, FileText, ImagePlus, Loader2, Send, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { SpinnerBotao } from './Carregando'
 import { MAX_PRINTS, PrintInvalido, prepararPrint, type PrintPreparado } from './prepararPrint'
 import type { MensagemChat, ParteConteudo, PropostaCitada } from './types'
+import type { AcaoProposta } from './useProposta'
 
 interface Props {
   mensagens: MensagemChat[]
   quickReplies: string[]
   onEnviar: (texto: string, prints?: PrintPreparado[]) => void
   carregando: boolean
+  acao?: AcaoProposta | null
   propostasCitadas?: PropostaCitada[]
+}
+
+const DICAS = [
+  'Diga a construtora, o empreendimento, o A/C e os itens — tudo de uma vez ou aos poucos.',
+  'Anexe um print do e-mail ou do WhatsApp com o pedido: a IA lê e monta a proposta.',
+  'Para repetir um cliente, peça "copiar a última proposta da GALLI" e ajuste o que mudou.',
+  'Os preços nunca vêm da IA: saem da tabela oficial ou do histórico do cliente.',
+]
+
+/** O que o chat diz enquanto espera a resposta, conforme o que foi mandado. */
+function fraseDeEspera(acao: AcaoProposta | null | undefined, ultima?: MensagemChat): string {
+  if (acao === 'saudacao') return 'Iniciando o chat…'
+  if (ultima && typeof ultima.content !== 'string') return 'Lendo o print e montando a proposta…'
+  return 'Pensando… lendo o pedido e montando a proposta.'
+}
+
+/** Bolha do assistente com spinner — ocupa o lugar da resposta que vem aí. */
+function BolhaEsperando({ texto }: { texto: string }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="inline-flex max-w-[80%] items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500 dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-gray-400"
+    >
+      <Loader2 className="h-4 w-4 animate-spin text-brand-purple" aria-hidden="true" />
+      {texto}
+    </div>
+  )
 }
 
 /** Bolha do chat: texto puro, ou texto + prints quando a mensagem tem anexo. */
@@ -37,7 +68,9 @@ function Bolha({ mensagem }: { mensagem: MensagemChat }) {
   )
 }
 
-export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, propostasCitadas = [] }: Props) {
+export function ChatPainel({
+  mensagens, quickReplies, onEnviar, carregando, acao, propostasCitadas = [],
+}: Props) {
   const [texto, setTexto] = useState('')
   const [prints, setPrints] = useState<PrintPreparado[]>([])
   const [erroAnexo, setErroAnexo] = useState<string | null>(null)
@@ -46,7 +79,11 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, prop
 
   useEffect(() => {
     fimRef.current?.scrollIntoView?.({ behavior: 'smooth' })
-  }, [mensagens])
+  }, [mensagens, carregando])
+
+  // As dicas ficam até a primeira mensagem da pessoa; depois só atrapalham.
+  const aindaNaoFalou = !mensagens.some((m) => m.role === 'user')
+  const esperando = carregando && (acao === 'saudacao' || acao === 'conversar')
 
   async function anexar(arquivos: FileList | null) {
     if (!arquivos?.length) return
@@ -79,7 +116,22 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, prop
   }
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-gray-200 bg-[#F1F1F1] p-6 dark:border-gray-700 dark:bg-[#1A1A1A]">
+    <div
+      aria-busy={esperando}
+      // Sem h-full: no grid ao lado do preview, 100% seria a altura do preview
+      // e o chat virava um bloco cinza vazio embaixo do input.
+      className="flex flex-col rounded-xl border border-gray-200 bg-[#F1F1F1] p-6 dark:border-gray-700 dark:bg-[#1A1A1A]"
+    >
+      {aindaNaoFalou && (
+        <div className="mb-3 rounded-lg border border-dashed border-brand-purple/40 bg-white/60 p-3 text-xs text-gray-600 dark:bg-[#0F0F0F]/60 dark:text-gray-300">
+          <p className="mb-1 font-semibold text-[#1A1A2E] dark:text-white">Como usar o chat</p>
+          <ul className="list-disc space-y-0.5 pl-4">
+            {DICAS.map((d) => (
+              <li key={d}>{d}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="flex max-h-[420px] min-h-[240px] flex-col gap-3 overflow-y-auto pr-1">
         {mensagens.map((m, i) => (
           <div
@@ -94,6 +146,7 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, prop
             <Bolha mensagem={m} />
           </div>
         ))}
+        {esperando && <BolhaEsperando texto={fraseDeEspera(acao, mensagens.at(-1))} />}
         <div ref={fimRef} />
       </div>
 
@@ -201,7 +254,11 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, prop
             if (e.key === 'Enter') enviar(texto)
           }}
           disabled={carregando}
-          placeholder="Escreva aqui… (ex.: proposta para GALLI, 3 externas)"
+          placeholder={
+            carregando
+              ? 'Aguarde a resposta…'
+              : 'Escreva aqui… (ex.: proposta para GALLI, 3 externas) e aperte Enter'
+          }
           className={cn(
             'flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm',
             'text-[#1A1A2E] placeholder:text-gray-400 focus:border-brand-purple focus:outline-none',
@@ -217,7 +274,7 @@ export function ChatPainel({ mensagens, quickReplies, onEnviar, carregando, prop
             'hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50'
           )}
         >
-          <Send className="h-4 w-4" />
+          {esperando ? <SpinnerBotao /> : <Send className="h-4 w-4" />}
         </button>
       </div>
     </div>
