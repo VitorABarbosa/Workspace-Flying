@@ -263,3 +263,62 @@ describe('PreviewPainel — áreas do empreendimento', () => {
     expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ ambientes: null }))
   })
 })
+
+describe('PreviewPainel — tudo é alterável à mão', () => {
+  it('a descrição do item se reescreve clicando nela', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    fireEvent.click(screen.getByText('Perspectiva Fachada'))
+    const campo = screen.getByLabelText('Descrição de Fachada')
+    fireEvent.change(campo, { target: { value: 'Fachada noturna vista da calçada' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ externas: ['Fachada noturna vista da calçada'] })
+    )
+  })
+
+  it('reescrever a descrição não perde o preço já fechado', () => {
+    const onEditar = jest.fn()
+    const comPrecoFechado = {
+      ...LEV,
+      estrutura: { ...LEV.estrutura, externas: [{ descricao: 'Fachada', preco: 5000 }] },
+    }
+    render(<PreviewPainel levantamento={comPrecoFechado} onEditar={onEditar} carregando={false} />)
+    fireEvent.click(screen.getByText('Perspectiva Fachada'))
+    const campo = screen.getByLabelText('Descrição de Fachada')
+    fireEvent.change(campo, { target: { value: 'Fachada noturna' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ externas: [{ descricao: 'Fachada noturna', preco: 5000 }] })
+    )
+  })
+
+  it('descrição vazia não apaga o item', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    fireEvent.click(screen.getByText('Perspectiva Fachada'))
+    const campo = screen.getByLabelText('Descrição de Fachada')
+    fireEvent.change(campo, { target: { value: '   ' } })
+    fireEvent.blur(campo)
+    expect(onEditar).not.toHaveBeenCalled()
+  })
+
+  it('o investimento pode ser cravado num valor', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Fechar o investimento em (R$)')
+    fireEvent.change(campo, { target: { value: '100 mil' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ total_fechado: 100000 }))
+  })
+
+  it('campo vazio volta ao desconto por percentual', () => {
+    const onEditar = jest.fn()
+    const fechado = { ...LEV, estrutura: { ...LEV.estrutura, total_fechado: 100000 } }
+    render(<PreviewPainel levantamento={fechado} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Fechar o investimento em (R$)')
+    fireEvent.change(campo, { target: { value: '' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ total_fechado: null }))
+  })
+})

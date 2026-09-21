@@ -20,6 +20,12 @@ export function comPreco(item: ItemEntrada, preco: number | null): ItemEntrada {
   return preco == null ? descricao : { descricao, preco }
 }
 
+/** Devolve a entrada com outra descrição, sem perder o preço fechado. */
+export function comDescricao(item: ItemEntrada, descricao: string): ItemEntrada {
+  const preco = precoInformadoDe(item)
+  return preco == null ? descricao : { descricao, preco }
+}
+
 /** "15.000" → 15000; "15 mil" → 15000; vazio ou lixo → null. */
 export function lerPreco(texto: string): number | null {
   const t = texto.trim().toLowerCase()
