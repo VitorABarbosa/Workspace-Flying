@@ -127,6 +127,23 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     }
   }
 
+  // Quantidade de áreas de lazer: o tour virtual é cobrado por ambiente, então
+  // este número multiplica o preço de cada etapa. Fica vazio até alguém
+  // informar — presumir 1 é o erro que faz a proposta sair sete vezes barata.
+  const [ambientes, setAmbientes] = useState(
+    estrutura.ambientes == null ? '' : String(estrutura.ambientes)
+  )
+  useEffect(() => {
+    setAmbientes(estrutura.ambientes == null ? '' : String(estrutura.ambientes))
+  }, [estrutura.ambientes])
+  const commitAmbientes = () => {
+    const n = parseInt(ambientes, 10)
+    const valor = ambientes.trim() === '' || !Number.isFinite(n) || n < 1 ? null : n
+    if (valor !== (estrutura.ambientes ?? null)) {
+      onEditar({ ...estrutura, ambientes: valor })
+    }
+  }
+
   const ESTRATEGIAS = [
     { valor: 'auto', rotulo: 'Automática' },
     { valor: 'planilha', rotulo: 'Planilha' },
@@ -294,12 +311,28 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
             className="w-24 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
           />
         </label>
+        <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+          Áreas do empreendimento
+          <input
+            aria-label="Quantidade de áreas/ambientes"
+            type="number"
+            min={1}
+            step={1}
+            placeholder="ex.: 7"
+            value={ambientes}
+            onChange={(e) => setAmbientes(e.target.value)}
+            onBlur={commitAmbientes}
+            onKeyDown={(e) => e.key === 'Enter' && commitAmbientes()}
+            className="w-16 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          />
+        </label>
       </div>
       <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
-        Os dois entram no preço de cada item e não aparecem na proposta. &quot;Planilha +10%&quot;
-        é o costume para cliente novo; o preço fixo vale para todas as perspectivas e plantas
-        (filme, tour e tecnologia ficam na tabela). Para fechar o valor de um item só, clique no
-        preço dele na lista.
+        Os dois primeiros entram no preço de cada item e não aparecem na proposta.
+        &quot;Planilha +10%&quot; é o costume para cliente novo; o preço fixo vale para todas as
+        perspectivas e plantas (filme e tecnologia ficam na tabela). As áreas do empreendimento
+        multiplicam o tour virtual, que é cobrado por ambiente. Para fechar o valor de um item
+        só, clique no preço dele na lista.
       </p>
 
       {pendencias.length > 0 && (
