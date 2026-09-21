@@ -268,7 +268,7 @@ describe('PropostaAgent — orientação de fluxo', () => {
     render(<PropostaAgent />)
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument())
     expect(screen.getByText('Não deu certo')).toBeInTheDocument()
-    expect(screen.getByText(/503/)).toBeInTheDocument()
+    expect(screen.getByText(/serviço de propostas está indisponível/)).toBeInTheDocument()
     fireEvent.click(screen.getByLabelText('Fechar erro'))
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
