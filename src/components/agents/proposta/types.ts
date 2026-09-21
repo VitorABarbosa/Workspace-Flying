@@ -32,6 +32,8 @@ export interface Estrutura {
   preco_por_imagem?: number | null
   /** Áreas do empreendimento: multiplica o tour virtual, cobrado por ambiente. */
   ambientes?: number | null
+  /** Valor final negociado da proposta inteira; o desconto vira a diferença. */
+  total_fechado?: number | null
   _avisos: string[]
   // Categorias dinâmicas (externas, internas, plantas, filmes, tecnologia, ...):
   // cada uma é uma lista de ItemEntrada — descrição em texto livre, ou

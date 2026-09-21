@@ -12,7 +12,9 @@ import {
   tabelaPadraoDe,
   tabelaValidaPara,
 } from './empresas'
-import { comPreco, descricaoDe, lerPreco, precoInformadoDe, type ItemEntrada } from './itens'
+import {
+  comDescricao, comPreco, descricaoDe, lerPreco, precoInformadoDe, type ItemEntrada,
+} from './itens'
 import type { CategoriaMeta, CategoriaOrcada, Estrutura, Fechado, Levantamento } from './types'
 
 const brl = (v: number) =>
@@ -99,6 +101,22 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     }
   }
 
+  // Valor fechado da proposta inteira: "fechamos por 100 mil". O desconto vira
+  // a diferença até esse número, então quem digita aqui manda no percentual
+  // acima — é o jeito de escrever o valor que o cliente vai ler.
+  const [totalFechado, setTotalFechado] = useState(
+    estrutura.total_fechado == null ? '' : String(estrutura.total_fechado)
+  )
+  useEffect(() => {
+    setTotalFechado(estrutura.total_fechado == null ? '' : String(estrutura.total_fechado))
+  }, [estrutura.total_fechado])
+  const commitTotalFechado = () => {
+    const valor = lerPreco(totalFechado)
+    if (valor !== (estrutura.total_fechado ?? null)) {
+      onEditar({ ...estrutura, total_fechado: valor })
+    }
+  }
+
   // Ajuste sobre a planilha e preço por imagem: mesmo rascunho com commit no
   // blur/Enter, porque cada commit reprecifica no backend.
   const [ajustePct, setAjustePct] = useState(String(estrutura.ajuste_planilha_pct ?? 0))
@@ -178,6 +196,25 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     const lista = listaDe(cat)
     if (novo === precoInformadoDe(lista[idx])) return
     onEditar({ ...estrutura, [cat]: lista.map((e, i) => (i === idx ? comPreco(e, novo) : e)) })
+  }
+
+  // Descrição do item: mesma ideia do preço — clicar abre o campo. Sem isto,
+  // corrigir uma palavra obrigava a remover o item e digitar tudo de novo, e
+  // a proposta sai com o texto que o cliente lê.
+  const [editandoDesc, setEditandoDesc] = useState<{ cat: string; idx: number } | null>(null)
+  const [descRascunho, setDescRascunho] = useState('')
+  const abrirDesc = (cat: string, idx: number) => {
+    setEditandoDesc({ cat, idx })
+    setDescRascunho(descricaoDe(listaDe(cat)[idx]))
+  }
+  const commitDesc = () => {
+    if (!editandoDesc) return
+    const { cat, idx } = editandoDesc
+    setEditandoDesc(null)
+    const nova = descRascunho.trim()
+    const lista = listaDe(cat)
+    if (!nova || nova === descricaoDe(lista[idx])) return
+    onEditar({ ...estrutura, [cat]: lista.map((e, i) => (i === idx ? comDescricao(e, nova) : e)) })
   }
 
   const adicionar = (cat: string) => {
@@ -364,7 +401,29 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
                   key={`${item.descricao}-${idx}`}
                   className="flex items-center justify-between border-b border-gray-200 py-1 text-sm dark:border-gray-700"
                 >
-                  <span className="text-[#1A1A2E] dark:text-white">{item.descricao}</span>
+                  {editandoDesc?.cat === cat && editandoDesc.idx === idx ? (
+                    <input
+                      autoFocus
+                      aria-label={`Descrição de ${descricaoDe(listaDe(cat)[idx])}`}
+                      value={descRascunho}
+                      onChange={(e) => setDescRascunho(e.target.value)}
+                      onBlur={commitDesc}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') commitDesc()
+                        if (e.key === 'Escape') setEditandoDesc(null)
+                      }}
+                      className="mr-2 flex-1 rounded border border-brand-purple bg-white px-1 py-0.5 text-sm text-[#1A1A2E] dark:bg-[#0F0F0F] dark:text-white"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      title="Clique para editar a descrição"
+                      onClick={() => abrirDesc(cat, idx)}
+                      className="mr-2 flex-1 rounded px-1 text-left text-[#1A1A2E] hover:bg-brand-purple/10 dark:text-white"
+                    >
+                      {item.descricao}
+                    </button>
+                  )}
                   <span className="flex items-center gap-2">
                     {editandoPreco?.cat === cat && editandoPreco.idx === idx ? (
                       <input
@@ -463,10 +522,27 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
           </span>
           <span>-{brl(fechado.financeiro.desconto_valor)}</span>
         </div>
-        <div className="mt-2 flex justify-between text-base font-bold text-[#1A1A2E] dark:text-white">
-          <span>Investimento</span>
+        <div className="mt-2 flex items-center justify-between text-base font-bold text-[#1A1A2E] dark:text-white">
+          <span className="flex items-center gap-2">
+            Investimento
+            <input
+              aria-label="Fechar o investimento em (R$)"
+              inputMode="numeric"
+              placeholder="fechar em R$…"
+              value={totalFechado}
+              onChange={(e) => setTotalFechado(e.target.value)}
+              onBlur={commitTotalFechado}
+              onKeyDown={(e) => e.key === 'Enter' && commitTotalFechado()}
+              className="w-28 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs font-normal dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+            />
+          </span>
           <span className="text-brand-purple">{brl(fechado.financeiro.total)}</span>
         </div>
+        <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
+          Tudo aqui é negociável: clique na descrição ou no preço de um item para reescrever, e
+          use &quot;fechar em R$&quot; para cravar o valor final — o desconto vira a diferença.
+          Deixe vazio para voltar ao desconto por percentual.
+        </p>
       </div>
 
       {avisos.length > 0 && (
