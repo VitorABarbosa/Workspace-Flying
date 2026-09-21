@@ -9,7 +9,8 @@
 
 export const MAX_BYTES = 5 * 1024 * 1024
 export const MAX_PRINTS = 4
-export const LADO_MAXIMO = 1400
+export const LARGURA_MAXIMA = 1600
+export const ALTURA_MAXIMA = 3600
 export const QUALIDADE_JPEG = 0.85
 
 export interface PrintPreparado {
@@ -38,7 +39,13 @@ function carregarImagem(dataUrl: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Encolhe para `LADO_MAXIMO` no maior lado e reencoda em JPEG.
+ * Encolhe para caber em `LARGURA_MAXIMA` x `ALTURA_MAXIMA` e reencoda em JPEG.
+ *
+ * Os dois lados são limitados SEPARADAMENTE, e não o maior lado: print de
+ * e-mail é alto e estreito, e com um teto único de 1400px uma captura de
+ * 1200x3000 virava 560x1400 — a letra miúda sumia antes mesmo de sair daqui.
+ * Não se ganhava nada com isso: a API de visão normaliza o menor lado para
+ * 768px de qualquer jeito, então as duas versões custam os mesmos tiles.
  *
  * O canvas é conferido ANTES de carregar a imagem: onde ele não existe (jsdom,
  * browser antigo) nem chegamos a esperar um `onload` que nunca vem — devolve o
@@ -56,8 +63,7 @@ async function encolher(dataUrl: string): Promise<string> {
   if (!ctx || typeof canvas.toDataURL !== 'function') return dataUrl
 
   const img = await carregarImagem(dataUrl)
-  const maior = Math.max(img.width, img.height)
-  const escala = maior > LADO_MAXIMO ? LADO_MAXIMO / maior : 1
+  const escala = Math.min(1, LARGURA_MAXIMA / img.width, ALTURA_MAXIMA / img.height)
   canvas.width = Math.max(1, Math.round(img.width * escala))
   canvas.height = Math.max(1, Math.round(img.height * escala))
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height)

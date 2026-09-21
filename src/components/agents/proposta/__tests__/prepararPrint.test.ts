@@ -36,16 +36,18 @@ describe('prepararPrint', () => {
 describe('prepararPrint com canvas disponível', () => {
   const ImageOriginal = global.Image
   let desenhado: { w: number; h: number } | null = null
+  let tamanho = { largura: 2800, altura: 1400 }
 
   beforeEach(() => {
     desenhado = null
-    // jsdom não decodifica imagem nem desenha: fingimos um print de 2800x1400.
+    // jsdom não decodifica imagem nem desenha: fingimos as dimensões do print.
+    tamanho = { largura: 2800, altura: 1400 }
     // @ts-expect-error — Image de mentira só com o que prepararPrint usa.
     global.Image = class {
       onload: (() => void) | null = null
       onerror: (() => void) | null = null
-      width = 2800
-      height = 1400
+      width = tamanho.largura
+      height = tamanho.altura
       set src(_valor: string) {
         setTimeout(() => this.onload?.(), 0)
       }
@@ -66,10 +68,24 @@ describe('prepararPrint com canvas disponível', () => {
     global.Image = ImageOriginal
   })
 
-  it('encolhe o print para o lado máximo antes de subir', async () => {
+  it('encolhe o print largo pela largura antes de subir', async () => {
     const print = await prepararPrint(printGrande())
-    expect(desenhado).toEqual({ w: 1400, h: 700 })
+    expect(desenhado).toEqual({ w: 1600, h: 800 })
     expect(print.dataUrl).toBe('data:image/jpeg;base64,menor')
+  })
+
+  it('print alto de e-mail sobe com a largura que dá para ler', async () => {
+    // A régua antiga era o MAIOR lado: 1200x3000 subia como 560x1400 e a letra
+    // miúda sumia — foi assim que "2º ao 13º Pavimento" chegou como "2º ao 3º".
+    tamanho = { largura: 1200, altura: 3000 }
+    await prepararPrint(printGrande())
+    expect(desenhado).toEqual({ w: 1200, h: 3000 })
+  })
+
+  it('print altíssimo cai pela altura, sem distorcer', async () => {
+    tamanho = { largura: 1200, altura: 7200 }
+    await prepararPrint(printGrande())
+    expect(desenhado).toEqual({ w: 600, h: 3600 })
   })
 
   it('mantém o original quando o JPEG sai maior que ele', async () => {
