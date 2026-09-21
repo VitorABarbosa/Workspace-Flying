@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ChatPainel } from '../ChatPainel'
 
 const PNG = 'data:image/png;base64,iVBORw0KGgo='
@@ -140,5 +140,57 @@ describe('ChatPainel', () => {
     render(<ChatPainel mensagens={[]} quickReplies={[]} onEnviar={jest.fn()} carregando={false} />)
     anexarArquivo('foto.jpg', 'image/jpeg', 6 * 1024 * 1024)
     expect(await screen.findByRole('alert')).toHaveTextContent(/5 MB/)
+  })
+
+  /** Print vindo da área de transferência, como o browser entrega no Ctrl+V. */
+  function colar(alvo: Document | HTMLElement = document) {
+    const arquivo = new File(['x'], '', { type: 'image/png' })
+    Object.defineProperty(arquivo, 'size', { value: 1024 })
+    const evento = new Event('paste', { bubbles: true }) as Event & { clipboardData: unknown }
+    evento.clipboardData = {
+      items: [{ kind: 'file', type: 'image/png', getAsFile: () => arquivo }],
+      files: [],
+    }
+    alvo.dispatchEvent(evento)
+    return evento
+  }
+
+  it('cola o print com Ctrl+V mesmo sem o campo de texto estar focado', async () => {
+    render(<ChatPainel mensagens={[]} quickReplies={[]} onEnviar={jest.fn()} carregando={false} />)
+    await act(async () => { colar() })
+    expect(await screen.findByAltText('print-colado.png')).toBeInTheDocument()
+  })
+
+  it('não cola enquanto a resposta está vindo', async () => {
+    render(<ChatPainel mensagens={[]} quickReplies={[]} onEnviar={jest.fn()} carregando acao="conversar" />)
+    await act(async () => { colar() })
+    expect(screen.queryByAltText('print-colado.png')).not.toBeInTheDocument()
+  })
+
+  it('para de escutar o paste depois de sair da tela', async () => {
+    const { unmount } = render(
+      <ChatPainel mensagens={[]} quickReplies={[]} onEnviar={jest.fn()} carregando={false} />
+    )
+    unmount()
+    const evento = colar()
+    expect(evento.defaultPrevented).toBe(false)
+  })
+
+  it('aceita o print arrastado e mostra o alvo enquanto arrasta', async () => {
+    const { container } = render(
+      <ChatPainel mensagens={[]} quickReplies={[]} onEnviar={jest.fn()} carregando={false} />
+    )
+    const painel = container.firstElementChild as HTMLElement
+    const arquivo = new File(['x'], 'email.png', { type: 'image/png' })
+    Object.defineProperty(arquivo, 'size', { value: 1024 })
+
+    fireEvent.dragOver(painel, { dataTransfer: { items: [], files: [arquivo] } })
+    expect(screen.getByText('Solte o print aqui')).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.drop(painel, { dataTransfer: { items: [], files: [arquivo] } })
+    })
+    expect(await screen.findByAltText('email.png')).toBeInTheDocument()
+    expect(screen.queryByText('Solte o print aqui')).not.toBeInTheDocument()
   })
 })

@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Download, FileText, ImagePlus, Loader2, Send, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { SpinnerBotao } from './Carregando'
-import { MAX_PRINTS, PrintInvalido, prepararPrint, type PrintPreparado } from './prepararPrint'
+import {
+  imagensDaTransferencia, MAX_PRINTS, PrintInvalido, prepararPrint, type PrintPreparado,
+} from './prepararPrint'
 import type { MensagemChat, ParteConteudo, PropostaCitada } from './types'
 import type { AcaoProposta } from './useProposta'
 
@@ -19,7 +21,7 @@ interface Props {
 
 const DICAS = [
   'Diga a construtora, o empreendimento, o A/C e os itens — tudo de uma vez ou aos poucos.',
-  'Anexe um print do e-mail ou do WhatsApp com o pedido: a IA lê e monta a proposta.',
+  'Cole o print com Ctrl+V (ou arraste o arquivo aqui): a IA lê e monta a proposta.',
   'Para repetir um cliente, peça "copiar a última proposta da GALLI" e ajuste o que mudou.',
   'Os preços nunca vêm da IA: saem da tabela oficial ou do histórico do cliente.',
 ]
@@ -74,6 +76,7 @@ export function ChatPainel({
   const [texto, setTexto] = useState('')
   const [prints, setPrints] = useState<PrintPreparado[]>([])
   const [erroAnexo, setErroAnexo] = useState<string | null>(null)
+  const [arrastando, setArrastando] = useState(false)
   const fimRef = useRef<HTMLDivElement>(null)
   const arquivoRef = useRef<HTMLInputElement>(null)
 
@@ -85,7 +88,7 @@ export function ChatPainel({
   const aindaNaoFalou = !mensagens.some((m) => m.role === 'user')
   const esperando = carregando && (acao === 'saudacao' || acao === 'conversar')
 
-  async function anexar(arquivos: FileList | null) {
+  async function anexar(arquivos: FileList | File[] | null) {
     if (!arquivos?.length) return
     setErroAnexo(null)
     const sobra = MAX_PRINTS - prints.length
@@ -105,6 +108,29 @@ export function ChatPainel({
     if (arquivoRef.current) arquivoRef.current.value = ''
   }
 
+  // Ctrl+V vale com o foco em qualquer lugar da página, não só dentro do campo
+  // de texto: depois de dar print, ninguém clica no input antes de colar. Por
+  // isso o listener é do documento — um onPaste no input perderia esse caso.
+  useEffect(() => {
+    function aoColar(evento: ClipboardEvent) {
+      if (carregando) return
+      const imagens = imagensDaTransferencia(evento.clipboardData)
+      if (!imagens.length) return
+      evento.preventDefault()  // sem isto o browser ainda cola o caminho como texto
+      void anexar(imagens)
+    }
+    document.addEventListener('paste', aoColar)
+    return () => document.removeEventListener('paste', aoColar)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [carregando, prints.length])
+
+  function soltar(evento: React.DragEvent) {
+    evento.preventDefault()
+    setArrastando(false)
+    if (carregando) return
+    void anexar(imagensDaTransferencia(evento.dataTransfer))
+  }
+
   function enviar(valor: string) {
     const conteudo = valor.trim()
     // Print sozinho já é um pedido — não exige texto junto.
@@ -118,10 +144,26 @@ export function ChatPainel({
   return (
     <div
       aria-busy={esperando}
+      onDragOver={(e) => {
+        e.preventDefault()
+        if (!carregando) setArrastando(true)
+      }}
+      onDragLeave={() => setArrastando(false)}
+      onDrop={soltar}
       // Sem h-full: no grid ao lado do preview, 100% seria a altura do preview
       // e o chat virava um bloco cinza vazio embaixo do input.
-      className="flex flex-col rounded-xl border border-gray-200 bg-[#F1F1F1] p-6 dark:border-gray-700 dark:bg-[#1A1A1A]"
+      className={cn(
+        'flex flex-col rounded-xl border bg-[#F1F1F1] p-6 dark:bg-[#1A1A1A]',
+        arrastando
+          ? 'border-brand-purple ring-2 ring-brand-purple/30'
+          : 'border-gray-200 dark:border-gray-700'
+      )}
     >
+      {arrastando && (
+        <p className="mb-3 rounded-lg border border-dashed border-brand-purple bg-white/70 p-2 text-center text-xs text-brand-purple dark:bg-[#0F0F0F]/70">
+          Solte o print aqui
+        </p>
+      )}
       {aindaNaoFalou && (
         <div className="mb-3 rounded-lg border border-dashed border-brand-purple/40 bg-white/60 p-3 text-xs text-gray-600 dark:bg-[#0F0F0F]/60 dark:text-gray-300">
           <p className="mb-1 font-semibold text-[#1A1A2E] dark:text-white">Como usar o chat</p>
@@ -238,7 +280,7 @@ export function ChatPainel({
           onClick={() => arquivoRef.current?.click()}
           disabled={carregando}
           aria-label="Anexar print"
-          title="Anexar print de e-mail, WhatsApp ou briefing"
+          title="Anexar print de e-mail, WhatsApp ou briefing — ou cole com Ctrl+V"
           className={cn(
             'inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white p-2.5',
             'text-brand-purple hover:bg-brand-purple/10 disabled:cursor-not-allowed disabled:opacity-50',
@@ -257,7 +299,7 @@ export function ChatPainel({
           placeholder={
             carregando
               ? 'Aguarde a resposta…'
-              : 'Escreva aqui… (ex.: proposta para GALLI, 3 externas) e aperte Enter'
+              : 'Escreva aqui ou cole um print com Ctrl+V… (ex.: proposta para GALLI, 3 externas)'
           }
           className={cn(
             'flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm',

@@ -1,4 +1,5 @@
-import { MAX_BYTES, PrintInvalido, prepararPrint } from '../prepararPrint'
+import {
+  imagensDaTransferencia, MAX_BYTES, PrintInvalido, prepararPrint } from '../prepararPrint'
 
 function arquivo(nome: string, tipo: string, tamanho = 1024, conteudo = 'x'): File {
   const f = new File([conteudo], nome, { type: tipo })
@@ -77,5 +78,45 @@ describe('prepararPrint com canvas disponível', () => {
       .mockReturnValue('data:image/jpeg;base64,' + 'a'.repeat(9000))
     const print = await prepararPrint(printGrande())
     expect(print.dataUrl).not.toContain('aaaa')
+  })
+})
+
+
+describe('imagensDaTransferencia', () => {
+  const imagem = () => new File(['x'], '', { type: 'image/png' })
+
+  function transferencia(itens: unknown[], arquivos: File[] = []) {
+    return { items: itens, files: arquivos } as unknown as DataTransfer
+  }
+
+  it('pega o print colado e lhe dá um nome (Ctrl+V vem sem nome)', () => {
+    const colado = imagem()
+    const achados = imagensDaTransferencia(
+      transferencia([{ kind: 'file', type: 'image/png', getAsFile: () => colado }])
+    )
+    expect(achados).toHaveLength(1)
+    expect(achados[0].name).toBe('print-colado.png')
+    expect(achados[0].type).toBe('image/png')
+  })
+
+  it('ignora o texto que vem junto com o print', () => {
+    const achados = imagensDaTransferencia(
+      transferencia([
+        { kind: 'string', type: 'text/plain', getAsFile: () => null },
+        { kind: 'file', type: 'image/png', getAsFile: () => imagem() },
+      ])
+    )
+    expect(achados).toHaveLength(1)
+  })
+
+  it('cai em files quando o browser não preenche items (arrastar e soltar)', () => {
+    const arquivo = new File(['x'], 'email.png', { type: 'image/png' })
+    const achados = imagensDaTransferencia(transferencia([], [arquivo]))
+    expect(achados.map((a) => a.name)).toEqual(['email.png'])
+  })
+
+  it('sem imagem nenhuma, devolve lista vazia — o paste de texto segue normal', () => {
+    expect(imagensDaTransferencia(transferencia([{ kind: 'string', type: 'text/plain' }]))).toEqual([])
+    expect(imagensDaTransferencia(null)).toEqual([])
   })
 })

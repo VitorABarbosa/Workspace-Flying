@@ -80,3 +80,38 @@ export async function prepararPrint(arquivo: File): Promise<PrintPreparado> {
   const original = await lerComoDataUrl(arquivo)
   return { nome: arquivo.name, dataUrl: await encolher(original) }
 }
+
+/**
+ * Imagens dentro de um Ctrl+V ou de um arrastar-e-soltar, na ordem em que vieram.
+ *
+ * Print colado é o caminho mais curto entre o pedido do cliente e a proposta:
+ * a pessoa dá print no e-mail, cola e pronto — sem salvar arquivo no disco só
+ * para depois procurá-lo no seletor.
+ */
+export function imagensDaTransferencia(dados: DataTransfer | null | undefined): File[] {
+  if (!dados) return []
+  const achados: File[] = []
+  // `items` é o que traz o print colado; `files`, o arquivo arrastado. Alguns
+  // browsers preenchem só um dos dois, então olhamos os dois — sem duplicar.
+  for (const item of Array.from(dados.items ?? [])) {
+    if (item.kind !== 'file' || !item.type.startsWith('image/')) continue
+    const arquivo = item.getAsFile()
+    if (arquivo) achados.push(comNome(arquivo))
+  }
+  if (achados.length) return achados
+  for (const arquivo of Array.from(dados.files ?? [])) {
+    if (arquivo.type.startsWith('image/')) achados.push(comNome(arquivo))
+  }
+  return achados
+}
+
+/** Print colado chega sem nome (ou como "image.png") — e a miniatura mostra o nome. */
+function comNome(arquivo: File): File {
+  if (arquivo.name && arquivo.name !== 'image.png') return arquivo
+  const extensao = (arquivo.type.split('/')[1] || 'png').replace('jpeg', 'jpg')
+  try {
+    return new File([arquivo], `print-colado.${extensao}`, { type: arquivo.type })
+  } catch {
+    return arquivo
+  }
+}
