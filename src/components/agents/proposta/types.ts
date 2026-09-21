@@ -30,6 +30,8 @@ export interface Estrutura {
   ajuste_planilha_pct?: number
   // Preço único fechado para todas as perspectivas e plantas (ex.: 2400).
   preco_por_imagem?: number | null
+  /** Áreas do empreendimento: multiplica o tour virtual, cobrado por ambiente. */
+  ambientes?: number | null
   _avisos: string[]
   // Categorias dinâmicas (externas, internas, plantas, filmes, tecnologia, ...):
   // cada uma é uma lista de ItemEntrada — descrição em texto livre, ou

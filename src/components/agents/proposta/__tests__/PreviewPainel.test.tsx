@@ -241,3 +241,25 @@ describe('PreviewPainel — preço fechado por item', () => {
     expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ externas: [] }))
   })
 })
+
+describe('PreviewPainel — áreas do empreendimento', () => {
+  it('o número de áreas volta na estrutura, porque multiplica o tour', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Quantidade de áreas/ambientes')
+    expect(campo).toHaveValue(null)          // vazio até alguém informar
+    fireEvent.change(campo, { target: { value: '7' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ ambientes: 7 }))
+  })
+
+  it('campo vazio volta a null, e não a 1', () => {
+    const onEditar = jest.fn()
+    const com = { ...LEV, estrutura: { ...LEV.estrutura, ambientes: 7 } }
+    render(<PreviewPainel levantamento={com} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Quantidade de áreas/ambientes')
+    fireEvent.change(campo, { target: { value: '' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ ambientes: null }))
+  })
+})
