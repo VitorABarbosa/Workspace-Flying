@@ -57,7 +57,7 @@ describe('ChatPainel — espera', () => {
   it('mostra as dicas de uso até a pessoa mandar a primeira mensagem', () => {
     const { rerender } = render(<ChatPainel {...base} carregando={false} />)
     expect(screen.getByText('Como usar o chat')).toBeInTheDocument()
-    expect(screen.getByText(/Anexe um print/)).toBeInTheDocument()
+    expect(screen.getByText(/Cole o print com Ctrl\+V/)).toBeInTheDocument()
 
     rerender(
       <ChatPainel {...base} carregando={false}
