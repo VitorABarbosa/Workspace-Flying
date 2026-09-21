@@ -38,7 +38,7 @@ describe('useProposta', () => {
     expect(JSON.parse(opcoes.body)).toEqual({ texto: 'filme conceito pra OUSY', emissor: 'rinno' })
   })
 
-  it('erro HTTP vira mensagem e não quebra', async () => {
+  it('erro HTTP vira frase de gente, não número de status', async () => {
     ;(global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       status: 503,
@@ -46,8 +46,36 @@ describe('useProposta', () => {
     })
     const { result } = renderHook(() => useProposta())
     await act(() => result.current.levantarPorTexto('x'))
-    expect(result.current.erro).toContain('503')
+    expect(result.current.erro).toBe(
+      'O serviço de propostas está indisponível agora. Tente de novo em alguns minutos.'
+    )
     expect(result.current.levantamento).toBeNull()
+  })
+
+  it('quando a API explica o motivo, é o motivo que aparece', async () => {
+    // A API manda o porquê em `detail`; antes a tela cuspia o JSON cru.
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      text: async () => JSON.stringify({
+        detail: "O banco está atrás do código (falta coluna ou tabela). Rode 'python -m scripts.migrar_catalogo_2026'.",
+      }),
+    })
+    const { result } = renderHook(() => useProposta())
+    await act(() => result.current.levantarPorTexto('x'))
+    expect(result.current.erro).toContain('banco está atrás do código')
+    expect(result.current.erro).not.toContain('{')
+  })
+
+  it('erro 500 sem corpo aponta para onde olhar', async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      text: async () => 'Internal Server Error',
+    })
+    const { result } = renderHook(() => useProposta())
+    await act(() => result.current.levantarPorTexto('x'))
+    expect(result.current.erro).toContain('/saude')
   })
 
   it('gerar popula gerada e reiniciar limpa tudo', async () => {
