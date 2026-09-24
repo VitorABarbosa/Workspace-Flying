@@ -367,3 +367,40 @@ describe('PreviewPainel — parcelamento e contagem de áreas', () => {
     )
   })
 })
+
+describe('PreviewPainel — nome do arquivo', () => {
+  it('mostra o nome calculado pelo backend', () => {
+    const com = {
+      ...LEV,
+      estrutura: { ...LEV.estrutura, nome_arquivo: 'Flying_Factus_Upside_Vista_AnexoI_R00' },
+    }
+    render(<PreviewPainel levantamento={com} onEditar={jest.fn()} carregando={false} />)
+    expect(screen.getByLabelText('Nome do arquivo da proposta')).toHaveValue(
+      'Flying_Factus_Upside_Vista_AnexoI_R00'
+    )
+  })
+
+  it('o nome escrito à mão volta na estrutura', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Nome do arquivo da proposta')
+    fireEvent.change(campo, { target: { value: 'Flying_Galli_Aurora_Especial_R02' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ nome_arquivo: 'Flying_Galli_Aurora_Especial_R02' })
+    )
+  })
+
+  it('apagar devolve o nome calculado ao backend', () => {
+    const onEditar = jest.fn()
+    const com = {
+      ...LEV,
+      estrutura: { ...LEV.estrutura, nome_arquivo: 'Flying_Galli_Aurora_Imagens_AnexoI_R00' },
+    }
+    render(<PreviewPainel levantamento={com} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Nome do arquivo da proposta')
+    fireEvent.change(campo, { target: { value: '  ' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ nome_arquivo: null }))
+  })
+})

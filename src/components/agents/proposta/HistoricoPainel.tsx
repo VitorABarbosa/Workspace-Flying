@@ -93,7 +93,14 @@ export function HistoricoPainel({
                   {rotuloDaEmpresa(p.emissor)}
                 </td>
                 <td className="py-2 pr-4 text-[#1A1A2E] dark:text-white">{p.cliente}</td>
-                <td className="py-2 pr-4 text-[#1A1A2E] dark:text-white">{p.referencia ?? '—'}</td>
+                <td className="py-2 pr-4 text-[#1A1A2E] dark:text-white">
+                  {p.referencia ?? '—'}
+                  {p.nome_arquivo && (
+                    <span className="block font-mono text-[11px] text-gray-400 dark:text-gray-500">
+                      {p.nome_arquivo}.docx
+                    </span>
+                  )}
+                </td>
                 <td className="py-2 pr-4 text-[#1A1A2E] dark:text-white">{formatarData(p.data)}</td>
                 <td className="py-2 pr-4 text-[#1A1A2E] dark:text-white">{formatarTotal(p.total)}</td>
                 <td className="py-2 pr-4">
