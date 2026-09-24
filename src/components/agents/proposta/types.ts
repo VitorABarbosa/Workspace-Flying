@@ -34,6 +34,10 @@ export interface Estrutura {
   ambientes?: number | null
   /** Valor final negociado da proposta inteira; o desconto vira a diferença. */
   total_fechado?: number | null
+  /** Em quantas vezes o cliente paga; ausente = cronograma da empresa. */
+  parcelas?: number | null
+  /** Mostrar "(N ambientes)" no título do serviço cobrado por ambiente. */
+  mostrar_ambientes?: boolean
   _avisos: string[]
   // Categorias dinâmicas (externas, internas, plantas, filmes, tecnologia, ...):
   // cada uma é uma lista de ItemEntrada — descrição em texto livre, ou
