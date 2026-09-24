@@ -176,6 +176,20 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     if (valor !== (estrutura.parcelas ?? null)) onEditar({ ...estrutura, parcelas: valor })
   }
 
+  // Nome do arquivo entregue. O backend devolve o padrão calculado
+  // (Flying_Factus_Upside_Vista_AnexoI_R00); o que estiver escrito aqui manda,
+  // e apagar volta para o calculado.
+  const [nomeArquivo, setNomeArquivo] = useState(estrutura.nome_arquivo ?? '')
+  useEffect(() => {
+    setNomeArquivo(estrutura.nome_arquivo ?? '')
+  }, [estrutura.nome_arquivo])
+  const commitNomeArquivo = () => {
+    const valor = nomeArquivo.trim()
+    if (valor !== (estrutura.nome_arquivo ?? '')) {
+      onEditar({ ...estrutura, nome_arquivo: valor || null })
+    }
+  }
+
   const ESTRATEGIAS = [
     { valor: 'auto', rotulo: 'Automática' },
     { valor: 'planilha', rotulo: 'Planilha' },
@@ -407,6 +421,22 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
           </label>
         )}
       </div>
+      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+        <label className="flex flex-1 items-center gap-2 text-gray-500 dark:text-gray-400">
+          Arquivo
+          <input
+            aria-label="Nome do arquivo da proposta"
+            type="text"
+            placeholder="Flying_Factus_Upside_Vista_AnexoI_R00"
+            value={nomeArquivo}
+            onChange={(e) => setNomeArquivo(e.target.value)}
+            onBlur={commitNomeArquivo}
+            onKeyDown={(e) => e.key === 'Enter' && commitNomeArquivo()}
+            className="min-w-0 flex-1 rounded border border-gray-200 bg-white px-2 py-0.5 font-mono text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          />
+          .docx
+        </label>
+      </div>
       <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
         Os dois primeiros entram no preço de cada item e não aparecem na proposta.
         &quot;Planilha +10%&quot; é o costume para cliente novo; o preço fixo vale para todas as
@@ -414,7 +444,9 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
         multiplicam o tour virtual, que é cobrado por ambiente — e mostrar esse número no
         título da proposta é opcional. &quot;Pagamento em 4x&quot; troca o cronograma da
         empresa por parcelas iguais. Para fechar o valor de um item só, clique no preço dele
-        na lista.
+        na lista. O nome do arquivo sai pronto no padrão
+        Empresa_Cliente_Empreendimento_Serviço_AnexoI_Revisão — reabrir uma proposta já
+        gerada sobe a revisão sozinha, e dá para reescrever o nome inteiro à mão.
       </p>
 
       {pendencias.length > 0 && (

@@ -38,6 +38,10 @@ export interface Estrutura {
   parcelas?: number | null
   /** Mostrar "(N ambientes)" no título do serviço cobrado por ambiente. */
   mostrar_ambientes?: boolean
+  /** Nome do arquivo entregue (Flying_Factus_Upside_Vista_AnexoI_R00). */
+  nome_arquivo?: string | null
+  /** Revisão da proposta: sobe sozinha ao reabrir uma já gerada. */
+  revisao?: number | null
   _avisos: string[]
   // Categorias dinâmicas (externas, internas, plantas, filmes, tecnologia, ...):
   // cada uma é uma lista de ItemEntrada — descrição em texto livre, ou
@@ -83,6 +87,8 @@ export interface Levantamento {
   fechado: Fechado
   estrategia_usada: string
   emissor?: Emissor
+  /** Como o .docx vai se chamar ao ser baixado. */
+  nome_arquivo?: string
   avisos: string[]
   pendencias: string[]
 }
@@ -91,6 +97,7 @@ export interface PropostaGerada {
   proposta_id: number
   docx_url: string | null
   download: string
+  nome_arquivo?: string
   fechado: Fechado
   emissor?: Emissor
   avisos: string[]
@@ -104,6 +111,7 @@ export interface PropostaListada {
   data: string
   total: number
   docx_url: string | null
+  nome_arquivo?: string | null
   download: string
   pdf: string
 }

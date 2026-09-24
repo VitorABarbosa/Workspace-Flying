@@ -68,3 +68,17 @@ describe('HistoricoPainel — editar proposta já gerada', () => {
     expect(screen.queryByLabelText('Editar proposta 7')).not.toBeInTheDocument()
   })
 })
+
+describe('HistoricoPainel — nome do arquivo', () => {
+  it('mostra como o arquivo daquela proposta se chama', () => {
+    const lista = [{
+      id: 7, cliente: 'FACTUS', referencia: 'Upside', data: '2026-09-24',
+      total: 45000, docx_url: null, emissor: 'flying' as const,
+      nome_arquivo: 'Flying_Factus_Upside_Vista_AnexoI_R00',
+      download: '/propostas/7/docx', pdf: '/propostas/7/pdf',
+    }]
+    render(<HistoricoPainel propostas={lista} onExcluir={jest.fn()}
+                            onFiltrar={jest.fn()} carregando={false} />)
+    expect(screen.getByText('Flying_Factus_Upside_Vista_AnexoI_R00.docx')).toBeInTheDocument()
+  })
+})
