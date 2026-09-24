@@ -169,8 +169,7 @@ export function HistoricoPainel({
         </table>
         {propostas.length === 0 && !listando && (
           <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            Nenhuma proposta encontrada. As que você gerar nas abas Chat e Texto direto aparecem
-            aqui.
+            Nenhuma proposta encontrada. As que você gerar pelo Chat aparecem aqui.
           </p>
         )}
       </div>
