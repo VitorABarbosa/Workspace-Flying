@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import type { Emissor } from './empresas'
 import type {
   Estrutura,
   Levantamento,
@@ -88,16 +87,6 @@ export function useProposta() {
     }
   }, [])
 
-  // No texto direto a empresa vai no corpo: o texto livre não diz de qual
-  // das três é a proposta, e sem isso o backend assume Flying.
-  const levantarPorTexto = useCallback(
-    (texto: string, emissor?: Emissor) =>
-      executar('levantar', async () => {
-        setLevantamento(await postJson<Levantamento>('/levantamento', { texto, emissor }))
-      }),
-    [executar]
-  )
-
   const reprecificar = useCallback(
     (estrutura: Estrutura) =>
       executar('reprecificar', async () => {
@@ -179,7 +168,6 @@ export function useProposta() {
     gerada,
     historico,
     chat,
-    levantarPorTexto,
     reprecificar,
     gerar,
     reiniciar,

@@ -6,20 +6,20 @@ import { AgentShell } from '@/components/tools/AgentShell'
 import { cn } from '@/lib/cn'
 import { Carregando, SpinnerBotao } from './Carregando'
 import { ChatPainel } from './ChatPainel'
-import { EntradaPainel } from './EntradaPainel'
 import { GuiaPassos, type Passo } from './GuiaPassos'
 import { HistoricoPainel } from './HistoricoPainel'
 import type { PrintPreparado } from './prepararPrint'
 import { PreviewPainel } from './PreviewPainel'
+import { RollAba } from './RollAba'
 import { ResultadoPainel } from './ResultadoPainel'
 import type { Estrutura, Levantamento, MensagemChat, ParteConteudo, PropostaCitada } from './types'
 import { useProposta, type AcaoProposta } from './useProposta'
 
-type Aba = 'chat' | 'texto' | 'historico'
+type Aba = 'chat' | 'roll' | 'historico'
 
 const ABAS: { key: Aba; label: string; descricao: string }[] = [
   { key: 'chat', label: 'Chat', descricao: 'Conversa guiada: a IA pergunta o que faltar e monta a proposta.' },
-  { key: 'texto', label: 'Texto direto', descricao: 'Cole o pedido inteiro de uma vez, sem conversa.' },
+  { key: 'roll', label: 'Roll de imagens', descricao: 'A lista do que entra em produção: leia o roll que chegou, veja o que mudou e gere a versão nova.' },
   { key: 'historico', label: 'Histórico', descricao: 'Baixar ou excluir propostas já geradas.' },
 ]
 
@@ -76,7 +76,7 @@ function PreviewComGerar({
 export function PropostaAgent() {
   const {
     carregando, acao, erro, levantamento, gerada, historico, chat,
-    levantarPorTexto, reprecificar, gerar, reiniciar,
+    reprecificar, gerar, reiniciar,
     listarHistorico, excluirProposta, conversar, limparErro, editar,
   } = useProposta()
 
@@ -159,7 +159,7 @@ export function PropostaAgent() {
       title="Proposta"
       description="Gera a proposta comercial no timbrado da Flying, da Rinno ou da NID a partir do pedido do cliente. Você descreve, revisa o preço e baixa o PDF."
     >
-      {aba !== 'historico' && <GuiaPassos atual={passo} />}
+      {aba === 'chat' && <GuiaPassos atual={passo} />}
 
       <div className="mb-1 flex gap-2 border-b border-gray-200 dark:border-gray-700" role="tablist">
         {ABAS.map((item) => (
@@ -204,10 +204,10 @@ export function PropostaAgent() {
         </div>
       )}
 
-      {/* Depois de gerar, o resultado toma o lugar do chat/texto — mas o
-          Histórico continua abrindo: a pessoa vai lá conferir a que acabou
-          de sair. Sem esse `aba !== 'historico'`, clicar na aba não fazia nada. */}
-      {gerada && aba !== 'historico' ? (
+      {/* Depois de gerar, o resultado toma o lugar do chat — mas as outras
+          abas continuam abrindo: a pessoa vai ao Histórico conferir a que
+          acabou de sair, ou ao Roll, que tem vida própria. */}
+      {gerada && aba === 'chat' ? (
         <ResultadoPainel gerada={gerada} onNova={novaProposta} />
       ) : (
         <>
@@ -233,20 +233,7 @@ export function PropostaAgent() {
             </div>
           )}
 
-          {aba === 'texto' && (
-            <div className={cn('grid gap-6 lg:items-start', levantamento && 'lg:grid-cols-2')}>
-              <EntradaPainel onPrecificar={levantarPorTexto} carregando={carregando} acao={acao} />
-              {levantamento && (
-                <PreviewComGerar
-                  levantamento={levantamento}
-                  onEditar={reprecificar}
-                  onGerar={() => gerar(levantamento.estrutura)}
-                  carregando={carregando}
-                  acao={acao}
-                />
-              )}
-            </div>
-          )}
+          {aba === 'roll' && <RollAba />}
 
           {aba === 'historico' && (
             <HistoricoPainel
@@ -254,7 +241,7 @@ export function PropostaAgent() {
               onExcluir={excluirProposta}
               // Editar leva para o preview, que é onde se mexe e se gera.
               onEditar={(id) => {
-                setAba('texto')
+                setAba('chat')
                 editar(id)
               }}
               onFiltrar={(cliente) => listarHistorico(cliente)}

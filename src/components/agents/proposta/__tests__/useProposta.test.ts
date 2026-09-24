@@ -9,18 +9,20 @@ const LEVANTAMENTO = {
   pendencias: [],
 }
 
+const ESTRUTURA = { cliente: { empresa: 'GALLI', ref: 'Aurora', contato: '—' } }
+
 describe('useProposta', () => {
   beforeEach(() => {
     global.fetch = jest.fn()
   })
 
-  it('levantarPorTexto popula levantamento', async () => {
+  it('reprecificar popula levantamento', async () => {
     ;(global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => LEVANTAMENTO,
     })
     const { result } = renderHook(() => useProposta())
-    await act(() => result.current.levantarPorTexto('cliente GALLI'))
+    await act(() => result.current.reprecificar(ESTRUTURA as never))
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/tools/proposta/levantamento',
       expect.objectContaining({ method: 'POST' })
@@ -29,13 +31,12 @@ describe('useProposta', () => {
     expect(result.current.erro).toBeNull()
   })
 
-  it('levantarPorTexto manda a empresa escolhida', async () => {
-    // O texto livre não diz de qual das três é a proposta.
+  it('reprecificar manda a estrutura inteira, com a empresa dentro', async () => {
     ;(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => LEVANTAMENTO })
     const { result } = renderHook(() => useProposta())
-    await act(() => result.current.levantarPorTexto('filme conceito pra OUSY', 'rinno'))
+    await act(() => result.current.reprecificar({ ...ESTRUTURA, emissor: 'rinno' } as never))
     const [, opcoes] = (global.fetch as jest.Mock).mock.calls[0]
-    expect(JSON.parse(opcoes.body)).toEqual({ texto: 'filme conceito pra OUSY', emissor: 'rinno' })
+    expect(JSON.parse(opcoes.body).estrutura.emissor).toBe('rinno')
   })
 
   it('erro HTTP vira frase de gente, não número de status', async () => {
@@ -45,7 +46,7 @@ describe('useProposta', () => {
       text: async () => 'sem token',
     })
     const { result } = renderHook(() => useProposta())
-    await act(() => result.current.levantarPorTexto('x'))
+    await act(() => result.current.reprecificar(ESTRUTURA as never))
     expect(result.current.erro).toBe(
       'O serviço de propostas está indisponível agora. Tente de novo em alguns minutos.'
     )
@@ -62,7 +63,7 @@ describe('useProposta', () => {
       }),
     })
     const { result } = renderHook(() => useProposta())
-    await act(() => result.current.levantarPorTexto('x'))
+    await act(() => result.current.reprecificar(ESTRUTURA as never))
     expect(result.current.erro).toContain('banco está atrás do código')
     expect(result.current.erro).not.toContain('{')
   })
@@ -74,7 +75,7 @@ describe('useProposta', () => {
       text: async () => 'Internal Server Error',
     })
     const { result } = renderHook(() => useProposta())
-    await act(() => result.current.levantarPorTexto('x'))
+    await act(() => result.current.reprecificar(ESTRUTURA as never))
     expect(result.current.erro).toContain('/saude')
   })
 
