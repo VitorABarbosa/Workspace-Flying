@@ -46,3 +46,25 @@ describe('HistoricoPainel', () => {
     expect(screen.getByText('Flying Studio')).toBeInTheDocument()
   })
 })
+
+describe('HistoricoPainel — editar proposta já gerada', () => {
+  const LISTA = [
+    { id: 7, cliente: 'FACTUS', referencia: 'Baronesa', data: '2026-09-23',
+      total: 45000, docx_url: null, emissor: 'flying' as const,
+      download: '/propostas/7/docx', pdf: '/propostas/7/pdf' },
+  ]
+
+  it('o botão Editar chama onEditar com o id da proposta', () => {
+    const onEditar = jest.fn()
+    render(<HistoricoPainel propostas={LISTA} onExcluir={jest.fn()} onEditar={onEditar}
+                            onFiltrar={jest.fn()} carregando={false} />)
+    fireEvent.click(screen.getByLabelText('Editar proposta 7'))
+    expect(onEditar).toHaveBeenCalledWith(7)
+  })
+
+  it('sem onEditar o botão não aparece', () => {
+    render(<HistoricoPainel propostas={LISTA} onExcluir={jest.fn()}
+                            onFiltrar={jest.fn()} carregando={false} />)
+    expect(screen.queryByLabelText('Editar proposta 7')).not.toBeInTheDocument()
+  })
+})

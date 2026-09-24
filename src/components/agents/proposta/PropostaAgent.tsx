@@ -77,7 +77,7 @@ export function PropostaAgent() {
   const {
     carregando, acao, erro, levantamento, gerada, historico, chat,
     levantarPorTexto, reprecificar, gerar, reiniciar,
-    listarHistorico, excluirProposta, conversar, limparErro,
+    listarHistorico, excluirProposta, conversar, limparErro, editar,
   } = useProposta()
 
   const [aba, setAba] = useState<Aba>('chat')
@@ -252,6 +252,11 @@ export function PropostaAgent() {
             <HistoricoPainel
               propostas={historico ?? []}
               onExcluir={excluirProposta}
+              // Editar leva para o preview, que é onde se mexe e se gera.
+              onEditar={(id) => {
+                setAba('texto')
+                editar(id)
+              }}
               onFiltrar={(cliente) => listarHistorico(cliente)}
               carregando={carregando}
               acao={acao}

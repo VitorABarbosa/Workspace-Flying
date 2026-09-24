@@ -146,6 +146,20 @@ export function useProposta() {
     [executar]
   )
 
+  // Reabrir uma proposta gerada: a estrutura volta como foi feita e cai no
+  // preview, de onde dá para mexer e gerar de novo.
+  const editar = useCallback(
+    (id: number) =>
+      executar('levantar', async () => {
+        const resp = await fetch(`${BASE}/propostas/${id}/estrutura`)
+        if (!resp.ok) throw new Error(await mensagemDeErro(resp))
+        const { estrutura } = (await resp.json()) as { estrutura: Estrutura }
+        setGerada(null)
+        setLevantamento(await postJson<Levantamento>('/levantamento', { estrutura }))
+      }),
+    [executar]
+  )
+
   const reiniciar = useCallback(() => {
     setLevantamento(null)
     setGerada(null)
@@ -161,6 +175,7 @@ export function useProposta() {
     acao,
     erro,
     levantamento,
+    editar,
     gerada,
     historico,
     chat,

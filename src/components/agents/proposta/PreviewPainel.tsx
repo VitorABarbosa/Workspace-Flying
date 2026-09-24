@@ -162,6 +162,20 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
     }
   }
 
+  // Parcelamento: "pagamento em 4x". Vazio mantém o cronograma da empresa,
+  // atrelado às etapas de entrega.
+  const [parcelas, setParcelas] = useState(
+    estrutura.parcelas == null ? '' : String(estrutura.parcelas)
+  )
+  useEffect(() => {
+    setParcelas(estrutura.parcelas == null ? '' : String(estrutura.parcelas))
+  }, [estrutura.parcelas])
+  const commitParcelas = () => {
+    const n = parseInt(parcelas, 10)
+    const valor = parcelas.trim() === '' || !Number.isFinite(n) || n < 1 ? null : n
+    if (valor !== (estrutura.parcelas ?? null)) onEditar({ ...estrutura, parcelas: valor })
+  }
+
   const ESTRATEGIAS = [
     { valor: 'auto', rotulo: 'Automática' },
     { valor: 'planilha', rotulo: 'Planilha' },
@@ -349,6 +363,23 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
           />
         </label>
         <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+          Pagamento em
+          <input
+            aria-label="Parcelamento (nº de vezes)"
+            type="number"
+            min={1}
+            max={24}
+            step={1}
+            placeholder="ex.: 4"
+            value={parcelas}
+            onChange={(e) => setParcelas(e.target.value)}
+            onBlur={commitParcelas}
+            onKeyDown={(e) => e.key === 'Enter' && commitParcelas()}
+            className="w-14 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
+          />
+          x
+        </label>
+        <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
           Áreas do empreendimento
           <input
             aria-label="Quantidade de áreas/ambientes"
@@ -363,13 +394,27 @@ export function PreviewPainel({ levantamento, onEditar, carregando, acao }: Prop
             className="w-16 rounded border border-gray-200 bg-white px-1 py-0.5 text-xs text-[#1A1A2E] dark:border-gray-700 dark:bg-[#0F0F0F] dark:text-white"
           />
         </label>
+        {estrutura.ambientes != null && (
+          <label className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+            <input
+              type="checkbox"
+              aria-label="Mostrar a quantidade de áreas na proposta"
+              checked={estrutura.mostrar_ambientes !== false}
+              onChange={(e) => onEditar({ ...estrutura, mostrar_ambientes: e.target.checked })}
+              className="accent-brand-purple"
+            />
+            mostrar na proposta
+          </label>
+        )}
       </div>
       <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">
         Os dois primeiros entram no preço de cada item e não aparecem na proposta.
         &quot;Planilha +10%&quot; é o costume para cliente novo; o preço fixo vale para todas as
         perspectivas e plantas (filme e tecnologia ficam na tabela). As áreas do empreendimento
-        multiplicam o tour virtual, que é cobrado por ambiente. Para fechar o valor de um item
-        só, clique no preço dele na lista.
+        multiplicam o tour virtual, que é cobrado por ambiente — e mostrar esse número no
+        título da proposta é opcional. &quot;Pagamento em 4x&quot; troca o cronograma da
+        empresa por parcelas iguais. Para fechar o valor de um item só, clique no preço dele
+        na lista.
       </p>
 
       {pendencias.length > 0 && (

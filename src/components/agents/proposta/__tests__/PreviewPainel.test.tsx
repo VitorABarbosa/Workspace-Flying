@@ -322,3 +322,48 @@ describe('PreviewPainel — tudo é alterável à mão', () => {
     expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ total_fechado: null }))
   })
 })
+
+describe('PreviewPainel — parcelamento e contagem de áreas', () => {
+  it('"pagamento em 4x" volta na estrutura', () => {
+    const onEditar = jest.fn()
+    render(<PreviewPainel levantamento={LEV} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Parcelamento (nº de vezes)')
+    fireEvent.change(campo, { target: { value: '4' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ parcelas: 4 }))
+  })
+
+  it('vazio volta ao cronograma da empresa', () => {
+    const onEditar = jest.fn()
+    const com = { ...LEV, estrutura: { ...LEV.estrutura, parcelas: 4 } }
+    render(<PreviewPainel levantamento={com} onEditar={onEditar} carregando={false} />)
+    const campo = screen.getByLabelText('Parcelamento (nº de vezes)')
+    fireEvent.change(campo, { target: { value: '' } })
+    fireEvent.blur(campo)
+    expect(onEditar).toHaveBeenCalledWith(expect.objectContaining({ parcelas: null }))
+  })
+
+  it('a contagem de áreas só tem o interruptor quando há áreas informadas', () => {
+    const { rerender } = render(
+      <PreviewPainel levantamento={LEV} onEditar={jest.fn()} carregando={false} />
+    )
+    expect(
+      screen.queryByLabelText('Mostrar a quantidade de áreas na proposta')
+    ).not.toBeInTheDocument()
+
+    const onEditar = jest.fn()
+    rerender(
+      <PreviewPainel
+        levantamento={{ ...LEV, estrutura: { ...LEV.estrutura, ambientes: 25 } }}
+        onEditar={onEditar}
+        carregando={false}
+      />
+    )
+    const caixa = screen.getByLabelText('Mostrar a quantidade de áreas na proposta')
+    expect(caixa).toBeChecked()
+    fireEvent.click(caixa)
+    expect(onEditar).toHaveBeenCalledWith(
+      expect.objectContaining({ mostrar_ambientes: false })
+    )
+  })
+})

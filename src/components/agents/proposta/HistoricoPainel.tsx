@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, FileText, Search, Trash2 } from 'lucide-react'
+import { Download, FileText, Pencil, Search, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { Carregando, SpinnerBotao } from './Carregando'
 import { rotuloDaEmpresa } from './empresas'
@@ -11,6 +11,8 @@ import type { AcaoProposta } from './useProposta'
 interface Props {
   propostas: PropostaListada[]
   onExcluir: (id: number) => void
+  /** Reabre a proposta no preview para mexer e gerar de novo. */
+  onEditar?: (id: number) => void
   onFiltrar: (cliente: string) => void
   carregando: boolean
   acao?: AcaoProposta | null
@@ -24,7 +26,9 @@ function formatarTotal(total: number) {
   return total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando, acao }: Props) {
+export function HistoricoPainel({
+  propostas, onExcluir, onEditar, onFiltrar, carregando, acao,
+}: Props) {
   const [cliente, setCliente] = useState('')
   const [confirmando, setConfirmando] = useState<number | null>(null)
   const listando = carregando && acao === 'listar'
@@ -116,6 +120,16 @@ export function HistoricoPainel({ propostas, onExcluir, onFiltrar, carregando, a
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
+                      {onEditar && (
+                        <button
+                          onClick={() => onEditar(p.id)}
+                          aria-label={`Editar proposta ${p.id}`}
+                          title="Abrir no preview para mexer e gerar de novo"
+                          className="text-brand-purple hover:opacity-80"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                      )}
                       <a
                         href={`/api/tools/proposta${p.pdf}`}
                         aria-label={`Baixar PDF da proposta ${p.id}`}
