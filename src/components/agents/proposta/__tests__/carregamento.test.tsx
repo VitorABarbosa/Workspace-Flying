@@ -6,7 +6,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { Carregando, MENSAGEM_DA_ACAO } from '../Carregando'
 import { ChatPainel } from '../ChatPainel'
-import { EntradaPainel } from '../EntradaPainel'
 import { GuiaPassos } from '../GuiaPassos'
 import { HistoricoPainel } from '../HistoricoPainel'
 import { PreviewPainel } from '../PreviewPainel'
@@ -94,30 +93,6 @@ describe('ChatPainel — espera', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })
-
-describe('EntradaPainel — instruções e espera', () => {
-  it('traz instrução, exemplo por empresa e botão para usar o exemplo', () => {
-    const onPrecificar = jest.fn()
-    render(<EntradaPainel onPrecificar={onPrecificar} carregando={false} />)
-    expect(screen.getByText(/Cole o pedido inteiro de uma vez/)).toBeInTheDocument()
-
-    fireEvent.change(screen.getByLabelText('Empresa'), { target: { value: 'rinno' } })
-    expect(screen.getByText(/Ver exemplo de pedido para Rinno Films/)).toBeInTheDocument()
-
-    fireEvent.click(screen.getByText('Usar este exemplo'))
-    fireEvent.click(screen.getByText('Precificar'))
-    expect(onPrecificar).toHaveBeenCalledWith(
-      expect.stringContaining('Filme institucional de até 2:00 = 15.000'), 'rinno'
-    )
-  })
-
-  it('enquanto precifica, o botão e a frase dizem isso', () => {
-    render(<EntradaPainel onPrecificar={jest.fn()} carregando acao="levantar" />)
-    expect(screen.getByText('Precificando…')).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent(/interpretando o texto/)
-  })
-})
-
 describe('PreviewPainel — espera e ajuda', () => {
   it('explica o que a estratégia escolhida faz', () => {
     render(<PreviewPainel levantamento={LEV} onEditar={jest.fn()} carregando={false} />)

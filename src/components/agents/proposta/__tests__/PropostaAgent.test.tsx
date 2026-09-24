@@ -257,8 +257,8 @@ describe('PropostaAgent — orientação de fluxo', () => {
   it('cada aba explica para que serve', () => {
     render(<PropostaAgent />)
     expect(screen.getByText(/Conversa guiada/)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('tab', { name: 'Texto direto' }))
-    expect(screen.getByText(/Cole o pedido inteiro de uma vez, sem conversa/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Roll de imagens' }))
+    expect(screen.getByText(/A lista do que entra em produção/)).toBeInTheDocument()
   })
 
   it('erro tem título, orientação e botão de fechar', async () => {

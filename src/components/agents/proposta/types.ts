@@ -143,3 +143,64 @@ export interface RespostaChat {
   // nas rodadas seguintes (chat stateless: o front reenvia tudo a cada vez).
   transcricao?: string | null
 }
+
+// ---------------------------------------------------------------- roll
+//
+// O roll é a lista do que entra em produção — cada perspectiva, cada planta,
+// cada serviço — e não tem preço. Ele se mexe ao longo do projeto, e cada
+// versão vira um arquivo: Roll_Flying, Roll_Flying_Atl, Roll_Flying_Atl_1.
+
+/** Seção do roll. "" é o que a regra não soube dizer e alguém precisa confirmar. */
+export type TipoDeBloco = 'externas' | 'internas' | 'plantas' | 'servico' | ''
+
+export interface BlocoDoRoll {
+  tipo: TipoDeBloco
+  /** Nome próprio da seção. Serviço sempre tem; imagem herda o rótulo fixo. */
+  titulo: string
+  itens: string[]
+}
+
+export interface Roll {
+  cliente: { empresa: string; ref: string }
+  aprovado_em: string | null
+  blocos: BlocoDoRoll[]
+  avisos: string[]
+  emissor?: Emissor
+  nome_arquivo?: string | null
+  versao?: number
+}
+
+export interface MudancaDoRoll {
+  entrou: { tipo: string; item: string }[]
+  saiu: { tipo: string; item: string }[]
+  imagens_antes: number
+  imagens_depois: number
+}
+
+export interface RollGerado {
+  roll_id: number
+  versao: number
+  nome_arquivo: string
+  emissor: Emissor
+  imagens: number
+  docx_url: string | null
+  download: string
+  pdf: string
+  anterior: { id: number; nome_arquivo: string } | null
+  mudou: MudancaDoRoll | null
+  avisos: string[]
+}
+
+export interface RollListado {
+  id: number
+  cliente: string
+  referencia: string | null
+  emissor: Emissor
+  versao: number
+  nome_arquivo: string | null
+  imagens: number
+  data: string
+  docx_url: string | null
+  download: string
+  pdf: string
+}
